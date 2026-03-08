@@ -56,6 +56,7 @@ class QuizState {
   final int fiftyFiftyLimit;
 
   // Time tracking
+  final bool isTimed; // true only if server sent non-zero duration
   final Map<String, int> questionStartTime;
   final Map<String, int> questionTimeSpent;
 
@@ -66,6 +67,7 @@ class QuizState {
     this.currentQuestionId = '',
     this.answers = const {},
     this.remainingSeconds = 0,
+    this.isTimed = false,
     this.checkDetails = false,
     this.pagination,
     this.isLoading = false,
@@ -86,6 +88,7 @@ class QuizState {
     String? currentQuestionId,
     Map<String, AnswerState>? answers,
     int? remainingSeconds,
+    bool? isTimed,
     bool? checkDetails,
     Pagination? pagination,
     bool? isLoading,
@@ -105,6 +108,7 @@ class QuizState {
         currentQuestionId: currentQuestionId ?? this.currentQuestionId,
         answers: answers ?? this.answers,
         remainingSeconds: remainingSeconds ?? this.remainingSeconds,
+        isTimed: isTimed ?? this.isTimed,
         checkDetails: checkDetails ?? this.checkDetails,
         pagination: pagination ?? this.pagination,
         isLoading: isLoading ?? this.isLoading,
@@ -144,7 +148,10 @@ class QuizState {
 
   bool get canUseFiftyFifty => fiftyFiftyUsageCount < fiftyFiftyLimit;
 
+  bool get hasTimer => remainingSeconds > 0;
+
   String get timerDisplay {
+    if (!hasTimer) return '\u221E'; // ∞
     final m = remainingSeconds ~/ 60;
     final s = remainingSeconds % 60;
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
@@ -183,6 +190,7 @@ class QuizNotifier extends StateNotifier<QuizState> {
         currentQuestionId: data.questions.first.questionId,
         answers: answers,
         remainingSeconds: data.timer?.remainingSeconds ?? data.durationSeconds,
+        isTimed: (data.timer?.remainingSeconds ?? data.durationSeconds) > 0,
         pagination: data.pagination,
         isLoading: false,
         fiftyFiftyLimit: limit,
@@ -198,7 +206,10 @@ class QuizNotifier extends StateNotifier<QuizState> {
         submitResult: null,
       );
 
-      _startTimer();
+      // Only start countdown if server gave a non-zero duration
+      if (state.remainingSeconds > 0) {
+        _startTimer();
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

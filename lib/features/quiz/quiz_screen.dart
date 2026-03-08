@@ -36,8 +36,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final quizState = ref.watch(quizProvider);
     final isTablet = MediaQuery.of(context).size.width > 768;
 
-    // Time up check
-    if (quizState.remainingSeconds <= 0 &&
+    // Time up check — only if the quiz is timed (server sent non-zero duration)
+    if (quizState.isTimed &&
+        quizState.remainingSeconds <= 0 &&
         quizState.questions.isNotEmpty &&
         !_showedTimeUp) {
       _showedTimeUp = true;
