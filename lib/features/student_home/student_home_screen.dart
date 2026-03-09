@@ -199,9 +199,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             subtitle: 'Speed Math',
                             icon: Icons.calculate_rounded,
                             color: const Color(0xFF10B981),
-                            buttonLabel: 'Coming Soon',
-                            isComingSoon: true,
-                            onTap: () {},
+                            buttonLabel: 'Play Now',
+                            onTap: () => context.push('/games/master-arithmetic'),
                           ),
                           _MissionCard(
                             title: 'Games',
