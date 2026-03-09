@@ -121,11 +121,9 @@ class _FindMissingNumbersScreenState extends State<FindMissingNumbersScreen>
     String num1Str = num1.toString();
     String num2Str = num2.toString();
     if (hideFromTop) {
-      num1Str = num1Str.substring(0, missingPos) + '_' +
-          num1Str.substring(missingPos + 1);
+      num1Str = '${num1Str.substring(0, missingPos)}_${num1Str.substring(missingPos + 1)}';
     } else {
-      num2Str = num2Str.substring(0, missingPos) + '_' +
-          num2Str.substring(missingPos + 1);
+      num2Str = '${num2Str.substring(0, missingPos)}_${num2Str.substring(missingPos + 1)}';
     }
 
     setState(() {

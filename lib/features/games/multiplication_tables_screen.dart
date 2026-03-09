@@ -18,6 +18,10 @@ class _MultiplicationTablesScreenState
   int _multiplier = 1;
   int _correctAnswer = 1;
 
+  // ── Mode state ───────────────────────────────────────────────────────────────
+  // 'mixed' | '1-5' | '6-10' | '1'..'12'
+  String _mode = 'mixed';
+
   // ── Game state ──────────────────────────────────────────────────────────────
   bool _isAnswered = false;
   bool _isCorrect = false;
@@ -89,9 +93,43 @@ class _MultiplicationTablesScreenState
     super.dispose();
   }
 
+  // ── Mode helpers ─────────────────────────────────────────────────────────────
+  void _setMode(String mode) {
+    setState(() {
+      _mode = mode;
+      _score = 0;
+      _totalQuestions = 0;
+      _streak = 0;
+      _bestStreak = 0;
+      _scoreKey = 0;
+      _streakKey = 0;
+      _isAnswered = false;
+      _isCorrect = false;
+      _feedbackMessage = '';
+    });
+    _answerController.clear();
+    _generateQuestion();
+  }
+
+  String _modeLabel(String mode) {
+    if (mode == 'mixed') return 'Mixed';
+    if (mode == '1-5') return '1–5';
+    if (mode == '6-10') return '6–10';
+    return '×$mode';
+  }
+
   // ── Question generation ─────────────────────────────────────────────────────
   void _generateQuestion() {
-    final table = _random.nextInt(12) + 1;
+    final int table;
+    if (_mode == 'mixed') {
+      table = _random.nextInt(12) + 1;
+    } else if (_mode == '1-5') {
+      table = _random.nextInt(5) + 1;
+    } else if (_mode == '6-10') {
+      table = _random.nextInt(5) + 6;
+    } else {
+      table = int.parse(_mode);
+    }
     final multiplier = _random.nextInt(12) + 1;
 
     setState(() {
@@ -165,6 +203,7 @@ class _MultiplicationTablesScreenState
             Column(
               children: [
                 _buildTopBar(),
+                _buildModeSelector(),
                 Expanded(
                   child: SingleChildScrollView(
                     padding:
@@ -334,6 +373,58 @@ class _MultiplicationTablesScreenState
                 setState(() => _isSoundEnabled = !_isSoundEnabled),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Mode selector ───────────────────────────────────────────────────────────
+  Widget _buildModeSelector() {
+    final modes = [
+      'mixed',
+      '1-5',
+      '6-10',
+      for (int i = 1; i <= 12; i++) '$i',
+    ];
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: modes.map((mode) {
+            final selected = _mode == mode;
+            return GestureDetector(
+              onTap: () => _setMode(mode),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? const Color(0xFFF59E0B)
+                      : const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  _modeLabel(mode),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: selected
+                        ? Colors.white
+                        : const Color(0xFFF59E0B),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -534,7 +625,9 @@ class _MultiplicationTablesScreenState
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Table of $_table',
+              _mode == 'mixed' || _mode == '1-5' || _mode == '6-10'
+                  ? 'Table of $_table'
+                  : '×$_table Table',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

@@ -83,6 +83,48 @@ class MasterArithmeticScreen extends StatelessWidget {
       color: Color(0xFFF59E0B),
       route: '/games/times-tables',
     ),
+    _GameInfo(
+      title: 'Doubles & Halves',
+      description: 'Smart multiplication by halving one, doubling the other',
+      icon: Icons.swap_horiz_rounded,
+      color: Color(0xFF009688),
+      route: '/games/doubles-halves',
+    ),
+    _GameInfo(
+      title: 'Division',
+      description: 'Practice division tables — dividends up to 144',
+      icon: Icons.splitscreen_rounded,
+      color: Color(0xFF3F51B5),
+      route: '/games/division',
+    ),
+    _GameInfo(
+      title: 'Set the Time',
+      description: 'Drag clock hands to match the target time',
+      icon: Icons.schedule_rounded,
+      color: Color(0xFF7C3AED),
+      route: '/games/set-time',
+    ),
+    _GameInfo(
+      title: 'Read the Time',
+      description: 'Look at the clock and type the time you see',
+      icon: Icons.watch_rounded,
+      color: Color(0xFFD946EF),
+      route: '/games/read-time',
+    ),
+    _GameInfo(
+      title: 'Time Conversion',
+      description: 'Convert between 12-hour and 24-hour formats',
+      icon: Icons.swap_vert_circle_rounded,
+      color: Color(0xFF10B981),
+      route: '/games/time-conversion',
+    ),
+    _GameInfo(
+      title: 'Sudoku 4×4',
+      description: 'Fill the grid — every row, column and box has 1–4',
+      icon: Icons.grid_4x4_rounded,
+      color: Color(0xFF7C3AED),
+      route: '/games/sudoku',
+    ),
   ];
 
   @override
@@ -269,8 +311,7 @@ class _GameTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: game.color,
                     borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.arrow_forward_ios_rounded,
+                  ),st Icon(Icons.arrow_forward_ios_rounded,
                       color: Colors.white, size: 16),
                 ),
             ],

@@ -20,6 +20,12 @@ import '../../features/games/balance_numbers_screen.dart';
 import '../../features/games/find_missing_numbers_screen.dart';
 import '../../features/games/multiplication_tables_screen.dart';
 import '../../features/games/skip_counting_screen.dart';
+import '../../features/games/doubles_halves_screen.dart';
+import '../../features/games/division_screen.dart';
+import '../../features/games/set_time_screen.dart';
+import '../../features/games/read_time_screen.dart';
+import '../../features/games/time_conversion_screen.dart';
+import '../../features/games/sudoku_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -112,6 +118,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/skip-counting',
         builder: (context, state) => const SkipCountingScreen(),
+      ),
+      GoRoute(
+        path: '/games/doubles-halves',
+        builder: (context, state) => const DoublesHalvesScreen(),
+      ),
+      GoRoute(
+        path: '/games/division',
+        builder: (context, state) => const DivisionScreen(),
+      ),
+      GoRoute(
+        path: '/games/set-time',
+        builder: (context, state) => const SetTimeScreen(),
+      ),
+      GoRoute(
+        path: '/games/read-time',
+        builder: (context, state) => const ReadTimeScreen(),
+      ),
+      GoRoute(
+        path: '/games/time-conversion',
+        builder: (context, state) => const TimeConversionScreen(),
+      ),
+      GoRoute(
+        path: '/games/sudoku',
+        builder: (context, state) => const SudokuScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
