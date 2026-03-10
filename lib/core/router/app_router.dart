@@ -26,6 +26,12 @@ import '../../features/games/set_time_screen.dart';
 import '../../features/games/read_time_screen.dart';
 import '../../features/games/time_conversion_screen.dart';
 import '../../features/games/sudoku_screen.dart';
+import '../../features/games/games_hub_screen.dart';
+import '../../features/games/lemonade_stand_screen.dart';
+import '../../features/games/money_exchanger_screen.dart';
+import '../../features/games/saving_vs_borrowing_screen.dart';
+import '../../features/games/race_to_finish_screen.dart';
+import '../../features/games/tug_of_war_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -142,6 +148,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/sudoku',
         builder: (context, state) => const SudokuScreen(),
+      ),
+      GoRoute(
+        path: '/games',
+        builder: (context, state) => const GamesHubScreen(),
+      ),
+      GoRoute(
+        path: '/games/lemonade-stand',
+        builder: (context, state) => const LemonadeStandScreen(),
+      ),
+      GoRoute(
+        path: '/games/money-exchanger',
+        builder: (context, state) => const MoneyExchangerScreen(),
+      ),
+      GoRoute(
+        path: '/games/saving-vs-borrowing',
+        builder: (context, state) => const SavingVsBorrowingScreen(),
+      ),
+      GoRoute(
+        path: '/games/race-to-finish',
+        builder: (context, state) => const RaceToFinishScreen(),
+      ),
+      GoRoute(
+        path: '/games/tug-of-war',
+        builder: (context, state) => const TugOfWarScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
