@@ -10,7 +10,6 @@ class FindMissingNumbersScreen extends StatefulWidget {
   State<FindMissingNumbersScreen> createState() =>
       _FindMissingNumbersScreenState();
 }
-
 class _FindMissingNumbersScreenState extends State<FindMissingNumbersScreen>
     with TickerProviderStateMixin {
   // ── Question state ──────────────────────────────────────────────────────────

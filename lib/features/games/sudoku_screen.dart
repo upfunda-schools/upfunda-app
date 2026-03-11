@@ -312,8 +312,9 @@ class _SudokuScreenState extends State<SudokuScreen>
     final fade = (sr * 0.02).round();
     for (int i = 0; i < n; i++) {
       double env = 1.0;
-      if (i < fade) env = i / fade;
-      else if (i > n - fade) env = (n - i) / fade;
+      if (i < fade) {
+        env = i / fade;
+      } else if (i > n - fade) env = (n - i) / fade;
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round().clamp(-32768, 32767);
       buf.setInt16(44 + i * 2, s, Endian.little);

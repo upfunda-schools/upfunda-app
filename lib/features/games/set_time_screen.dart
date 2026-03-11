@@ -216,7 +216,11 @@ class _SetTimeScreenState extends State<SetTimeScreen>
       }
     });
 
-    if (correct) _playCorrectSound(); else _playWrongSound();
+    if (correct) {
+      _playCorrectSound();
+    } else {
+      _playWrongSound();
+    }
 
     _feedbackTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) _generateQuestion();
@@ -258,8 +262,9 @@ class _SetTimeScreenState extends State<SetTimeScreen>
     final fade = (sr * 0.02).round();
     for (int i = 0; i < n; i++) {
       double env = 1.0;
-      if (i < fade) env = i / fade;
-      else if (i > n - fade) env = (n - i) / fade;
+      if (i < fade) {
+        env = i / fade;
+      } else if (i > n - fade) env = (n - i) / fade;
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round()
           .clamp(-32768, 32767);

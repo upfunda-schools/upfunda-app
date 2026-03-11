@@ -32,6 +32,11 @@ import '../../features/games/money_exchanger_screen.dart';
 import '../../features/games/saving_vs_borrowing_screen.dart';
 import '../../features/games/race_to_finish_screen.dart';
 import '../../features/games/tug_of_war_screen.dart';
+import '../../features/games/number_detective_screen.dart';
+import '../../features/games/wordle_screen.dart';
+import '../../features/games/four_shapes_screen.dart';
+import '../../features/games/word_scramble_screen.dart';
+import '../../features/games/water_reflections_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -172,6 +177,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/tug-of-war',
         builder: (context, state) => const TugOfWarScreen(),
+      ),
+      GoRoute(
+        path: '/games/number-detective',
+        builder: (context, state) => const NumberDetectiveScreen(),
+      ),
+      GoRoute(
+        path: '/games/wordle',
+        builder: (context, state) => const WordleScreen(),
+      ),
+      GoRoute(
+        path: '/games/four-shapes',
+        builder: (context, state) => const FourShapesScreen(),
+      ),
+      GoRoute(
+        path: '/games/word-scramble',
+        builder: (context, state) => const WordScrambleScreen(),
+      ),
+      GoRoute(
+        path: '/games/water-reflections',
+        builder: (context, state) => const WaterReflectionsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

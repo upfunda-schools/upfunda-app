@@ -9,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 // Data types
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum _GameMode { vsAi, twoPlayer }
 enum _GamePhase { menu, playing, finished }
 enum _Feedback { none, correct, wrong }
 
@@ -58,7 +57,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   ];
 
   // ── Game state ────────────────────────────────────────────────────────────
-  _GameMode _mode  = _GameMode.vsAi;
   _GamePhase _phase = _GamePhase.menu;
   int _level = 1;
 
@@ -67,16 +65,14 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   int _p2Correct = 0; // also used for AI score in vsAi mode
 
   String _p1Input = '';
-  String _p2Input = '';
   _Feedback _p1Fb = _Feedback.none;
   _Feedback _p2Fb = _Feedback.none;
 
   bool _p1Locked = false;
   bool _p2Locked = false;
-  bool _questionAnswered = false; // prevent double-scoring in 2-player
 
   bool _aiThinking = false;
-  String? _winner; // 'player' | 'ai' | 'player2'
+  String? _winner; // 'player' | 'ai'
   int _questionsAnswered = 0;
   bool _showInstructions = false;
 
@@ -130,6 +126,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   // ── Sounds ────────────────────────────────────────────────────────────────
   void _playSound(bool correct) async {
     try {
+      await _audio.stop();
       await _audio.play(
         AssetSource(correct ? 'audio/correct.mp3' : 'audio/wrong.mp3'),
         volume: 0.5,
@@ -146,12 +143,10 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
       _questionsAnswered = 0;
       _winner = null;
       _p1Input = '';
-      _p2Input = '';
       _p1Fb = _Feedback.none;
       _p2Fb = _Feedback.none;
       _p1Locked = false;
       _p2Locked = false;
-      _questionAnswered = false;
       _aiThinking = false;
     });
     _generateQuestion();
@@ -163,14 +158,12 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
       _question = q;
       _questionsAnswered++;
       _p1Input = '';
-      _p2Input = '';
       _p1Fb = _Feedback.none;
       _p2Fb = _Feedback.none;
       _p1Locked = false;
       _p2Locked = false;
-      _questionAnswered = false;
     });
-    if (_mode == _GameMode.vsAi) _startAiTimer();
+    _startAiTimer();
   }
 
   _Question _buildQuestion(int lvl) {
@@ -236,21 +229,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
     }
   }
 
-  void _submitP2() {
-    if (_p2Locked || _question == null) return;
-    final ans = int.tryParse(_p2Input);
-    if (ans == null) return;
-
-    if (ans == _question!.answer) {
-      _onCorrect(isPlayer1: false);
-    } else {
-      _onWrong(isPlayer1: false);
-    }
-  }
-
   void _onCorrect({required bool isPlayer1}) {
-    if (_mode == _GameMode.twoPlayer && _questionAnswered) return;
-
     _playSound(true);
     _lurchSign = isPlayer1 ? -1 : 1;
     _lurchCtrl.forward(from: 0);
@@ -258,7 +237,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
     _questionCorrect = true;
 
     setState(() {
-      _questionAnswered = true;
       if (isPlayer1) {
         _p1Correct++;
         _p1Fb = _Feedback.correct;
@@ -278,8 +256,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
     if (_p1Correct >= _winScore) {
       Future.delayed(const Duration(milliseconds: 900), () => _finishGame('player'));
     } else if (_p2Correct >= _winScore) {
-      final w = _mode == _GameMode.vsAi ? 'ai' : 'player2';
-      Future.delayed(const Duration(milliseconds: 900), () => _finishGame(w));
+      Future.delayed(const Duration(milliseconds: 900), () => _finishGame('ai'));
     } else {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (mounted && _phase == _GamePhase.playing) _generateQuestion();
@@ -298,7 +275,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
         _p1Input = '';
       } else {
         _p2Fb = _Feedback.wrong;
-        _p2Input = '';
       }
     });
 
@@ -319,7 +295,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
     setState(() => _aiThinking = true);
 
     _aiTimer = Timer(Duration(seconds: delay), () {
-      if (!mounted || _phase != _GamePhase.playing || _questionAnswered) return;
+      if (!mounted || _phase != _GamePhase.playing || _p2Locked) return;
 
       final aiCorrect = _random.nextDouble() < 0.7;
       setState(() => _aiThinking = false);
@@ -329,7 +305,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
       } else {
         // AI got it wrong — try again after another delay
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted && _phase == _GamePhase.playing && !_questionAnswered) {
+          if (mounted && _phase == _GamePhase.playing && !_p2Locked) {
             _startAiTimer();
           }
         });
@@ -414,27 +390,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Mode buttons
-                Row(
-                  children: [
-                    _ModeBtn(
-                      emoji: '👤',
-                      label: 'vs AI',
-                      selected: _mode == _GameMode.vsAi,
-                      onTap: () => setState(() => _mode = _GameMode.vsAi),
-                    ),
-                    const SizedBox(width: 12),
-                    _ModeBtn(
-                      emoji: '👥',
-                      label: '2 Players',
-                      selected: _mode == _GameMode.twoPlayer,
-                      onTap: () => setState(() => _mode = _GameMode.twoPlayer),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
                 Text(
                   'Choose Level:',
                   style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
@@ -550,8 +505,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
                         Text('• First to pull the rope 7 steps to their side wins! 🏆', style: TextStyle(color: Colors.white70, fontSize: 13)),
                         SizedBox(height: 6),
                         Text('• vs AI: the AI will try to answer after 2–5 seconds', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                        SizedBox(height: 6),
-                        Text('• 2-Player: whoever answers correctly first wins the round', style: TextStyle(color: Colors.white70, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -568,65 +521,58 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   // Phase 2 — Playing
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildPlaying() {
-    final is2P = _mode == _GameMode.twoPlayer;
-
     return Column(
       children: [
         _buildTopBar('🪢 Tug of War  •  Level $_level'),
-        const SizedBox(height: 8),
-
-        // Score bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              _ScorePill(label: is2P ? 'Player 1' : 'You', score: _p1Correct, total: _winScore, color: const Color(0xFF2196F3)),
-              Expanded(
-                child: Center(
-                  child: Text('VS', style: GoogleFonts.montserrat(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white54)),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+            child: Column(
+              children: [
+                // Score bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      _ScorePill(label: 'You', score: _p1Correct, total: _winScore, color: const Color(0xFF2196F3)),
+                      Expanded(
+                        child: Center(
+                          child: Text('VS', style: GoogleFonts.montserrat(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white54)),
+                        ),
+                      ),
+                      _ScorePill(label: 'AI', score: _p2Correct, total: _winScore, color: const Color(0xFFF44336), reversed: true),
+                    ],
+                  ),
                 ),
-              ),
-              _ScorePill(label: is2P ? 'Player 2' : 'AI', score: _p2Correct, total: _winScore, color: const Color(0xFFF44336), reversed: true),
-            ],
-          ),
-        ),
 
-        const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-        // Question
-        _buildQuestionWidget(),
+                // Question
+                _buildQuestionWidget(),
 
-        const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-        // Arena
-        _buildArena(),
+                // Arena
+                _buildArena(),
 
-        if (_mode == _GameMode.vsAi && _aiThinking) ...[
-          const SizedBox(height: 6),
-          Center(
-            child: Text(
-              'AI is thinking… 🤔',
-              style: const TextStyle(color: Colors.white60, fontSize: 13, fontStyle: FontStyle.italic),
+                if (_aiThinking) ...[
+                  const SizedBox(height: 4),
+                  const Center(
+                    child: Text(
+                      'AI is thinking… 🤔',
+                      style: TextStyle(color: Colors.white60, fontSize: 12, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 8),
+
+                // Number pad
+                _buildPad(isP1: true),
+              ],
             ),
           ),
-        ],
-
-        const SizedBox(height: 6),
-
-        // Number pad(s)
-        Expanded(
-          child: is2P
-              ? Row(
-                  children: [
-                    Expanded(child: _buildPad(isP1: true)),
-                    const SizedBox(width: 4),
-                    Expanded(child: _buildPad(isP1: false)),
-                  ],
-                )
-              : _buildPad(isP1: true),
         ),
-
-        const SizedBox(height: 8),
       ],
     );
   }
@@ -702,7 +648,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
                   size: Size(w, 155),
                   painter: _ArenaPainter(
                     lurchOffset: _lurchOffset,
-                    isVsAi: _mode == _GameMode.vsAi,
+                    isVsAi: true,
                     p1Score: _p1Correct,
                     p2Score: _p2Correct,
                     winScore: _winScore,
@@ -725,7 +671,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
                 Positioned(
                   right: 2,
                   bottom: 4,
-                  child: Text(_mode == _GameMode.vsAi ? 'AI ▶' : 'P2 ▶',
+                  child: Text('AI ▶',
                     style: TextStyle(color: const Color(0xFFEF9A9A), fontSize: 9, fontWeight: FontWeight.w700)),
                 ),
               ],
@@ -738,30 +684,23 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
 
   // ── Number pad ────────────────────────────────────────────────────────────
   Widget _buildPad({required bool isP1}) {
-    final input  = isP1 ? _p1Input : _p2Input;
-    final fb     = isP1 ? _p1Fb : _p2Fb;
-    final locked = isP1 ? _p1Locked : _p2Locked;
-    final color  = isP1 ? const Color(0xFF1565C0) : const Color(0xFFC62828);
-    final label  = isP1
-        ? (_mode == _GameMode.twoPlayer ? 'Player 1' : 'You')
-        : (_mode == _GameMode.twoPlayer ? 'Player 2' : 'AI');
-    final is2P   = _mode == _GameMode.twoPlayer;
+    final input  = _p1Input;
+    final fb     = _p1Fb;
+    final locked = _p1Locked;
+    const color  = Color(0xFF1565C0);
 
     void onDigit(String d) {
       if (locked) return;
-      setState(() {
-        if (isP1) { _p1Input = _p1Input.length < 5 ? _p1Input + d : _p1Input; }
-        else { _p2Input = _p2Input.length < 5 ? _p2Input + d : _p2Input; }
-      });
+      setState(() { _p1Input = _p1Input.length < 5 ? _p1Input + d : _p1Input; });
     }
 
     void onClear() {
       if (locked) return;
-      setState(() { if (isP1) { _p1Input = ''; } else { _p2Input = ''; } });
+      setState(() { _p1Input = ''; });
     }
 
     return Container(
-      margin: EdgeInsets.fromLTRB(isP1 ? 8 : 4, 0, isP1 ? 4 : 8, 0),
+      margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
       child: Column(
         children: [
           // Input display
@@ -780,7 +719,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
             ),
             child: Row(
               children: [
-                if (is2P) Text('$label  ', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
                 Expanded(
                   child: Text(
                     input.isEmpty
@@ -799,25 +737,25 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
           ),
 
           // Digit grid
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 3,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                for (final d in ['7','8','9','4','5','6','1','2','3'])
-                  _PadBtn(label: d, color: color, locked: locked, onTap: () => onDigit(d)),
-                _PadBtn(label: 'C', color: Colors.orange, locked: locked, onTap: onClear),
-                _PadBtn(label: '0', color: color, locked: locked, onTap: () => onDigit('0')),
-                _PadBtn(
-                  label: '✓',
-                  color: const Color(0xFF00C853),
-                  locked: locked,
-                  onTap: isP1 ? _submitP1 : _submitP2,
-                ),
-              ],
-            ),
+          GridView.count(
+            crossAxisCount: 3,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 6,
+            childAspectRatio: 2.2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              for (final d in ['7','8','9','4','5','6','1','2','3'])
+                _PadBtn(label: d, color: color, locked: locked, onTap: () => onDigit(d)),
+              _PadBtn(label: 'C', color: Colors.orange, locked: locked, onTap: onClear),
+              _PadBtn(label: '0', color: color, locked: locked, onTap: () => onDigit('0')),
+              _PadBtn(
+                label: '✓',
+                color: const Color(0xFF00C853),
+                locked: locked,
+                onTap: _submitP1,
+              ),
+            ],
           ),
         ],
       ),
@@ -829,9 +767,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildFinished() {
     final playerWon = _winner == 'player';
-    final is2P = _mode == _GameMode.twoPlayer;
-    final winnerName = _winner == 'player' ? (is2P ? 'Player 1' : 'You')
-        : _winner == 'player2' ? 'Player 2' : 'AI';
+    final winnerName = playerWon ? 'You' : 'AI';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
@@ -848,9 +784,7 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
               gradient: LinearGradient(
                 colors: playerWon
                     ? const [Color(0xFF00897B), Color(0xFF1DE9B6)]
-                    : _winner == 'player2'
-                        ? const [Color(0xFF880E4F), Color(0xFFE91E63)]
-                        : const [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                    : const [Color(0xFF4A148C), Color(0xFF7B1FA2)],
               ),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
@@ -863,19 +797,17 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
             ),
             child: Column(
               children: [
-                Text(playerWon ? '🏆' : (_winner == 'ai' ? '🤖' : '🏆'), style: const TextStyle(fontSize: 56)),
+                Text(playerWon ? '🏆' : '🤖', style: const TextStyle(fontSize: 56)),
                 const SizedBox(height: 10),
                 Text(
-                  '$winnerName Wins!',
+                  playerWon ? 'You Win! 🎉' : 'AI Wins!',
                   style: GoogleFonts.montserrat(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   playerWon
                       ? 'Incredible! You pulled the rope all the way! 💪'
-                      : is2P
-                          ? '$winnerName pulled the rope to victory!'
-                          : 'The AI won this time. Try again! 💪',
+                      : 'The AI won this time. Try again! 💪',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
@@ -900,9 +832,9 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _ResultStat(label: is2P ? 'Player 1' : 'You', value: '$_p1Correct / $_winScore', color: const Color(0xFF90CAF9)),
+                    _ResultStat(label: 'You', value: '$_p1Correct / $_winScore', color: const Color(0xFF90CAF9)),
                     _ResultStat(label: 'Questions', value: '$_questionsAnswered', color: Colors.white70),
-                    _ResultStat(label: is2P ? 'Player 2' : 'AI', value: '$_p2Correct / $_winScore', color: const Color(0xFFEF9A9A)),
+                    _ResultStat(label: 'AI', value: '$_p2Correct / $_winScore', color: const Color(0xFFEF9A9A)),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -1114,38 +1046,6 @@ class _ArenaPainter extends CustomPainter {
 // Sub-widgets
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ModeBtn extends StatelessWidget {
-  final String emoji, label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _ModeBtn({required this.emoji, required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: selected ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.2), width: selected ? 2 : 1),
-          ),
-          child: Column(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 28)),
-              const SizedBox(height: 4),
-              Text(label, style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _ScorePill extends StatelessWidget {
   final String label;
   final int score, total;
@@ -1177,7 +1077,7 @@ class _ScorePill extends StatelessWidget {
   }
 }
 
-class _PadBtn extends StatelessWidget {
+class _PadBtn extends StatefulWidget {
   final String label;
   final Color color;
   final bool locked;
@@ -1185,20 +1085,48 @@ class _PadBtn extends StatelessWidget {
   const _PadBtn({required this.label, required this.color, required this.locked, required this.onTap});
 
   @override
+  State<_PadBtn> createState() => _PadBtnState();
+}
+
+class _PadBtnState extends State<_PadBtn> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: locked ? Colors.white.withValues(alpha: 0.04) : color.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: locked ? null : onTap,
-        borderRadius: BorderRadius.circular(10),
+    final bg = widget.locked
+        ? Colors.white.withValues(alpha: 0.04)
+        : _pressed
+            ? widget.color.withValues(alpha: 0.40)
+            : widget.color.withValues(alpha: 0.22);
+
+    return GestureDetector(
+      onTapDown: widget.locked ? null : (_) => setState(() => _pressed = true),
+      onTapUp: widget.locked
+          ? null
+          : (_) {
+              setState(() => _pressed = false);
+              widget.onTap();
+            },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 80),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: widget.locked
+                ? Colors.white.withValues(alpha: 0.08)
+                : widget.color.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
+        ),
         child: Center(
           child: Text(
-            label,
+            widget.label,
             style: GoogleFonts.montserrat(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: locked ? Colors.white24 : Colors.white,
+              color: widget.locked ? Colors.white24 : Colors.white,
             ),
           ),
         ),
