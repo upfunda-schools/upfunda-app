@@ -332,7 +332,6 @@ class _GameInfo {
     required this.icon,
     required this.color,
     required this.route,
-    this.comingSoon = false,
   });
 
   final String title;

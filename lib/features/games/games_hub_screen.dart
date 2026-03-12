@@ -86,6 +86,54 @@ class GamesHubScreen extends StatelessWidget {
       gradient: [Color(0xFF2563EB), Color(0xFF0891B2)],
       route: '/games/water-reflections',
     ),
+    _GameCard(
+      emoji: '🪞',
+      title: 'Mirror Images',
+      description: 'Find the correct horizontal mirror image of a 5×5 grid pattern from 4 options!',
+      tags: ['Patterns', 'Logic', 'Symmetry'],
+      gradient: [Color(0xFF0D9488), Color(0xFF16A34A)],
+      route: '/games/mirror-images',
+    ),
+    _GameCard(
+      emoji: '2048',
+      title: '2048',
+      description: 'Slide and merge numbered tiles to reach 2048! A classic puzzle of strategy and foresight.',
+      tags: ['Puzzle', 'Strategy', 'Numbers'],
+      gradient: [Color(0xFFBBADA0), Color(0xFF8F7A66)],
+      route: '/games/2048',
+    ),
+    _GameCard(
+      emoji: '🔮',
+      title: 'What Comes Next?',
+      description: 'Spot number, shape, and colour patterns then predict what comes next. Perfect for young minds!',
+      tags: ['Patterns', 'Logic', 'Sequences'],
+      gradient: [Color(0xFFFF9800), Color(0xFFF57C00)],
+      route: '/games/what-comes-next',
+    ),
+    _GameCard(
+      emoji: '🃏',
+      title: 'Memory Matching',
+      description: 'Flip cards to find matching emoji pairs! Test your memory in a 4×4 grid with 8 pairs.',
+      tags: ['Memory', 'Puzzle', 'Pairs'],
+      gradient: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+      route: '/games/memory-matching',
+    ),
+    _GameCard(
+      emoji: '〰️',
+      title: 'Lines of Symmetry',
+      description: 'Study a 6×6 pattern and identify every line of symmetry — vertical, horizontal, and diagonal.',
+      tags: ['Geometry', 'Patterns', 'Logic'],
+      gradient: [Color(0xFFEA580C), Color(0xFFF97316)],
+      route: '/games/lines-of-symmetry',
+    ),
+    _GameCard(
+      emoji: '🎨',
+      title: '75 Chart Coloring',
+      description: 'Solve addition & subtraction problems to colour every number on the chart. Two difficulty levels!',
+      tags: ['Maths', 'Addition', 'Subtraction'],
+      gradient: [Color(0xFFEC407A), Color(0xFF7B1FA2)],
+      route: '/games/seventy-five',
+    ),
   ];
 
   @override
@@ -219,8 +267,12 @@ class _GameTile extends StatelessWidget {
                   bottomLeft: Radius.circular(20),
                 ),
               ),
-              child: Center(
-                child: Text(game.emoji, style: const TextStyle(fontSize: 42)),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(game.emoji, style: const TextStyle(fontSize: 42, color: Colors.white, fontWeight: FontWeight.w900)),
+                ),
               ),
             ),
 

@@ -37,6 +37,12 @@ import '../../features/games/wordle_screen.dart';
 import '../../features/games/four_shapes_screen.dart';
 import '../../features/games/word_scramble_screen.dart';
 import '../../features/games/water_reflections_screen.dart';
+import '../../features/games/mirror_images_screen.dart';
+import '../../features/games/game_2048_screen.dart';
+import '../../features/games/what_comes_next_screen.dart';
+import '../../features/games/seventy_five_screen.dart';
+import '../../features/games/lines_of_symmetry_screen.dart';
+import '../../features/games/memory_matching_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -197,6 +203,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/water-reflections',
         builder: (context, state) => const WaterReflectionsScreen(),
+      ),
+      GoRoute(
+        path: '/games/mirror-images',
+        builder: (context, state) => const MirrorImagesScreen(),
+      ),
+      GoRoute(
+        path: '/games/2048',
+        builder: (context, state) => const Game2048Screen(),
+      ),
+      GoRoute(
+        path: '/games/what-comes-next',
+        builder: (context, state) => const WhatComesNextScreen(),
+      ),
+      GoRoute(
+        path: '/games/seventy-five',
+        builder: (context, state) => const SeventyFiveScreen(),
+      ),
+      GoRoute(
+        path: '/games/lines-of-symmetry',
+        builder: (context, state) => const LinesOfSymmetryScreen(),
+      ),
+      GoRoute(
+        path: '/games/memory-matching',
+        builder: (context, state) => const MemoryMatchingScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
