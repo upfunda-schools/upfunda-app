@@ -14,6 +14,8 @@ This file provides structured context for AI coding agents working on the Upfund
 | **HTTP Client** | Dio |
 | **Backend** | AWS Lambda (API Gateway, ap-south-1) |
 | **Design System** | Material 3 with Montserrat font |
+| **Auth** | Firebase Auth (email + password) |
+| **Env Config** | `.env` via `flutter_dotenv` |
 | **Package** | `com.upfunda.upfunda_app` |
 
 ## File Map — Where Things Live
@@ -25,6 +27,9 @@ This file provides structured context for AI coding agents working on the Upfund
 | Route definitions | `lib/core/router/app_router.dart` |
 | Theme & colors | `lib/core/theme/app_theme.dart`, `app_colors.dart` |
 | Input validators | `lib/core/utils/validators.dart` |
+| Environment config | `lib/core/utils/env_config.dart` |
+| Firebase auth service | `lib/data/services/firebase_auth_service.dart` |
+| Firebase options | `lib/firebase_options.dart` |
 | API interface | `lib/data/services/api_service.dart` |
 | Real API implementation | `lib/data/services/dio_api_service.dart` |
 | Mock API implementation | `lib/data/services/mock_api_service.dart` |
@@ -100,4 +105,5 @@ This file provides structured context for AI coding agents working on the Upfund
 | [CONVENTIONS.md](CONVENTIONS.md) | Coding standards, naming, file structure rules |
 | [FEATURES.md](FEATURES.md) | All features, screens, and games catalog |
 | [API.md](API.md) | API endpoints, models, request/response schemas |
+| [FIREBASE_AUTH.md](FIREBASE_AUTH.md) | Firebase Auth integration guide, auth flow, env setup |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | How to add features, models, tests, build releases |

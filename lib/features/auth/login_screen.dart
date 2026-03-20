@@ -46,14 +46,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final phone = _isPhoneMode
-        ? '$_countryCode${_phoneController.text}'
+    final email = _isPhoneMode
+        ? '${_phoneController.text}@phone.upfunda.com'
         : _emailController.text;
     final password = _passwordController.text;
 
     final success = await ref
         .read(authProvider.notifier)
-        .login(phone: phone, password: password);
+        .login(email: email, password: password);
 
     if (success && mounted) {
       context.go('/student-home');

@@ -13,9 +13,29 @@
 ```bash
 git clone git@github.com:upfunda-schools/upfunda-app.git
 cd upfunda-app
+cp .env.example .env          # copy env template
+# Edit .env with your Firebase keys and API URL
 flutter pub get
-flutter doctor        # verify everything is configured
+flutter doctor                # verify everything is configured
 ```
+
+### Environment variables
+
+The app uses a `.env` file for all secrets and configuration. See `.env.example` for the required variables:
+
+| Variable | Source |
+|---|---|
+| `FIREBASE_API_KEY` | Firebase Console → Project Settings |
+| `FIREBASE_AUTH_DOMAIN` | Firebase Console → Project Settings |
+| `FIREBASE_PROJECT_ID` | Firebase Console → Project Settings |
+| `FIREBASE_STORAGE_BUCKET` | Firebase Console → Project Settings |
+| `FIREBASE_MESSAGING_SENDER_ID` | Firebase Console → Project Settings |
+| `FIREBASE_APP_ID` | Firebase Console → Project Settings |
+| `FIREBASE_MEASUREMENT_ID` | Firebase Console → Project Settings |
+| `API_BASE_URL` | AWS API Gateway endpoint |
+| `RAZORPAY_KEY_ID` | Razorpay Dashboard |
+
+The `.env` file is gitignored — never commit it. See [FIREBASE_AUTH.md](FIREBASE_AUTH.md) for full details.
 
 ### Running
 
@@ -147,7 +167,9 @@ flutter build windows --release
 
 ## Environment Notes
 
-- The app currently uses a hardcoded user ID in the API service provider
-- Auth is simplified (no Firebase/OAuth) — uses direct user ID with SharedPreferences persistence
+- Auth uses **Firebase Authentication** (email + password) via `FirebaseAuthService`
+- Firebase ID tokens are automatically attached to API requests as Bearer tokens
+- All secrets and config are loaded from `.env` via `flutter_dotenv` (see `EnvConfig`)
 - Mock API can be swapped in via the `apiServiceProvider` in `auth_provider.dart`
 - All games run entirely on-device with no backend integration
+- See [FIREBASE_AUTH.md](FIREBASE_AUTH.md) for the full auth integration guide

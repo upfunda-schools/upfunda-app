@@ -36,23 +36,16 @@ All state is managed through Riverpod `StateNotifierProvider`s. The app is wrapp
 ### Provider Dependency Graph
 
 ```
+firebaseAuthServiceProvider (Provider<FirebaseAuthService>)
+    ↑ used by
 apiServiceProvider (Provider<ApiService>)
     ↑ used by
 authProvider (StateNotifierProvider<AuthNotifier, AuthState>)
     ↑ watched by
 routerProvider (Provider<GoRouter>)  ← auth redirect logic
 
-userProvider (StateNotifierProvider<UserNotifier, UserState>)
-    ↑ uses apiServiceProvider
-
-quizProvider (StateNotifierProvider<QuizNotifier, QuizState>)
-    ↑ uses apiServiceProvider
-
-worksheetProvider (StateNotifierProvider<WorksheetNotifier, WorksheetState>)
-    ↑ uses apiServiceProvider
-
-testListProvider (StateNotifierProvider<TestListNotifier, TestListState>)
-    ↑ uses apiServiceProvider
+userProvider, quizProvider, worksheetProvider, testListProvider
+    ↑ all use apiServiceProvider
 ```
 
 ## Routing — GoRouter
@@ -97,9 +90,9 @@ abstract class ApiService {
 
 ### Backend
 
-- **Base URL**: AWS Lambda via API Gateway (ap-south-1)
+- **Base URL**: AWS Lambda via API Gateway (ap-south-1), loaded from `EnvConfig.apiBaseUrl`
 - **Endpoints**: Under `/mobile/v1/`
-- **Auth**: User ID passed as query parameter (simplified auth)
+- **Auth**: Firebase ID token passed as `Authorization: Bearer <token>` header
 
 ## Theme
 

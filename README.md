@@ -31,13 +31,36 @@ git clone git@github.com:upfunda-schools/upfunda-app.git
 cd upfunda-app
 ```
 
-### 2. Install dependencies
+### 2. Set up environment variables
+
+Copy the example environment file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your Firebase project keys and API URL. Get the Firebase values from [Firebase Console](https://console.firebase.google.com/) → Project Settings → General.
+
+See [docs/FIREBASE_AUTH.md](docs/FIREBASE_AUTH.md) for details on where each value comes from.
+
+### 3. Install dependencies
 
 ```bash
 flutter pub get
 ```
 
-### 3. Verify your setup
+### 4. (Optional) Configure native Firebase
+
+For Android/iOS development, run FlutterFire CLI to generate native config files:
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure --project=upfuna-academy
+```
+
+This generates `google-services.json` (Android) and `GoogleService-Info.plist` (iOS). These files are gitignored.
+
+### 5. Verify your setup
 
 ```bash
 flutter doctor
@@ -45,7 +68,7 @@ flutter doctor
 
 Resolve any issues reported by `flutter doctor` before proceeding.
 
-### 4. Run the app
+### 6. Run the app
 
 **Android emulator:**
 ```bash
@@ -75,7 +98,7 @@ flutter devices          # List connected devices
 flutter run -d <device>  # Run on a specific device
 ```
 
-### 5. Development commands
+### 7. Development commands
 
 ```bash
 # Hot reload (while app is running)
@@ -150,7 +173,10 @@ lib/
 | `percent_indicator` | Progress indicators |
 | `fl_chart` | Charts for stats display |
 | `flutter_html` | Render HTML content in quiz questions |
-| `shared_preferences` | Local auth persistence |
+| `firebase_core` | Firebase initialization |
+| `firebase_auth` | Firebase Authentication (email/password) |
+| `flutter_dotenv` | Load environment variables from `.env` |
+| `shared_preferences` | Local data persistence |
 | `audioplayers` | Sound effects for games |
 
 ## Android Build Info
