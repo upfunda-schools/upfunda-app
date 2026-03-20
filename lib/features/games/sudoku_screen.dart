@@ -60,13 +60,6 @@ class _SudokuScreenState extends State<SudokuScreen>
     [4, 3, 2, 1],
   ];
 
-  // ── Fallback puzzle ──────────────────────────────────────────────────────────
-  static const _fallbackPuzzle = [
-    [1, 0, 0, 4],
-    [0, 4, 1, 0],
-    [0, 1, 4, 0],
-    [4, 0, 0, 1],
-  ];
   static const _fallbackSolution = [
     [1, 2, 3, 4],
     [3, 4, 1, 2],
@@ -80,7 +73,6 @@ class _SudokuScreenState extends State<SudokuScreen>
   static const _prefillText = Color(0xFF1A237E);
   static const _conflictBg = Color(0xFFFFEBEE);
   static const _conflictText = Color(0xFFD32F2F);
-  static const _conflictBorder = Color(0xFFF44336);
   static const _userText = Color(0xFF6D28D9);
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -314,7 +306,9 @@ class _SudokuScreenState extends State<SudokuScreen>
       double env = 1.0;
       if (i < fade) {
         env = i / fade;
-      } else if (i > n - fade) env = (n - i) / fade;
+      } else if (i > n - fade) {
+        env = (n - i) / fade;
+      }
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round().clamp(-32768, 32767);
       buf.setInt16(44 + i * 2, s, Endian.little);
@@ -505,7 +499,7 @@ class _SudokuScreenState extends State<SudokuScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 12,
-                color: _purple.withOpacity(0.7),
+                color: _purple.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500),
           ),
       ],
@@ -526,7 +520,7 @@ class _SudokuScreenState extends State<SudokuScreen>
               border: Border.all(color: _purple, width: 3),
               boxShadow: [
                 BoxShadow(
-                    color: _purple.withOpacity(0.2),
+                    color: _purple.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 6)),
               ],
@@ -696,7 +690,7 @@ class _SudokuScreenState extends State<SudokuScreen>
           boxShadow: isActive
               ? [
                   BoxShadow(
-                      color: _purple.withOpacity(0.3),
+                      color: _purple.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3))
                 ]
@@ -758,7 +752,7 @@ class _SudokuScreenState extends State<SudokuScreen>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.3),
+                color: const Color(0xFF10B981).withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 5))
           ],
@@ -775,7 +769,7 @@ class _SudokuScreenState extends State<SudokuScreen>
             Text('Next puzzle in 3 s — or tap below',
                 style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.8))),
+                    color: Colors.white.withValues(alpha: 0.8))),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

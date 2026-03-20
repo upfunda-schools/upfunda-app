@@ -59,7 +59,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           onSelected: (v) async {
                             if (v == 'logout') {
                               await ref.read(authProvider.notifier).logout();
-                              if (mounted) context.go('/login');
+                              if (context.mounted) context.go('/login');
                             }
                           },
                           itemBuilder: (_) => [

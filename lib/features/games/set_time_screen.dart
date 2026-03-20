@@ -48,11 +48,9 @@ class _SetTimeScreenState extends State<SetTimeScreen>
   // ── Clock geometry (viewbox = 280 × 280) ─────────────────────────────────────
   static const double _kVB = 280.0;
   static const Offset _kC = Offset(140, 140); // center
-  static const double _kR = 130.0; // clock radius
   static const double _kHourLen = 72.0;
   static const double _kMinLen = 104.0;
   static const double _kHandleR = 13.0;
-  static const double _kNumR = 98.0;
 
   static const _numberBgColors = [
     Color(0xFFFFCDD2), Color(0xFFE1BEE7), Color(0xFFBBDEFB),
@@ -264,7 +262,9 @@ class _SetTimeScreenState extends State<SetTimeScreen>
       double env = 1.0;
       if (i < fade) {
         env = i / fade;
-      } else if (i > n - fade) env = (n - i) / fade;
+      } else if (i > n - fade) {
+        env = (n - i) / fade;
+      }
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round()
           .clamp(-32768, 32767);
@@ -473,7 +473,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
           padding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF7C3AED).withOpacity(0.07),
+            color: const Color(0xFF7C3AED).withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Column(
@@ -519,7 +519,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF7C3AED).withOpacity(0.28),
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.28),
                     blurRadius: 18,
                     offset: const Offset(0, 6))
               ],
@@ -555,7 +555,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: const Color(0xFF7C3AED).withOpacity(0.25), width: 1.5),
+                color: const Color(0xFF7C3AED).withValues(alpha: 0.25), width: 1.5),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -600,7 +600,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.32),
+                color: const Color(0xFF10B981).withValues(alpha: 0.32),
                 blurRadius: 14,
                 offset: const Offset(0, 5))
           ],
@@ -637,7 +637,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: accent.withOpacity(0.28),
+              color: accent.withValues(alpha: 0.28),
               blurRadius: 14,
               offset: const Offset(0, 5))
         ],
@@ -653,7 +653,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
           const SizedBox(height: 6),
           Text('Next question in 3 s — or tap below',
               style: TextStyle(
-                  fontSize: 12, color: Colors.white.withOpacity(0.8))),
+                  fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -844,7 +844,7 @@ class _ClockPainter extends CustomPainter {
         _c + const Offset(0, 3),
         _r + 2,
         Paint()
-          ..color = const Color(0xFF7C3AED).withOpacity(0.14)
+          ..color = const Color(0xFF7C3AED).withValues(alpha: 0.14)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10));
     // White fill
     canvas.drawCircle(_c, _r, Paint()..color = Colors.white);
@@ -869,8 +869,8 @@ class _ClockPainter extends CustomPainter {
         Offset(_c.dx + inner * sin(angle), _c.dy - inner * cos(angle)),
         Paint()
           ..color = isHour
-              ? const Color(0xFF7C3AED).withOpacity(0.45)
-              : const Color(0xFF9E9E9E).withOpacity(0.35)
+              ? const Color(0xFF7C3AED).withValues(alpha: 0.45)
+              : const Color(0xFF9E9E9E).withValues(alpha: 0.35)
           ..strokeWidth = isHour ? 2.5 : 1.0
           ..strokeCap = StrokeCap.round,
       );
@@ -878,7 +878,7 @@ class _ClockPainter extends CustomPainter {
   }
 
   void _drawSmiley(Canvas canvas) {
-    final paint = Paint()..color = const Color(0xFF7C3AED).withOpacity(0.13);
+    final paint = Paint()..color = const Color(0xFF7C3AED).withValues(alpha: 0.13);
     // Eyes
     canvas.drawCircle(Offset(_c.dx - 26, _c.dy - 30), 5.5, paint);
     canvas.drawCircle(Offset(_c.dx + 26, _c.dy - 30), 5.5, paint);
@@ -889,7 +889,7 @@ class _ClockPainter extends CustomPainter {
     canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFF7C3AED).withOpacity(0.13)
+          ..color = const Color(0xFF7C3AED).withValues(alpha: 0.13)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.5
           ..strokeCap = StrokeCap.round);
@@ -910,7 +910,7 @@ class _ClockPainter extends CustomPainter {
           pos,
           16.5,
           Paint()
-            ..color = const Color(0xFF7C3AED).withOpacity(0.35)
+            ..color = const Color(0xFF7C3AED).withValues(alpha: 0.35)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2);
       // Number
@@ -945,7 +945,7 @@ class _ClockPainter extends CustomPainter {
         tip,
         _handleR,
         Paint()
-          ..color = Colors.white.withOpacity(0.55)
+          ..color = Colors.white.withValues(alpha: 0.55)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0);
     canvas.drawCircle(tip, 4, Paint()..color = Colors.white);

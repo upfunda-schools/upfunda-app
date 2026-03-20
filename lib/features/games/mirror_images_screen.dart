@@ -329,7 +329,7 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
       onTap: _feedback != null ? null : () => _selectOption(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        transform: Matrix4.identity()..scale(selected ? 1.05 : 1.0),
+        transform: selected ? Matrix4.diagonal3Values(1.05, 1.05, 1.0) : Matrix4.identity(),
         transformAlignment: Alignment.center,
         decoration: BoxDecoration(
           color: bgColor,

@@ -74,7 +74,7 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
     setState(() => _isSubmitting = true);
     try {
       final result = await ref.read(quizProvider.notifier).submitTest();
-      if (mounted) {
+      if (context.mounted) {
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -82,7 +82,7 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Submission failed: $e')),
         );

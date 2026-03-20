@@ -229,7 +229,9 @@ class _ReadTimeScreenState extends State<ReadTimeScreen>
       double env = 1.0;
       if (i < fade) {
         env = i / fade;
-      } else if (i > n - fade) env = (n - i) / fade;
+      } else if (i > n - fade) {
+        env = (n - i) / fade;
+      }
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round().clamp(-32768, 32767);
       buf.setInt16(44 + i * 2, s, Endian.little);
@@ -444,7 +446,7 @@ class _ReadTimeScreenState extends State<ReadTimeScreen>
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF7C3AED).withOpacity(0.28),
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.28),
                     blurRadius: 18,
                     offset: const Offset(0, 6))
               ],
@@ -540,7 +542,7 @@ class _ReadTimeScreenState extends State<ReadTimeScreen>
           boxShadow: hasInput
               ? [
                   BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
                       blurRadius: 14,
                       offset: const Offset(0, 5))
                 ]
@@ -587,7 +589,7 @@ class _ReadTimeScreenState extends State<ReadTimeScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: accent.withOpacity(0.28),
+              color: accent.withValues(alpha: 0.28),
               blurRadius: 14,
               offset: const Offset(0, 5))
         ],
@@ -605,7 +607,7 @@ class _ReadTimeScreenState extends State<ReadTimeScreen>
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.85))),
+                  color: Colors.white.withValues(alpha: 0.85))),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -779,9 +781,8 @@ class _StaticClockPainter extends CustomPainter {
         _c + const Offset(0, 3),
         _r + 2,
         Paint()
-          ..color = const Color(0xFF7C3AED).withOpacity(0.13)
+          ..color = const Color(0xFF7C3AED).withValues(alpha: 0.13)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10));
-    canvas.drawCircle(_c, _r, Paint()..color = Colors.white);
     canvas.drawCircle(
         _c,
         _r,
@@ -802,8 +803,8 @@ class _StaticClockPainter extends CustomPainter {
         Offset(_c.dx + inner * sin(angle), _c.dy - inner * cos(angle)),
         Paint()
           ..color = isHour
-              ? const Color(0xFF7C3AED).withOpacity(0.45)
-              : const Color(0xFF9E9E9E).withOpacity(0.35)
+              ? const Color(0xFF7C3AED).withValues(alpha: 0.45)
+              : const Color(0xFF9E9E9E).withValues(alpha: 0.35)
           ..strokeWidth = isHour ? 2.5 : 1.0
           ..strokeCap = StrokeCap.round,
       );
@@ -812,7 +813,7 @@ class _StaticClockPainter extends CustomPainter {
 
   void _drawSmiley(Canvas canvas) {
     final fill = Paint()
-      ..color = const Color(0xFF7C3AED).withOpacity(0.13);
+      ..color = const Color(0xFF7C3AED).withValues(alpha: 0.13);
     canvas.drawCircle(Offset(_c.dx - 26, _c.dy - 30), 5.5, fill);
     canvas.drawCircle(Offset(_c.dx + 26, _c.dy - 30), 5.5, fill);
     final path = Path()
@@ -821,7 +822,7 @@ class _StaticClockPainter extends CustomPainter {
     canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFF7C3AED).withOpacity(0.13)
+          ..color = const Color(0xFF7C3AED).withValues(alpha: 0.13)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.5
           ..strokeCap = StrokeCap.round);
@@ -841,7 +842,7 @@ class _StaticClockPainter extends CustomPainter {
           pos,
           16.5,
           Paint()
-            ..color = const Color(0xFF7C3AED).withOpacity(0.35)
+            ..color = const Color(0xFF7C3AED).withValues(alpha: 0.35)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2);
       final tp = TextPainter(

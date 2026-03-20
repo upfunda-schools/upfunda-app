@@ -389,7 +389,7 @@ class _SkipCountingScreenState extends State<SkipCountingScreen>
             Border.all(color: const Color(0xFF0284C7), width: 2),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF0284C7).withOpacity(0.15),
+              color: const Color(0xFF0284C7).withValues(alpha: 0.15),
               blurRadius: 14,
               offset: const Offset(0, 5)),
         ],
@@ -401,7 +401,7 @@ class _SkipCountingScreenState extends State<SkipCountingScreen>
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF0284C7).withOpacity(0.1),
+              color: const Color(0xFF0284C7).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -548,7 +548,7 @@ class _SkipCountingScreenState extends State<SkipCountingScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -566,7 +566,7 @@ class _SkipCountingScreenState extends State<SkipCountingScreen>
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -732,7 +732,7 @@ class _SequenceBox extends StatelessWidget {
         boxShadow: !isAnswered
             ? [
                 BoxShadow(
-                    color: const Color(0xFFFFB300).withOpacity(0.4),
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 2))
               ]
@@ -786,7 +786,7 @@ class _TableChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: const Color(0xFF0284C7).withOpacity(0.3),
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2))
                 ]

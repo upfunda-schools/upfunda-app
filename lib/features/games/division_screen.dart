@@ -415,7 +415,7 @@ class _DivisionScreenState extends State<DivisionScreen>
         border: Border.all(color: const Color(0xFF3F51B5), width: 2.5),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF3F51B5).withOpacity(0.15),
+              color: const Color(0xFF3F51B5).withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, 6)),
         ],
@@ -428,7 +428,7 @@ class _DivisionScreenState extends State<DivisionScreen>
             height: 48,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF3F51B5).withOpacity(0.1),
+              color: const Color(0xFF3F51B5).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Center(
@@ -453,7 +453,7 @@ class _DivisionScreenState extends State<DivisionScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF3F51B5).withOpacity(0.08),
+              color: const Color(0xFF3F51B5).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -545,7 +545,7 @@ class _DivisionScreenState extends State<DivisionScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -562,7 +562,7 @@ class _DivisionScreenState extends State<DivisionScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -579,7 +579,7 @@ class _DivisionScreenState extends State<DivisionScreen>
           Text(
             'Next question in 3 s — or tap below',
             style: TextStyle(
-                fontSize: 12, color: Colors.white.withOpacity(0.75)),
+                fontSize: 12, color: Colors.white.withValues(alpha: 0.75)),
           ),
           const SizedBox(height: 14),
           SizedBox(

@@ -300,7 +300,9 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
       double env = 1.0;
       if (i < fade) {
         env = i / fade;
-      } else if (i > n - fade) env = (n - i) / fade;
+      } else if (i > n - fade) {
+        env = (n - i) / fade;
+      }
       final s = (sin(2 * pi * hz * i / sr) * amp * env)
           .round().clamp(-32768, 32767);
       buf.setInt16(44 + i * 2, s, Endian.little);
@@ -510,11 +512,11 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
               border: Border.all(color: const Color(0xFF444444), width: 2),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     blurRadius: 24,
                     offset: const Offset(0, 8)),
                 BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.06),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.06),
                     blurRadius: 30,
                     spreadRadius: 2),
               ],
@@ -558,15 +560,15 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
                               shadows: [
                                 Shadow(
                                     color: const Color(0xFF10B981)
-                                        .withOpacity(0.9),
+                                        .withValues(alpha: 0.9),
                                     blurRadius: 18),
                                 Shadow(
                                     color: const Color(0xFF10B981)
-                                        .withOpacity(0.5),
+                                        .withValues(alpha: 0.5),
                                     blurRadius: 40),
                                 Shadow(
                                     color: const Color(0xFF34D399)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 60),
                               ],
                             ),
@@ -589,7 +591,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: i == 2
-                            ? const Color(0xFF10B981).withOpacity(0.8)
+                            ? const Color(0xFF10B981).withValues(alpha: 0.8)
                             : const Color(0xFF333333),
                       ),
                     ),
@@ -604,10 +606,10 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
             decoration: BoxDecoration(
-              color: badgeColor.withOpacity(0.12),
+              color: badgeColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: badgeColor.withOpacity(0.4), width: 1.5),
+                  color: badgeColor.withValues(alpha: 0.4), width: 1.5),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -652,7 +654,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF7C3AED).withOpacity(0.28),
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.28),
                     blurRadius: 18,
                     offset: const Offset(0, 6))
               ],
@@ -682,7 +684,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: const Color(0xFF7C3AED).withOpacity(0.25),
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
                   width: 1.5),
             ),
             child: Text(
@@ -777,7 +779,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
           boxShadow: hasInput
               ? [
                   BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
                       blurRadius: 14,
                       offset: const Offset(0, 5))
                 ]
@@ -824,7 +826,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: accent.withOpacity(0.28),
+              color: accent.withValues(alpha: 0.28),
               blurRadius: 14,
               offset: const Offset(0, 5))
         ],
@@ -843,7 +845,7 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.9))),
+                  color: Colors.white.withValues(alpha: 0.9))),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,

@@ -17,7 +17,6 @@ class _TwoDigitSubtractionScreenState
   int _minuend = 0;
   int _subtrahend = 0;
   int _tensPart = 0;
-  int _onesPart = 0;
   int _intermediate = 0;
   int _correctAnswer = 0;
   String _explanationText = '';
@@ -134,7 +133,6 @@ class _TwoDigitSubtractionScreenState
       _minuend = minuend;
       _subtrahend = subtrahend;
       _tensPart = tensPart;
-      _onesPart = onesPart;
       _intermediate = intermediate;
       _correctAnswer = answer;
       _explanationText = explanation;
@@ -309,7 +307,7 @@ class _TwoDigitSubtractionScreenState
                 color: _showChart ? _blue : const Color(0xFFE8F0FE),
                 borderRadius: BorderRadius.circular(12),
                 border:
-                    Border.all(color: _blue.withOpacity(0.5)),
+                    Border.all(color: _blue.withValues(alpha: 0.5)),
               ),
               child: Text(
                 _showChart ? 'Hide Chart' : 'Show Chart',
@@ -581,7 +579,7 @@ class _TwoDigitSubtractionScreenState
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: _blue.withOpacity(0.4),
+              shadowColor: _blue.withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -614,7 +612,7 @@ class _TwoDigitSubtractionScreenState
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -632,7 +630,7 @@ class _TwoDigitSubtractionScreenState
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -739,7 +737,7 @@ class _HintCard extends StatelessWidget {
           color: const Color(0xFFE8F0FE),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFF1976D2).withOpacity(0.35), width: 1.5),
+              color: const Color(0xFF1976D2).withValues(alpha: 0.35), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +785,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(

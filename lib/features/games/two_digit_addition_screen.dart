@@ -16,10 +16,6 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
   int _num1 = 0;
   int _num2 = 0;
   int _answer = 0;
-  int _tensPart = 0;
-  int _onesPart = 0;
-  String _step1 = '';
-  String _step2 = '';
   String _explanationText = '';
 
   int _score = 0;
@@ -110,27 +106,19 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
 
   void _buildQuestion() {
     _answerController.clear();
-
-    final num1 = _random.nextInt(89) + 10; // 10–98
-    final num2 = _random.nextInt(99 - num1) + 1; // 1 to (99 - num1)
+    final num1 = _random.nextInt(89) + 10;
+    final num2 = _random.nextInt(99 - num1) + 1;
     final tensPart = (num2 ~/ 10) * 10;
     final onesPart = num2 % 10;
     final intermediate = num1 + tensPart;
     final answer = num1 + num2;
 
-    String step1, step2, explanation;
+    String explanation;
     if (tensPart > 0 && onesPart > 0) {
-      step1 = '$num1 + $tensPart = $intermediate';
-      step2 = '$intermediate + $onesPart = $answer';
-      explanation =
-          'Add $tensPart to $num1 (= $intermediate), then add $onesPart (= $answer)';
+      explanation = 'Add $tensPart to $num1 (= $intermediate), then add $onesPart (= $answer)';
     } else if (tensPart == 0) {
-      step1 = '$num1 + $onesPart = $answer';
-      step2 = '';
       explanation = 'Add $onesPart to $num1';
     } else {
-      step1 = '$num1 + $tensPart = $answer';
-      step2 = '';
       explanation = 'Add $tensPart to $num1';
     }
 
@@ -138,10 +126,6 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
       _num1 = num1;
       _num2 = num2;
       _answer = answer;
-      _tensPart = tensPart;
-      _onesPart = onesPart;
-      _step1 = step1;
-      _step2 = step2;
       _explanationText = explanation;
       _isAnswered = false;
       _isCorrect = false;
@@ -318,7 +302,7 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
                     : const Color(0xFFFFF0F5),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFFEF2E73).withOpacity(0.5)),
+                    color: const Color(0xFFEF2E73).withValues(alpha: 0.5)),
               ),
               child: Text(
                 _showChart ? 'Hide Chart' : 'Show Chart',
@@ -587,7 +571,7 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFFEF2E73).withOpacity(0.4),
+              shadowColor: const Color(0xFFEF2E73).withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -620,7 +604,7 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -638,7 +622,7 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -730,59 +714,6 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
 
 // ── Sub-widgets ───────────────────────────────────────────────────────────────
 
-class _StepRow extends StatelessWidget {
-  const _StepRow({
-    required this.text,
-    required this.stepNum,
-    required this.isAnswered,
-    required this.isCorrect,
-  });
-
-  final String text;
-  final int stepNum;
-  final bool isAnswered, isCorrect;
-
-  @override
-  Widget build(BuildContext context) {
-    const pink = Color(0xFFEF2E73);
-    final answered = isAnswered;
-    final badgeColor = answered
-        ? (isCorrect ? const Color(0xFF4CAF50) : const Color(0xFFF44336))
-        : pink.withOpacity(0.15);
-    final badgeTextColor = answered ? Colors.white : pink.withOpacity(0.7);
-    final textColor = answered
-        ? (isCorrect ? const Color(0xFF2E7D32) : const Color(0xFFC62828))
-        : const Color(0xFF9E9E9E);
-
-    return Row(
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(color: badgeColor, shape: BoxShape.circle),
-          child: Center(
-            child: Text('$stepNum',
-                style: TextStyle(
-                    color: badgeTextColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold)),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: answered ? FontWeight.w700 : FontWeight.w600,
-                color: textColor),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _HintCard extends StatelessWidget {
   const _HintCard({required this.isExpanded, required this.onToggle});
   final bool isExpanded;
@@ -797,7 +728,7 @@ class _HintCard extends StatelessWidget {
           color: const Color(0xFFFFF0F5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFFEF2E73).withOpacity(0.35), width: 1.5),
+              color: const Color(0xFFEF2E73).withValues(alpha: 0.35), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -845,7 +776,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(

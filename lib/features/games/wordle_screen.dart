@@ -800,7 +800,6 @@ class _TileState extends State<_Tile> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isEmpty = widget.letter.isEmpty && !widget.isActive;
     final submitted = !widget.isActive && widget.status != _LetterStatus.empty;
     final bgColor = submitted ? widget.tileColor(_displayStatus) : Colors.white;
     final textColor = submitted ? Colors.white : Colors.black87;

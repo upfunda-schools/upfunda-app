@@ -410,7 +410,6 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
 
   Widget _buildOptionCard(int index) {
     final selected = _selectedIndex == index;
-    final isCorrect = index == _pattern.correctIndex;
     final showCorrect = _feedback == 'correct' && selected;
     final showWrong = _feedback == 'wrong' && selected;
 
@@ -434,7 +433,7 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
       onTap: _feedback != null ? null : () => _selectOption(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        transform: Matrix4.identity()..scale(selected ? 1.04 : 1.0),
+        transform: selected ? Matrix4.diagonal3Values(1.04, 1.04, 1.0) : Matrix4.identity(),
         transformAlignment: Alignment.center,
         decoration: BoxDecoration(
           color: bgColor,

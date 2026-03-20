@@ -767,7 +767,6 @@ class _TugOfWarScreenState extends State<TugOfWarScreen>
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildFinished() {
     final playerWon = _winner == 'player';
-    final winnerName = playerWon ? 'You' : 'AI';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),

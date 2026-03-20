@@ -511,7 +511,7 @@ class _ShapeTile extends StatelessWidget {
       width: 56,
       height: 56,
       margin: const EdgeInsets.symmetric(vertical: 3),
-      transform: isSelected ? (Matrix4.identity()..scale(1.08)) : Matrix4.identity(),
+      transform: isSelected ? Matrix4.diagonal3Values(1.08, 1.08, 1.0) : Matrix4.identity(),
       transformAlignment: Alignment.center,
       decoration: BoxDecoration(
         color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,

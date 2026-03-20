@@ -534,7 +534,7 @@ class _AnswerInput extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFFFF6B35).withOpacity(0.4),
+              shadowColor: const Color(0xFFFF6B35).withValues(alpha: 0.4),
             ),
             child: const Text(
               'Check Answer',
@@ -583,7 +583,7 @@ class _FeedbackBanner extends StatelessWidget {
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

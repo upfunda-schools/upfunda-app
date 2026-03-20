@@ -574,7 +574,7 @@ class _MakingNextTenScreenState extends State<MakingNextTenScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFF9C27B0).withOpacity(0.4),
+              shadowColor: const Color(0xFF9C27B0).withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -607,7 +607,7 @@ class _MakingNextTenScreenState extends State<MakingNextTenScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -625,7 +625,7 @@ class _MakingNextTenScreenState extends State<MakingNextTenScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -731,7 +731,7 @@ class _HintCard extends StatelessWidget {
           color: const Color(0xFFF3E5F5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFF9C27B0).withOpacity(0.35), width: 1.5),
+              color: const Color(0xFF9C27B0).withValues(alpha: 0.35), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -779,7 +779,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.65),
+                        color: Colors.white.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -912,7 +912,7 @@ class _NumberLinePainter extends CustomPainter {
     // ── Dots on ticks ─────────────────────────────────────────────────────────
     canvas.drawCircle(Offset(baseX, lineY), 5, dotPaint);
     canvas.drawCircle(
-        Offset(targetX, lineY), 5, dotPaint..color = _purple.withOpacity(progress));
+        Offset(targetX, lineY), 5, dotPaint..color = _purple.withValues(alpha: progress));
 
     // ── Animated arc arrow (above the line) ──────────────────────────────────
     final arcWidth = (targetX - baseX) * progress;
@@ -939,7 +939,7 @@ class _NumberLinePainter extends CustomPainter {
         final arrowRight =
             Offset(arcEndX - arrowSize, lineY - 6 + arrowSize * 0.6);
         final headPaint = Paint()
-          ..color = _purple.withOpacity(arrowOpacity)
+          ..color = _purple.withValues(alpha: arrowOpacity)
           ..strokeWidth = 2.8
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round;
@@ -956,7 +956,7 @@ class _NumberLinePainter extends CustomPainter {
           text: TextSpan(
             text: '+$add',
             style: TextStyle(
-              color: _purple.withOpacity(labelOpacity),
+              color: _purple.withValues(alpha: labelOpacity),
               fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
