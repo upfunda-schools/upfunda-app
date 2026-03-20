@@ -284,7 +284,7 @@ class _DoublesSubtractionScreenState extends State<DoublesSubtractionScreen>
                     : const Color(0xFFFFF3EE),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFFFF5722).withOpacity(0.5)),
+                    color: const Color(0xFFFF5722).withValues(alpha: 0.5)),
               ),
               child: Text(
                 _showTable ? 'Hide Table' : 'Doubles Table',
@@ -477,7 +477,7 @@ class _DoublesSubtractionScreenState extends State<DoublesSubtractionScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFFFF5722).withOpacity(0.4),
+              shadowColor: const Color(0xFFFF5722).withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -510,7 +510,7 @@ class _DoublesSubtractionScreenState extends State<DoublesSubtractionScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -528,7 +528,7 @@ class _DoublesSubtractionScreenState extends State<DoublesSubtractionScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -695,7 +695,7 @@ class _DoublesTable extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: isHighlighted
-                            ? Colors.white.withOpacity(0.85)
+                            ? Colors.white.withValues(alpha: 0.85)
                             : const Color(0xFF757575),
                       ),
                     ),
@@ -742,7 +742,7 @@ class _HintCard extends StatelessWidget {
           color: const Color(0xFFFFF3EE),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFFFF5722).withOpacity(0.35), width: 1.5),
+              color: const Color(0xFFFF5722).withValues(alpha: 0.35), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -790,7 +790,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -806,7 +806,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF5722).withOpacity(0.1),
+                        color: const Color(0xFFFF5722).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Row(

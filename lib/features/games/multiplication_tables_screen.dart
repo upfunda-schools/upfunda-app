@@ -599,7 +599,7 @@ class _MultiplicationTablesScreenState
             color: const Color(0xFFF59E0B), width: 2.5),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFFF59E0B).withOpacity(0.18),
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
               blurRadius: 16,
               offset: const Offset(0, 5)),
         ],
@@ -621,7 +621,7 @@ class _MultiplicationTablesScreenState
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.12),
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -718,7 +718,7 @@ class _MultiplicationTablesScreenState
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -736,7 +736,7 @@ class _MultiplicationTablesScreenState
             padding: const EdgeInsets.symmetric(
                 horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

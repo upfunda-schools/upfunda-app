@@ -169,7 +169,7 @@ class MasterArithmeticScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(Icons.calculate_rounded,
@@ -213,21 +213,18 @@ class _GameTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: game.comingSoon ? null : () => context.push(game.route),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+      onTap: () => context.push(game.route),
+      child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: game.comingSoon
-                ? Colors.transparent
-                : game.color.withOpacity(0.35),
+            color: game.color.withValues(alpha: 0.35),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: game.color.withOpacity(game.comingSoon ? 0.06 : 0.14),
+              color: game.color.withValues(alpha: 0.14),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -242,15 +239,12 @@ class _GameTile extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: game.color
-                      .withOpacity(game.comingSoon ? 0.07 : 0.13),
+                  color: game.color.withValues(alpha: 0.13),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   game.icon,
-                  color: game.comingSoon
-                      ? game.color.withOpacity(0.4)
-                      : game.color,
+                  color: game.color,
                   size: 28,
                 ),
               ),
@@ -266,19 +260,15 @@ class _GameTile extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: game.comingSoon
-                            ? const Color(0xFFBDBDBD)
-                            : const Color(0xFF222222),
+                        color: const Color(0xFF222222),
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       game.description,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: game.comingSoon
-                            ? const Color(0xFFBDBDBD)
-                            : const Color(0xFF757575),
+                        color: Color(0xFF757575),
                       ),
                     ),
                   ],
@@ -286,35 +276,17 @@ class _GameTile extends StatelessWidget {
               ),
               const SizedBox(width: 12),
 
-              // Badge / arrow
-              if (game.comingSoon)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Soon',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFBDBDBD),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: game.color,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.arrow_forward_ios_rounded,
-                      color: Colors.white, size: 16),
+              // Arrow
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: game.color,
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: const Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white, size: 16),
+              ),
             ],
           ),
         ),
@@ -340,5 +312,4 @@ class _GameInfo {
   final IconData icon;
   final Color color;
   final String route;
-  final bool comingSoon;
 }

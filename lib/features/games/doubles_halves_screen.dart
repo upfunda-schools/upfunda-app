@@ -460,7 +460,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
                   children: [
                     Container(
                       height: 1,
-                      color: const Color(0xFF009688).withOpacity(0.2),
+                      color: const Color(0xFF009688).withValues(alpha: 0.2),
                       margin: const EdgeInsets.only(bottom: 10),
                     ),
                     const Text(
@@ -473,7 +473,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF009688).withOpacity(0.1),
+                        color: const Color(0xFF009688).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -548,7 +548,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
         border: Border.all(color: const Color(0xFF009688), width: 2),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF009688).withOpacity(0.14),
+              color: const Color(0xFF009688).withValues(alpha: 0.14),
               blurRadius: 14,
               offset: const Offset(0, 5)),
         ],
@@ -569,7 +569,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFF009688).withOpacity(0.1),
+              color: const Color(0xFF009688).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -623,9 +623,9 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
       builder: (_, __) {
         final t = reveal.value;
         final bg =
-            Color.lerp(const Color(0xFFF5F5F5), color.withOpacity(0.10), t)!;
+            Color.lerp(const Color(0xFFF5F5F5), color.withValues(alpha: 0.10), t)!;
         final borderCol = Color.lerp(
-            const Color(0xFFE0E0E0), color.withOpacity(0.45), t)!;
+            const Color(0xFFE0E0E0), color.withValues(alpha: 0.45), t)!;
         final textCol = Color.lerp(
             const Color(0xFFBDBDBD), const Color(0xFF424242), t)!;
         final resultCol =
@@ -762,7 +762,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -780,7 +780,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -798,7 +798,7 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
             'Next question in 3 s — or tap below',
             style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withOpacity(0.75)),
+                color: Colors.white.withValues(alpha: 0.75)),
           ),
           const SizedBox(height: 14),
           SizedBox(

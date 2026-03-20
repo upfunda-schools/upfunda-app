@@ -577,7 +577,7 @@ class _MakingTensScreenState extends State<MakingTensScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFF00BCD4).withOpacity(0.4),
+              shadowColor: const Color(0xFF00BCD4).withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -609,7 +609,7 @@ class _MakingTensScreenState extends State<MakingTensScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -627,7 +627,7 @@ class _MakingTensScreenState extends State<MakingTensScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -776,7 +776,7 @@ class _HintCard extends StatelessWidget {
           color: const Color(0xFFFFF9C4),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFF00BCD4).withOpacity(0.4), width: 1.5),
+              color: const Color(0xFF00BCD4).withValues(alpha: 0.4), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -824,7 +824,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -923,7 +923,7 @@ class _BondCircle extends StatelessWidget {
         border: Border.all(color: const Color(0xFF00BCD4), width: 2.5),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF00BCD4).withOpacity(0.2),
+              color: const Color(0xFF00BCD4).withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 3))
         ],
@@ -945,7 +945,7 @@ class _BondPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00BCD4).withOpacity(0.5)
+      ..color = const Color(0xFF00BCD4).withValues(alpha: 0.5)
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke;
 

@@ -499,7 +499,7 @@ class _BalanceNumbersScreenState extends State<BalanceNumbersScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -517,7 +517,7 @@ class _BalanceNumbersScreenState extends State<BalanceNumbersScreen>
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -719,7 +719,7 @@ class _ScalePainter extends CustomPainter {
     // Glow when balanced
     if (isBalanced) {
       final glowPaint = Paint()
-        ..color = const Color(0xFF4CAF50).withOpacity(0.22)
+        ..color = const Color(0xFF4CAF50).withValues(alpha: 0.22)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(lPan, panR + 9, glowPaint);
       canvas.drawCircle(rPan, panR + 9, glowPaint);
@@ -733,7 +733,7 @@ class _ScalePainter extends CustomPainter {
         lPan,
         panR,
         Paint()
-          ..color = Colors.white.withOpacity(0.18)
+          ..color = Colors.white.withValues(alpha: 0.18)
           ..strokeWidth = 2
           ..style = PaintingStyle.stroke);
 
@@ -745,7 +745,7 @@ class _ScalePainter extends CustomPainter {
         rPan,
         panR,
         Paint()
-          ..color = Colors.white.withOpacity(0.18)
+          ..color = Colors.white.withValues(alpha: 0.18)
           ..strokeWidth = 2
           ..style = PaintingStyle.stroke);
 
@@ -860,7 +860,7 @@ class _OptionButton extends StatelessWidget {
           border: Border.all(color: border, width: 2),
           boxShadow: [
             BoxShadow(
-                color: border.withOpacity(isAnswered && isCorrect ? 0.3 : 0.1),
+                color: border.withValues(alpha: isAnswered && isCorrect ? 0.3 : 0.1),
                 blurRadius: 6,
                 offset: const Offset(0, 3))
           ],

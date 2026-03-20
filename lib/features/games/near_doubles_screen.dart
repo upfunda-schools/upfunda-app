@@ -312,7 +312,7 @@ class _HintCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFEDE9FE),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF6C5CE7).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFF6C5CE7).withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,7 +362,7 @@ class _HintCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -645,7 +645,7 @@ class _AnswerInput extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 4,
-              shadowColor: const Color(0xFF6C5CE7).withOpacity(0.4),
+              shadowColor: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
             ),
             child: const Text('Check Answer',
                 style:
@@ -696,7 +696,7 @@ class _FeedbackBanner extends StatelessWidget {
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -715,7 +715,7 @@ class _FeedbackBanner extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

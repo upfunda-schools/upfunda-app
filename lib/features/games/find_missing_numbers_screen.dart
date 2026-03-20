@@ -359,7 +359,7 @@ class _FindMissingNumbersScreenState extends State<FindMissingNumbersScreen>
         border: Border.all(color: const Color(0xFF1565C0), width: 2),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF1565C0).withOpacity(0.12),
+              color: const Color(0xFF1565C0).withValues(alpha: 0.12),
               blurRadius: 14,
               offset: const Offset(0, 5)),
         ],
@@ -567,7 +567,7 @@ class _FindMissingNumbersScreenState extends State<FindMissingNumbersScreen>
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -585,7 +585,7 @@ class _FindMissingNumbersScreenState extends State<FindMissingNumbersScreen>
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -726,7 +726,7 @@ class _DigitButton extends StatelessWidget {
           border: Border.all(color: border, width: 2),
           boxShadow: [
             BoxShadow(
-                color: border.withOpacity(isSelected ? 0.35 : 0.1),
+                color: border.withValues(alpha: isSelected ? 0.35 : 0.1),
                 blurRadius: 5,
                 offset: const Offset(0, 2)),
           ],
