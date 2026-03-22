@@ -6,38 +6,43 @@ import '../models/topics_model.dart';
 import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
 import 'api_service.dart';
+import 'firebase_auth_service.dart';
 
 class DioApiService implements ApiService {
-  static const _baseUrl =
-      'https://hsvpwklso8.execute-api.ap-south-1.amazonaws.com/default';
-
   final Dio _dio;
   final String userId;
 
-  DioApiService({required this.userId})
-      : _dio = Dio(BaseOptions(
-          baseUrl: _baseUrl,
+  DioApiService({
+    required this.userId,
+    required String baseUrl,
+    required FirebaseAuthService authService,
+  }) : _dio = Dio(BaseOptions(
+          baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 15),
           receiveTimeout: const Duration(seconds: 15),
           headers: {'Content-Type': 'application/json'},
-        ));
+        )) {
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await authService.getIdToken();
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+      onError: (error, handler) async {
+        if (error.response?.statusCode == 401) {
+          await authService.signOut();
+        }
+        return handler.next(error);
+      },
+    ));
+  }
 
   Map<String, dynamic> _userParams([Map<String, dynamic>? extra]) {
     final params = <String, dynamic>{'user_id': userId};
     if (extra != null) params.addAll(extra);
     return params;
-  }
-
-  @override
-  Future<LoginResponse> loginWithPhone({
-    required String phone,
-    required String password,
-  }) async {
-    final response = await _dio.post(
-      '/auth/phone/login',
-      data: {'phone': phone, 'password': password},
-    );
-    return LoginResponse.fromJson(response.data);
   }
 
   @override

@@ -1,64 +1,94 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../core/utils/env_config.dart';
 import '../data/services/api_service.dart';
 import '../data/services/dio_api_service.dart';
+import '../data/services/firebase_auth_service.dart';
 
-final apiServiceProvider = Provider<ApiService>((ref) => DioApiService(
-      userId: 'd3d29bbc-48e0-4f0e-80b0-b8e0a3b8eb38',
-    ));
+final firebaseAuthServiceProvider = Provider<FirebaseAuthService>((ref) {
+  return FirebaseAuthService();
+});
+
+final apiServiceProvider = Provider<ApiService>((ref) {
+  final authService = ref.watch(firebaseAuthServiceProvider);
+  final user = FirebaseAuth.instance.currentUser;
+  return DioApiService(
+    userId: user?.uid ?? '',
+    baseUrl: EnvConfig.apiBaseUrl,
+    authService: authService,
+  );
+});
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.read(apiServiceProvider));
+  return AuthNotifier(ref.read(firebaseAuthServiceProvider));
 });
 
 class AuthState {
   final bool isLoggedIn;
   final bool isLoading;
   final String? error;
+  final User? user;
 
   const AuthState({
     this.isLoggedIn = false,
     this.isLoading = false,
     this.error,
+    this.user,
   });
 
-  AuthState copyWith({bool? isLoggedIn, bool? isLoading, String? error}) =>
+  AuthState copyWith({
+    bool? isLoggedIn,
+    bool? isLoading,
+    String? error,
+    User? user,
+    bool clearUser = false,
+  }) =>
       AuthState(
         isLoggedIn: isLoggedIn ?? this.isLoggedIn,
         isLoading: isLoading ?? this.isLoading,
         error: error,
+        user: clearUser ? null : (user ?? this.user),
       );
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(ApiService _) : super(const AuthState()) {
-    _loadPersistedState();
+  final FirebaseAuthService _authService;
+  StreamSubscription<User?>? _authSub;
+
+  AuthNotifier(this._authService) : super(const AuthState()) {
+    _listenToAuthChanges();
   }
 
-  Future<void> _loadPersistedState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final loggedIn = prefs.getBool('isLoggedIn') ?? false;
-    state = state.copyWith(isLoggedIn: loggedIn);
+  void _listenToAuthChanges() {
+    _authSub = _authService.authStateChanges().listen((user) {
+      state = state.copyWith(
+        isLoggedIn: user != null,
+        user: user,
+        clearUser: user == null,
+      );
+    });
   }
 
-  Future<bool> login({required String phone, required String password}) async {
+  Future<bool> login({required String email, required String password}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // Mobile endpoints use user_id query param, not Firebase auth.
-      // For now, validate inputs and mark as logged in directly.
-      if (password.length < 6) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Password must be at least 6 characters',
-        );
-        return false;
-      }
-      // Simulate brief delay for UX
-      await Future.delayed(const Duration(milliseconds: 300));
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      state = state.copyWith(isLoggedIn: true, isLoading: false);
+      final credential = await _authService.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      state = state.copyWith(
+        isLoggedIn: true,
+        isLoading: false,
+        user: credential.user,
+      );
       return true;
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _mapFirebaseError(e.code),
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -69,8 +99,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
+    await _authService.signOut();
     state = const AuthState(isLoggedIn: false);
+  }
+
+  String _mapFirebaseError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No account found with this email';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Incorrect email or password';
+      case 'invalid-email':
+        return 'Please enter a valid email address';
+      case 'user-disabled':
+        return 'This account has been disabled';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later';
+      case 'network-request-failed':
+        return 'Network error. Check your connection';
+      default:
+        return 'Sign in failed. Please try again';
+    }
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }

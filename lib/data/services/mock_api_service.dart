@@ -9,18 +9,6 @@ import 'api_service.dart';
 
 class MockApiService implements ApiService {
   @override
-  Future<LoginResponse> loginWithPhone({
-    required String phone,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (password.length < 6) {
-      throw Exception('Invalid credentials');
-    }
-    return MockData.loginResponse;
-  }
-
-  @override
   Future<UserProfile> getUserProfile() async {
     await Future.delayed(const Duration(milliseconds: 400));
     return MockData.userProfile;

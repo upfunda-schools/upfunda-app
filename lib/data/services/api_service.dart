@@ -6,12 +6,6 @@ import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
 
 abstract class ApiService {
-  // Auth
-  Future<LoginResponse> loginWithPhone({
-    required String phone,
-    required String password,
-  });
-
   Future<UserProfile> getUserProfile();
 
   // Mobile v1 endpoints
