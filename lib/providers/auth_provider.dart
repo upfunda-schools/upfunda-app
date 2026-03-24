@@ -10,11 +10,13 @@ final firebaseAuthServiceProvider = Provider<FirebaseAuthService>((ref) {
   return FirebaseAuthService();
 });
 
+final firebaseUserProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
+});
+
 final apiServiceProvider = Provider<ApiService>((ref) {
   final authService = ref.watch(firebaseAuthServiceProvider);
-  final user = FirebaseAuth.instance.currentUser;
   return DioApiService(
-    userId: user?.uid ?? '',
     baseUrl: EnvConfig.apiBaseUrl,
     authService: authService,
   );

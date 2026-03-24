@@ -5,7 +5,7 @@ import 'auth_provider.dart';
 
 final userProvider =
     StateNotifierProvider<UserNotifier, UserState>((ref) {
-  return UserNotifier(ref.read(apiServiceProvider));
+  return UserNotifier(ref.watch(apiServiceProvider));
 });
 
 class UserState {

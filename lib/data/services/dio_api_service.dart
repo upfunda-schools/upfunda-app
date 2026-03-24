@@ -1,19 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../models/home_model.dart';
 import '../models/subjects_model.dart';
 import '../models/topics_model.dart';
 import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
+import '../models/challenge_model.dart';
+import '../models/challenge_room_model.dart';
 import 'api_service.dart';
 import 'firebase_auth_service.dart';
 
 class DioApiService implements ApiService {
   final Dio _dio;
-  final String userId;
 
   DioApiService({
-    required this.userId,
+    String? userId,
     required String baseUrl,
     required FirebaseAuthService authService,
   }) : _dio = Dio(BaseOptions(
@@ -40,7 +42,8 @@ class DioApiService implements ApiService {
   }
 
   Map<String, dynamic> _userParams([Map<String, dynamic>? extra]) {
-    final params = <String, dynamic>{'user_id': userId};
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final params = <String, dynamic>{'user_id': uid};
     if (extra != null) params.addAll(extra);
     return params;
   }
@@ -129,5 +132,84 @@ class DioApiService implements ApiService {
       queryParameters: _userParams(),
     );
     return SubmitTestResponse.fromJson(response.data);
+  }
+
+  @override
+  Future<BotChallengeSession> startChallenge() async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge/start',
+      queryParameters: _userParams(),
+      data: {},
+    );
+    return BotChallengeSession.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChallengeRoomCreated> createChallengeRoom() async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge-room/create',
+      queryParameters: _userParams(),
+      data: {},
+    );
+    return ChallengeRoomCreated.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChallengeRoomJoined> joinChallengeRoom(String roomCode) async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge-room/join',
+      queryParameters: _userParams(),
+      data: {'room_code': roomCode},
+    );
+    return ChallengeRoomJoined.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChallengeRoomResult> startChallengeRoom(String roomId) async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge-room/start',
+      queryParameters: _userParams(),
+      data: {'room_id': roomId},
+    );
+    return ChallengeRoomResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<SingleAnswerResult> submitChallengeRoomAnswer({
+    required String roomId,
+    required String questionId,
+    required String selectedOptionId,
+    required int timeTakenSeconds,
+  }) async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge-room/submit-answer',
+      queryParameters: _userParams(),
+      data: {
+        'room_id': roomId,
+        'question_id': questionId,
+        'selected_option_id': selectedOptionId,
+        'time_taken_seconds': timeTakenSeconds,
+      },
+    );
+    return SingleAnswerResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<ChallengeRoomResult> getChallengeRoomResult(String roomId) async {
+    final response = await _dio.post(
+      '/mobile/v1/challenge-room/result',
+      queryParameters: _userParams(),
+      data: {'room_id': roomId},
+    );
+    return ChallengeRoomResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> quitChallengeRoom(String roomId) async {
+    await _dio.post(
+      '/mobile/v1/challenge-room/quit',
+      queryParameters: _userParams(),
+      data: {'room_id': roomId},
+    );
   }
 }

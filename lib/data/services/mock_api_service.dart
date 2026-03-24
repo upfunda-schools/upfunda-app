@@ -5,6 +5,8 @@ import '../models/subjects_model.dart';
 import '../models/topics_model.dart';
 import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
+import '../models/challenge_model.dart';
+import '../models/challenge_room_model.dart';
 import 'api_service.dart';
 
 class MockApiService implements ApiService {
@@ -56,4 +58,37 @@ class MockApiService implements ApiService {
     await Future.delayed(const Duration(milliseconds: 500));
     return MockData.submitTestResponse;
   }
+
+  @override
+  Future<BotChallengeSession> startChallenge() =>
+      throw UnimplementedError('MockApiService does not support challenge');
+
+  @override
+  Future<ChallengeRoomCreated> createChallengeRoom() =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
+
+  @override
+  Future<ChallengeRoomJoined> joinChallengeRoom(String roomCode) =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
+
+  @override
+  Future<ChallengeRoomResult> startChallengeRoom(String roomId) =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
+
+  @override
+  Future<SingleAnswerResult> submitChallengeRoomAnswer({
+    required String roomId,
+    required String questionId,
+    required String selectedOptionId,
+    required int timeTakenSeconds,
+  }) =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
+
+  @override
+  Future<ChallengeRoomResult> getChallengeRoomResult(String roomId) =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
+
+  @override
+  Future<void> quitChallengeRoom(String roomId) =>
+      throw UnimplementedError('MockApiService does not support challenge rooms');
 }
