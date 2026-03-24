@@ -17,4 +17,8 @@ class EnvConfig {
 
   // Razorpay
   static String get razorpayKeyId => dotenv.env['RAZORPAY_KEY_ID'] ?? '';
+
+  // Emulator
+  static bool get useFirebaseEmulator =>
+      dotenv.env['USE_FIREBASE_EMULATOR'] == 'true';
 }

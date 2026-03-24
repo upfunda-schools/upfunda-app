@@ -304,7 +304,6 @@ class _GameInfo {
     required this.icon,
     required this.color,
     required this.route,
-    this.comingSoon = false,
   });
 
   final String title;
@@ -312,4 +311,5 @@ class _GameInfo {
   final IconData icon;
   final Color color;
   final String route;
+  final bool comingSoon = false;
 }

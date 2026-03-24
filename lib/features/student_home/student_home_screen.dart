@@ -20,13 +20,23 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(userProvider.notifier).loadHome();
-      ref.read(userProvider.notifier).loadProfile();
+      final uid = ref.read(firebaseUserProvider).valueOrNull?.uid ?? '';
+      if (uid.isNotEmpty) {
+        ref.read(userProvider.notifier).loadHome();
+        ref.read(userProvider.notifier).loadProfile();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(firebaseUserProvider, (prev, next) {
+      final uid = next.valueOrNull?.uid ?? '';
+      if (uid.isNotEmpty && (prev?.valueOrNull?.uid ?? '') != uid) {
+        ref.read(userProvider.notifier).loadHome();
+        ref.read(userProvider.notifier).loadProfile();
+      }
+    });
     final state = ref.watch(userProvider);
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = screenWidth > 900 ? 4 : 2;
@@ -190,9 +200,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             subtitle: 'Battle Friends',
                             icon: Icons.sports_kabaddi_rounded,
                             color: AppColors.accent,
-                            buttonLabel: 'Coming Soon',
-                            isComingSoon: true,
-                            onTap: () {},
+                            buttonLabel: 'Play Now',
+                            onTap: () => context.push('/challenge'),
                           ),
                           _MissionCard(
                             title: 'Master Arithmetic',
@@ -227,7 +236,6 @@ class _MissionCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String buttonLabel;
-  final bool isComingSoon;
   final VoidCallback onTap;
 
   const _MissionCard({
@@ -236,14 +244,13 @@ class _MissionCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.buttonLabel,
-    this.isComingSoon = false,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isComingSoon ? null : onTap,
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -290,13 +297,13 @@ class _MissionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isComingSoon ? AppColors.grey200 : color,
+                color: color,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 buttonLabel,
-                style: TextStyle(
-                  color: isComingSoon ? AppColors.grey600 : Colors.white,
+                style: const TextStyle(
+                  color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
