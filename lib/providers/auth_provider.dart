@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/utils/env_config.dart';
@@ -96,6 +97,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         error: e.toString().replaceFirst('Exception: ', ''),
       );
+      return false;
+    }
+  }
+
+  Future<bool> phoneLogin({required String phone, required String password}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = Dio(BaseOptions(baseUrl: EnvConfig.apiBaseUrl));
+      final res = await dio.post('/auth/phone/login',
+          data: {'phone': phone, 'password': password});
+      final customToken = res.data['custom_token'] as String;
+      final credential = await _authService.signInWithCustomToken(customToken);
+      state = state.copyWith(isLoggedIn: true, isLoading: false, user: credential.user);
+      return true;
+    } on DioException catch (e) {
+      final msg = (e.response?.data as Map?)?['error'] ?? 'Invalid phone or password';
+      state = state.copyWith(isLoading: false, error: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString().replaceFirst('Exception: ', ''));
       return false;
     }
   }

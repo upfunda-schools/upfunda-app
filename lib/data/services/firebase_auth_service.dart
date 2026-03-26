@@ -34,5 +34,8 @@ class FirebaseAuthService {
     return _auth.currentUser?.getIdToken(forceRefresh);
   }
 
+  Future<UserCredential> signInWithCustomToken(String token) =>
+      _auth.signInWithCustomToken(token);
+
   Future<void> signOut() => _auth.signOut();
 }
