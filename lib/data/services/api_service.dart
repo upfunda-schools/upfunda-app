@@ -4,14 +4,10 @@ import '../models/subjects_model.dart';
 import '../models/topics_model.dart';
 import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
+import '../models/challenge_model.dart';
+import '../models/challenge_room_model.dart';
 
 abstract class ApiService {
-  // Auth
-  Future<LoginResponse> loginWithPhone({
-    required String phone,
-    required String password,
-  });
-
   Future<UserProfile> getUserProfile();
 
   // Mobile v1 endpoints
@@ -33,4 +29,25 @@ abstract class ApiService {
   );
 
   Future<SubmitTestResponse> submitTest(String testId);
+
+  // Challenge (bot) endpoints
+  Future<BotChallengeSession> startChallenge();
+
+  // Challenge Room (friend) endpoints
+  Future<ChallengeRoomCreated> createChallengeRoom();
+
+  Future<ChallengeRoomJoined> joinChallengeRoom(String roomCode);
+
+  Future<ChallengeRoomResult> startChallengeRoom(String roomId);
+
+  Future<SingleAnswerResult> submitChallengeRoomAnswer({
+    required String roomId,
+    required String questionId,
+    required String selectedOptionId,
+    required int timeTakenSeconds,
+  });
+
+  Future<ChallengeRoomResult> getChallengeRoomResult(String roomId);
+
+  Future<void> quitChallengeRoom(String roomId);
 }

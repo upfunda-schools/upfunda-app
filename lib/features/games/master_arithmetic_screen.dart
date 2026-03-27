@@ -311,4 +311,5 @@ class _GameInfo {
   final IconData icon;
   final Color color;
   final String route;
+  final bool comingSoon = false;
 }

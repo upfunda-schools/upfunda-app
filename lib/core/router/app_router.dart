@@ -44,6 +44,12 @@ import '../../features/games/seventy_five_screen.dart';
 import '../../features/games/lines_of_symmetry_screen.dart';
 import '../../features/games/memory_matching_screen.dart';
 import '../../features/auth/open_screen.dart';
+import '../../features/challenge/challenge_home_screen.dart';
+import '../../features/challenge/bot/challenge_bot_screen.dart';
+import '../../features/challenge/bot/challenge_bot_result_screen.dart';
+import '../../features/challenge/room/challenge_room_lobby_screen.dart';
+import '../../features/challenge/room/challenge_room_quiz_screen.dart';
+import '../../features/challenge/room/challenge_room_result_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -233,6 +239,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/memory-matching',
         builder: (context, state) => const MemoryMatchingScreen(),
+      ),
+
+      // Challenge routes
+      GoRoute(
+        path: '/challenge',
+        builder: (context, state) => const ChallengeHomeScreen(),
+      ),
+      GoRoute(
+        path: '/challenge/bot',
+        builder: (context, state) => const ChallengeBotScreen(),
+      ),
+      GoRoute(
+        path: '/challenge/bot/result',
+        builder: (context, state) => const ChallengeBotResultScreen(),
+      ),
+      GoRoute(
+        path: '/challenge/room/lobby',
+        builder: (context, state) => const ChallengeRoomLobbyScreen(),
+      ),
+      GoRoute(
+        path: '/challenge/room/quiz',
+        builder: (context, state) => const ChallengeRoomQuizScreen(),
+      ),
+      GoRoute(
+        path: '/challenge/room/result',
+        builder: (context, state) => const ChallengeRoomResultScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
