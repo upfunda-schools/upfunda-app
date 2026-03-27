@@ -66,7 +66,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isTablet = MediaQuery.of(context).size.width > 768;
 
     return Scaffold(
-      body: isTablet ? _buildTabletLayout(authState) : _buildPhoneLayout(authState),
+      body: Stack(
+        children: [
+          isTablet ? _buildTabletLayout(authState) : _buildPhoneLayout(authState),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.go('/'),
+                color: isTablet 
+                    ? (MediaQuery.of(context).size.width * 0.5 > 20 ? Colors.white : Colors.black) 
+                    : Colors.black, // Color logic to keep it visible
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

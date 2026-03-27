@@ -43,21 +43,27 @@ import '../../features/games/what_comes_next_screen.dart';
 import '../../features/games/seventy_five_screen.dart';
 import '../../features/games/lines_of_symmetry_screen.dart';
 import '../../features/games/memory_matching_screen.dart';
+import '../../features/auth/open_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/',
     redirect: (context, state) {
       final isLoggedIn = authState.isLoggedIn;
       final isLoginRoute = state.matchedLocation == '/login';
+      final isOpenRoute = state.matchedLocation == '/';
 
-      if (!isLoggedIn && !isLoginRoute) return '/login';
-      if (isLoggedIn && isLoginRoute) return '/student-home';
+      if (!isLoggedIn && !isLoginRoute && !isOpenRoute) return '/';
+      if (isLoggedIn && (isLoginRoute || isOpenRoute)) return '/student-home';
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const OpenScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
