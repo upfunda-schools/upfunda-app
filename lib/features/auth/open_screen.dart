@@ -104,11 +104,12 @@ class OpenScreen extends StatelessWidget {
 
           // --- MAIN CENTERED CONTENT (KITE & LOGO) ---
           Center(
-            child: Column(
+            child: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  height: 200,
+                SizedBox(
+                  height: size.height * 0.18,
                 ), // 👈 INCREASE move DOWN, DECREASE move UP
                 // Kite Logo
                 Transform.translate(
@@ -118,7 +119,7 @@ class OpenScreen extends StatelessWidget {
                   ), // 👈 X: MOVE RIGHT(+)/LEFT(-), Y: MOVE DOWN(+)/UP(-)
                   child: Image.asset(
                     'assets/images/splash_kite.png',
-                    width: size.width * 0.45,
+                    width: (size.width * 0.45).clamp(0, size.height * 0.35),
                   ),
                 ),
 
@@ -190,6 +191,7 @@ class OpenScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ],
