@@ -186,17 +186,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 // Info pills
                 _InfoPill(
                   icon: Icons.school_outlined,
-                  label: profile.className ?? 'N/A',
+                  label: (profile.className != null && profile.className!.isNotEmpty)
+                      ? profile.className!
+                      : 'N/A',
                 ),
                 const SizedBox(height: 10),
                 _InfoPill(
                   icon: Icons.account_balance_outlined,
-                  label: profile.schoolName ?? 'N/A',
+                  label: (profile.schoolName != null && profile.schoolName!.isNotEmpty)
+                      ? profile.schoolName!
+                      : 'N/A',
                 ),
                 const SizedBox(height: 10),
                 _InfoPill(
                   icon: Icons.public_outlined,
-                  label: profile.country ?? 'N/A',
+                  label: (profile.country != null && profile.country!.isNotEmpty)
+                      ? profile.country!
+                      : 'N/A',
                 ),
                 const SizedBox(height: 28),
 
