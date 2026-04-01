@@ -14,7 +14,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isPhoneMode = false; // Figma shows Email first
+  bool _isPhoneMode = false;
   bool _obscurePassword = true;
 
   final _emailController = TextEditingController();
@@ -142,8 +142,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final padding = MediaQuery.of(context).padding;
     final authState = ref.watch(authProvider);
+
+    // ── Responsive scale tokens ──────────────────────────────────────────────
+    final sh = size.height; // screen height shorthand
+    final sw = size.width;  // screen width shorthand
+
+    // Bottom illustration zone — proportional so it never dominates small screens
+    final bottomZoneHeight = sh * 0.36;
+
+    // Rocket decoration size
+    final rocketSize = sw * 0.17;
+
+    // Form field height — scales with screen, clamped between 40–50px
+    final fieldH = (sh * 0.053).clamp(40.0, 50.0);
+
+    // Toggle pill dimensions
+    final toggleH = (sh * 0.046).clamp(32.0, 42.0);
+    final toggleW = (sw * 0.56).clamp(180.0, 220.0);
+
+    // Spacing tokens derived from screen height
+    final spaceXS = sh * 0.008;   // ~5–7 px
+    final spaceS  = sh * 0.015;   // ~10–14 px
+    final spaceM  = sh * 0.022;   // ~15–20 px
+    final spaceL  = sh * 0.032;   // ~21–30 px
+    // ────────────────────────────────────────────────────────────────────────
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -151,67 +177,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // LAYER 1: CLOUD ASSETS
+          // ── LAYER 1: Cloud decorations ────────────────────────────────────
           Positioned(
-            top: size.height * 0.02,
-            left: size.width * 0.75,
+            top: sh * 0.02,
+            left: sw * 0.75,
             child: Image.asset(
               'assets/images/signup/Vector-1.png',
-              width: size.width * 0.20,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildCodeCloud(width: size.width * 0.20),
+              width: sw * 0.20,
+              errorBuilder: (_, __, ___) =>
+                  _buildCodeCloud(width: sw * 0.20),
             ),
           ),
           Positioned(
-            top: size.height * 0.05,
-            left: -size.width * 0.05,
+            top: sh * 0.05,
+            left: -sw * 0.05,
             child: Image.asset(
               'assets/images/signup/Vector-2.png',
-              width: size.width * 0.18,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildCodeCloud(width: size.width * 0.18),
+              width: sw * 0.18,
+              errorBuilder: (_, __, ___) =>
+                  _buildCodeCloud(width: sw * 0.18),
             ),
           ),
           Positioned(
-            top: size.height * 0.11,
-            right: -size.width * 0.05,
+            top: sh * 0.11,
+            right: -sw * 0.05,
             child: Image.asset(
               'assets/images/signup/Vector.png',
-              width: size.width * 0.12,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildCodeCloud(width: size.width * 0.12),
+              width: sw * 0.12,
+              errorBuilder: (_, __, ___) =>
+                  _buildCodeCloud(width: sw * 0.12),
             ),
           ),
 
-          // LAYER 2: BOTTOM ASSETS
+          // ── LAYER 2: Bottom illustration — anchored to bottom ─────────────
           Positioned(
-            bottom: -20,
+            bottom: 0,
             left: 0,
             right: 0,
-            height: 350,
+            height: bottomZoneHeight,
             child: Stack(
               alignment: Alignment.bottomCenter,
               children: [
-                // Grass Background
-                Image.asset(
-                  'assets/images/signup/Grass.png',
-                  width: size.width,
-                  fit: BoxFit.fitWidth,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
+                // Grass strip fills the full zone width
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/signup/Grass.png',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.bottomCenter,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
                 ),
-                // Illustration (Behind the form)
+                // Illustration sits above the grass
                 Positioned(
-                  bottom: 30,
+                  bottom: bottomZoneHeight * 0.08,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: IgnorePointer(
                       child: Image.asset(
                         'assets/images/signup/online education.png',
-                        width: MediaQuery.of(context).size.width * 0.75,
+                        width: sw * 0.72,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
+                        errorBuilder: (_, __, ___) =>
                             const SizedBox.shrink(),
                       ),
                     ),
@@ -221,61 +248,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
 
-          // LAYER 3: MAIN CONTENT
+          // ── LAYER 3: Main scrollable content ─────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: sw * 0.06),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: size.height * 0.08),
-                  // Welcome Header
+                  SizedBox(height: sh * 0.06),
+
+                  // Welcome header image
                   Image.asset(
                     'assets/log in page/Welcome Back, Math Champion!.png',
-                    height: 60,
+                    height: (sh * 0.07).clamp(48.0, 70.0),
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => RichText(
+                    errorBuilder: (_, __, ___) => RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
                         style: GoogleFonts.montserrat(
-                          fontSize: 22,
+                          fontSize: (sw * 0.055).clamp(16.0, 22.0),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF333333),
                         ),
                         children: [
                           const TextSpan(text: 'Welcome Back,\n'),
-                          TextSpan(
+                          const TextSpan(
                             text: 'Math Champion!',
-                            style: TextStyle(
-                              color: const Color(0xFF7B66FF),
-                            ), // Purple
+                            style: TextStyle(color: Color(0xFF7B66FF)),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+
+                  SizedBox(height: spaceXS),
+
+                  // Subtitle
                   Image.asset(
                     'assets/log in page/Unlock the Logic in math!.png',
-                    height: 14,
+                    height: (sh * 0.018).clamp(12.0, 16.0),
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => Text(
+                    errorBuilder: (_, __, ___) => Text(
                       'Unlock the Logic in math!',
                       style: GoogleFonts.montserrat(
-                        fontSize: 11,
+                        fontSize: (sw * 0.03).clamp(10.0, 13.0),
                         color: AppColors.grey600,
                       ),
                     ),
                   ),
-                  SizedBox(height: 12),
 
-                  // Login Form Card
+                  SizedBox(height: spaceS),
+
+                  // ── Login Form Card ───────────────────────────────────────
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 420),
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
                         Container(
-                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                          padding: EdgeInsets.fromLTRB(
+                            sw * 0.06,
+                            spaceS,
+                            sw * 0.06,
+                            spaceM,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -296,24 +332,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                // Login title
                                 Image.asset(
                                   'assets/log in page/Login.png',
-                                  height: 24,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Text(
-                                        'Login',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                  height: (sh * 0.03).clamp(20.0, 28.0),
+                                  errorBuilder: (_, __, ___) => const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                const SizedBox(height: 20),
 
-                                // Toggle (Email/Phone)
+                                SizedBox(height: spaceM),
+
+                                // Email / Phone toggle
                                 Container(
-                                  height: 35,
-                                  width: 220,
+                                  height: toggleH,
+                                  width: toggleW,
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF7F7F7),
@@ -343,37 +380,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 18),
 
-                                // Inputs
+                                SizedBox(height: spaceM),
+
+                                // Input fields
                                 if (_isPhoneMode) ...[
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 4,
-                                        bottom: 8,
-                                      ),
-                                      child: const Text(
-                                        'Phone Number *',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  _fieldLabel('Phone Number *'),
+                                  SizedBox(height: spaceXS),
                                   Row(
                                     children: [
                                       _buildFieldContainer(
-                                        width: 75,
+                                        height: fieldH,
+                                        width: sw * 0.18,
                                         child: DropdownButtonHideUnderline(
                                           child: Center(
                                             child: DropdownButton<String>(
                                               isExpanded: true,
                                               value: _countryCode,
                                               padding: const EdgeInsets.only(
-                                                left: 10,
+                                                left: 8,
                                               ),
                                               items: _countryCodes
                                                   .map(
@@ -391,34 +416,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   )
                                                   .toList(),
                                               onChanged: (v) => setState(
-                                                () => _countryCode = v ?? '+91',
+                                                () =>
+                                                    _countryCode = v ?? '+91',
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: spaceS),
                                       Expanded(
                                         child: _buildFieldContainer(
+                                          height: fieldH,
                                           child: TextField(
                                             controller: _phoneController,
                                             focusNode: _phoneFocus,
-                                            keyboardType: TextInputType.phone,
-
-                                            decoration: const InputDecoration(
+                                            keyboardType:
+                                                TextInputType.phone,
+                                            decoration: InputDecoration(
                                               hintText: 'Enter Phone',
-                                              hintStyle: TextStyle(
+                                              hintStyle: const TextStyle(
                                                 color: Color(0xFFC4C4C4),
                                                 fontSize: 13,
                                               ),
                                               border: InputBorder.none,
                                               contentPadding:
                                                   EdgeInsets.fromLTRB(
-                                                    16,
-                                                    0,
-                                                    16,
-                                                    12,
-                                                  ),
+                                                16,
+                                                0,
+                                                16,
+                                                fieldH * 0.28,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -426,65 +453,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ],
                                   ),
                                 ] else ...[
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 4,
-                                        bottom: 8,
-                                      ),
-                                      child: const Text(
-                                        'Email *',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF333333),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  _fieldLabel('Email *'),
+                                  SizedBox(height: spaceXS),
                                   _buildFieldContainer(
+                                    height: fieldH,
                                     child: TextField(
                                       controller: _emailController,
                                       focusNode: _emailFocus,
-                                      keyboardType: TextInputType.emailAddress,
+                                      keyboardType:
+                                          TextInputType.emailAddress,
                                       textAlignVertical:
                                           TextAlignVertical.center,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         hintText: 'Enter Email',
-                                        hintStyle: TextStyle(
+                                        hintStyle: const TextStyle(
                                           color: Color(0xFFC4C4C4),
                                           fontSize: 13,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.fromLTRB(
+                                        contentPadding:
+                                            EdgeInsets.fromLTRB(
                                           12,
                                           0,
                                           12,
-                                          12,
+                                          fieldH * 0.28,
                                         ),
                                       ),
                                     ),
                                   ),
                                 ],
-                                const SizedBox(height: 18),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 4,
-                                      bottom: 8,
-                                    ),
-                                    child: const Text(
-                                      'Password *',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+
+                                SizedBox(height: spaceM),
+
+                                _fieldLabel('Password *'),
+                                SizedBox(height: spaceXS),
                                 _buildFieldContainer(
+                                  height: fieldH,
                                   child: Stack(
                                     alignment: Alignment.centerRight,
                                     children: [
@@ -494,18 +498,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         obscureText: _obscurePassword,
                                         textAlignVertical:
                                             TextAlignVertical.center,
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           hintText: '................',
-                                          hintStyle: TextStyle(
+                                          hintStyle: const TextStyle(
                                             color: Color(0xFFC4C4C4),
                                             fontSize: 18,
                                           ),
                                           border: InputBorder.none,
-                                          contentPadding: EdgeInsets.fromLTRB(
+                                          contentPadding:
+                                              EdgeInsets.fromLTRB(
                                             16,
                                             0,
-                                            16,
-                                            16,
+                                            40,
+                                            fieldH * 0.3,
                                           ),
                                         ),
                                       ),
@@ -518,7 +523,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           ),
                                           child: Icon(
                                             _obscurePassword
-                                                ? Icons.visibility_off_outlined
+                                                ? Icons
+                                                    .visibility_off_outlined
                                                 : Icons.visibility_outlined,
                                             size: 20,
                                             color: Colors.grey.shade400,
@@ -529,8 +535,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 12),
-                                if (authState.error != null)
+                                if (authState.error != null) ...[
+                                  SizedBox(height: spaceXS),
                                   Text(
                                     authState.error!,
                                     style: const TextStyle(
@@ -538,10 +544,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       fontSize: 12,
                                     ),
                                   ),
+                                ],
 
-                                const SizedBox(height: 32),
+                                SizedBox(height: spaceL),
 
-                                // Sign In Button
+                                // Sign In button
                                 GestureDetector(
                                   onTap: authState.isLoading
                                       ? null
@@ -552,27 +559,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       Image.asset(
                                         'assets/log in page/Rectangle 11.png',
                                         width: double.infinity,
-                                        height: 42,
+                                        height: fieldH,
                                         fit: BoxFit.fill,
-                                        errorBuilder:
-                                            (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) => Container(
-                                              height: 42,
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFFF7067),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                            ),
+                                        errorBuilder: (_, __, ___) =>
+                                            Container(
+                                          height: fieldH,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFF7067),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
                                       ),
                                       if (authState.isLoading)
-                                        const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
+                                        SizedBox(
+                                          height: fieldH * 0.48,
+                                          width: fieldH * 0.48,
+                                          child:
+                                              const CircularProgressIndicator(
                                             color: Colors.white,
                                             strokeWidth: 2,
                                           ),
@@ -580,111 +584,111 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       else
                                         Image.asset(
                                           'assets/log in page/Group 8.png',
-                                          height: 18,
-                                          errorBuilder:
-                                              (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) => Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: const [
-                                                  Text(
-                                                    'Sign In',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 8),
-                                                  Icon(
-                                                    Icons.arrow_forward,
-                                                    color: Colors.white,
-                                                    size: 18,
-                                                  ),
-                                                ],
+                                          height: fieldH * 0.45,
+                                          errorBuilder: (_, __, ___) => Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Text(
+                                                'Sign In',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
+                                              SizedBox(width: 8),
+                                              Icon(
+                                                Icons.arrow_forward,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                     ],
                                   ),
                                 ),
 
-                                const SizedBox(height: 24),
-                                // Bottom info/links
+                                SizedBox(height: spaceM),
+
+                                // Join now link
                                 GestureDetector(
                                   onTap: () => context.go('/signup'),
                                   child: Image.asset(
-                                    "assets/log in page/Don't have an account_ Join now.png",
-                                    height: 14,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Text(
-                                              "Don't have an account? Join now",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Bottom info/links
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: _handleForgotPassword,
-                                      child: Image.asset(
-                                        'assets/log in page/Forget Password_.png',
-                                        height: 14,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Text(
-                                                  'Forget Password?',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.orange,
-                                                  ),
-                                                ),
+                                    "assets/log in page/Don't have an account_ Join now.png",
+                                    height:
+                                        (sh * 0.018).clamp(12.0, 16.0),
+                                    errorBuilder: (_, __, ___) =>
+                                        const Text(
+                                      "Don't have an account? Join now",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                ),
+
+                                SizedBox(height: spaceS),
+
+                                // Forgot password link
+                                GestureDetector(
+                                  onTap: _handleForgotPassword,
+                                  child: Image.asset(
+                                    'assets/log in page/Forget Password_.png',
+                                    height:
+                                        (sh * 0.018).clamp(12.0, 16.0),
+                                    errorBuilder: (_, __, ___) =>
+                                        const Text(
+                                      'Forget Password?',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        // Rocket Decoration
+
+                        // Rocket decoration — proportional size, anchored to card corner
                         Positioned(
-                          top: 20,
-                          right: -30,
+                          top: spaceM,
+                          right: -rocketSize * 0.4,
                           child: Image.asset(
                             'assets/images/signup/Rocket.png',
-                            width: 70,
-                            errorBuilder: (context, error, stackTrace) =>
+                            width: rocketSize,
+                            errorBuilder: (_, __, ___) =>
                                 const SizedBox.shrink(),
                           ),
                         ),
                       ],
                     ),
                   ),
+
+                  // Bottom spacer: enough room so the form never sits on top
+                  // of the illustration, plus extra space for keyboard
                   SizedBox(
-                    height: MediaQuery.of(context).viewInsets.bottom + 150,
+                    height: bottomZoneHeight + viewInsets.bottom + spaceM,
                   ),
                 ],
               ),
             ),
           ),
 
-          // Back Button
+          // ── Back button — uses safe area top ─────────────────────────────
           Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 10,
+            top: padding.top + 4,
+            left: 4,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
-              onPressed: () => Navigator.canPop(context) ? context.pop() : context.go('/'),
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: Colors.black,
+              ),
+              onPressed: () =>
+                  Navigator.canPop(context) ? context.pop() : context.go('/'),
             ),
           ),
         ],
@@ -692,10 +696,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildFieldContainer({required Widget child, double? width}) {
+  Widget _fieldLabel(String text) => Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF333333),
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildFieldContainer({
+    required Widget child,
+    required double height,
+    double? width,
+  }) {
     return Container(
       width: width,
-      height: 42,
+      height: height,
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F7),
         borderRadius: BorderRadius.circular(8),
