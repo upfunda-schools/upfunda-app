@@ -38,4 +38,8 @@ class FirebaseAuthService {
       _auth.signInWithCustomToken(token);
 
   Future<void> signOut() => _auth.signOut();
+
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return _auth.sendPasswordResetEmail(email: email);
+  }
 }

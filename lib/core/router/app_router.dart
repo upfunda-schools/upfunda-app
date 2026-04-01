@@ -52,13 +52,22 @@ import '../../features/challenge/room/challenge_room_lobby_screen.dart';
 import '../../features/challenge/room/challenge_room_quiz_screen.dart';
 import '../../features/challenge/room/challenge_room_result_screen.dart';
 
+class _RouterNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final notifier = _RouterNotifier();
+
+  ref.listen(authProvider, (_, __) => notifier.notify());
+
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final isLoggedIn = authState.isLoggedIn;
+      final isLoggedIn = ref.read(authProvider).isLoggedIn;
       final isLoginRoute = state.matchedLocation == '/login';
       final isSignupRoute = state.matchedLocation == '/signup';
       final isOpenRoute = state.matchedLocation == '/';
@@ -68,10 +77,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Only redirect to landing page if truly at an unknown route AND not logged in
       if (!isLoggedIn && !isLoginRoute && !isSignupRoute && !isOpenRoute) return '/';
-      
+
       // Redirect to home if logged in and trying to access auth pages
       if (isLoggedIn && (isLoginRoute || isOpenRoute || isSignupRoute)) return '/student-home';
-      
+
       return null;
     },
     routes: [
