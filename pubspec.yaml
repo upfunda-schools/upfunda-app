@@ -24,6 +24,7 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.1
   flutter_dotenv: ^5.2.1
+  intl_phone_field: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -35,3 +36,5 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/images/signup/
+    - "assets/images/3. SignUp-Email/"

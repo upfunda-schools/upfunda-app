@@ -33,9 +33,10 @@ class DioApiService implements ApiService {
         return handler.next(options);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401) {
-          await authService.signOut();
-        }
+        // Temporarily disabled auto-sign-out on 401 to prevent 'snap back' behavior
+        // if (error.response?.statusCode == 401) {
+        //   await authService.signOut();
+        // }
         return handler.next(error);
       },
     ));
@@ -59,11 +60,15 @@ class DioApiService implements ApiService {
     final data = response.data;
     return UserProfile(
       id: data['student_id'] ?? '',
-      email: '',
+      email: data['email'] ?? '',
       role: 'student',
       name: data['student_name'] ?? '',
       upPoints: data['up_points'] ?? 0,
       schoolId: data['school_id'] ?? '',
+      schoolName: data['school_name'],
+      className: data['class_name'],
+      country: data['country'],
+      phone: data['phone'],
       studentId: data['student_id'] ?? '',
       isPremiumUser: data['is_premium_user'] ?? false,
     );

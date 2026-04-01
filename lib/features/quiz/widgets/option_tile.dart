@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../../../core/theme/app_colors.dart';
 
 class OptionTile extends StatelessWidget {
@@ -99,14 +100,18 @@ class OptionTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: isHidden ? AppColors.grey400 : AppColors.grey800,
-                  decoration: isHidden ? TextDecoration.lineThrough : null,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
+              child: Html(
+                data: text,
+                style: {
+                  'body': Style(
+                    fontSize: FontSize(15),
+                    color: isHidden ? AppColors.grey400 : AppColors.grey800,
+                    textDecoration: isHidden ? TextDecoration.lineThrough : null,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    margin: Margins.zero,
+                    padding: HtmlPaddings.zero,
+                  ),
+                },
               ),
             ),
             if (showResult && optionId == correctOptionId)

@@ -67,40 +67,11 @@ class QuestionCard extends StatelessWidget {
             },
           ),
 
-          // Type indicator
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.grey100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _typeLabel(question.type),
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.grey600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
+
         ],
       ),
     );
   }
 
-  String _typeLabel(String type) {
-    switch (type) {
-      case 'MCQ':
-        return 'Multiple Choice';
-      case 'FILL_UP':
-        return 'Fill in the Blank';
-      case 'TRUE_FALSE':
-        return 'True or False';
-      case 'INTEGER':
-        return 'Integer Type';
-      default:
-        return type;
-    }
-  }
+
 }

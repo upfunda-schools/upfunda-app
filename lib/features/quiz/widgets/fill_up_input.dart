@@ -80,12 +80,14 @@ class FillUpInput extends StatelessWidget {
                 const Icon(Icons.lightbulb_outline,
                     size: 16, color: AppColors.correct),
                 const SizedBox(width: 8),
-                Text(
-                  'Correct answer: $correctAnswer',
-                  style: const TextStyle(
-                    color: AppColors.correct,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    'Correct answer: ${correctAnswer?.replaceAll(RegExp(r'<[^>]*>'), '')}',
+                    style: const TextStyle(
+                      color: AppColors.correct,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],

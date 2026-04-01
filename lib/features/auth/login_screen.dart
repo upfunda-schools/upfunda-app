@@ -310,19 +310,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 const SizedBox(height: 20),
                 Center(
-                  child: Text.rich(
-                    TextSpan(
-                      text: "Don't have an account? ",
-                      style: const TextStyle(color: AppColors.grey600),
-                      children: [
-                        TextSpan(
-                          text: 'Sign Up',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                  child: GestureDetector(
+                    onTap: () => context.go('/signup'),
+                    child: Text.rich(
+                      TextSpan(
+                        text: "Don't have an account? ",
+                        style: const TextStyle(color: AppColors.grey600),
+                        children: [
+                          TextSpan(
+                            text: 'Sign Up',
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

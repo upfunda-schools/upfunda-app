@@ -185,7 +185,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         crossAxisSpacing: 16,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: 0.9,
+                        childAspectRatio: 0.85,
                         children: [
                           _MissionCard(
                             title: 'Worksheets',

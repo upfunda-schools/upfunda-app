@@ -126,6 +126,58 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(isLoggedIn: false);
   }
 
+  Future<bool> phoneRegister({required String phone, required String password}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = Dio(BaseOptions(baseUrl: EnvConfig.apiBaseUrl));
+      final res = await dio.post('/student/phone/register',
+          data: {'phone': phone, 'password': password});
+      
+      final customToken = res.data['custom_token'] as String;
+      final credential = await _authService.signInWithCustomToken(customToken);
+      
+      state = state.copyWith(
+        isLoggedIn: true, 
+        isLoading: false, 
+        user: credential.user
+      );
+      return true;
+    } on DioException catch (e) {
+      final msg = (e.response?.data as Map?)?['error'] ?? 'Sign up failed. Please try again.';
+      state = state.copyWith(isLoading: false, error: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    }
+  }
+
+  Future<bool> emailRegister({required String email, required String password}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = Dio(BaseOptions(baseUrl: EnvConfig.apiBaseUrl));
+      final res = await dio.post('/student/email/register',
+          data: {'email': email, 'password': password});
+      
+      final customToken = res.data['custom_token'] as String;
+      final credential = await _authService.signInWithCustomToken(customToken);
+      
+      state = state.copyWith(
+        isLoggedIn: true, 
+        isLoading: false, 
+        user: credential.user
+      );
+      return true;
+    } on DioException catch (e) {
+      final msg = (e.response?.data as Map?)?['error'] ?? 'Sign up failed. Please try again.';
+      state = state.copyWith(isLoading: false, error: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    }
+  }
+
   String _mapFirebaseError(String code) {
     switch (code) {
       case 'user-not-found':
