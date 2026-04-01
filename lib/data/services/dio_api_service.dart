@@ -33,9 +33,10 @@ class DioApiService implements ApiService {
         return handler.next(options);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401) {
-          await authService.signOut();
-        }
+        // Temporarily disabled auto-sign-out on 401 to prevent 'snap back' behavior
+        // if (error.response?.statusCode == 401) {
+        //   await authService.signOut();
+        // }
         return handler.next(error);
       },
     ));

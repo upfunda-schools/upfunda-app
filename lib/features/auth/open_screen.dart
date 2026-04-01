@@ -16,18 +16,18 @@ class OpenScreen extends StatelessWidget {
 
           // Yellow Blob - Top Left
           Positioned(
-            top: 20, // 👈 INCREASE move DOWN, DECREASE move UP
-            left: -30, // 👈 INCREASE move RIGHT, DECREASE move LEFT
+            top: size.height * 0.02,
+            left: -size.width * 0.1,
             child: Image.asset(
               'assets/images/blob_top_right.png',
-              width: size.width * 0.5, // 👈 Size factor
+              width: size.width * 0.5,
             ),
           ),
 
           // Yellow Blob - Bottom Right
           Positioned(
-            bottom: 0, // 👈 INCREASE move UP, DECREASE move DOWN
-            right: -10, // 👈 INCREASE move LEFT, DECREASE move RIGHT
+            bottom: 0,
+            right: -size.width * 0.03,
             child: Image.asset(
               'assets/images/blob_bottom_left.png',
               width: size.width * 0.4,
@@ -36,8 +36,8 @@ class OpenScreen extends StatelessWidget {
 
           // Grid Pattern - Top Right Area
           Positioned(
-            top: 20, // 👈 INCREASE move DOWN, DECREASE move UP
-            right: -10, // 👈 INCREASE move LEFT, DECREASE move RIGHT
+            top: size.height * 0.02,
+            right: -size.width * 0.03,
             child: Opacity(
               opacity: 0.15,
               child: Image.asset(
@@ -49,8 +49,8 @@ class OpenScreen extends StatelessWidget {
 
           // Grid Pattern - Bottom Left Area
           Positioned(
-            bottom: 40, // 👈 INCREASE move UP, DECREASE move DOWN
-            left: -20, // 👈 INCREASE move RIGHT, DECREASE move LEFT
+            bottom: size.height * 0.05,
+            left: -size.width * 0.05,
             child: Opacity(
               opacity: 0.15,
               child: Image.asset(
@@ -140,10 +140,10 @@ class OpenScreen extends StatelessWidget {
 
                 // Brush Stroke and Subtext (Moved Up)
                 Transform.translate(
-                  offset: const Offset(
+                  offset: Offset(
                     0,
-                    -90,
-                  ), // 👈 X: MOVE RIGHT(+)/LEFT(-), Y: MOVE DOWN(+)/UP(-)
+                    -size.height * 0.11,
+                  ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -152,9 +152,9 @@ class OpenScreen extends StatelessWidget {
                         width: size.width * 0.70,
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(
-                          top: 1,
-                        ), // 👈 INCREASE move DOWN, DECREASE move UP
+                        padding: EdgeInsets.only(
+                          top: size.height * 0.001,
+                        ),
                         child: Image.asset(
                           'assets/images/splash_text.png',
                           width: size.width * 0.60,
@@ -169,10 +169,10 @@ class OpenScreen extends StatelessWidget {
                 ), // 👈 INCREASE move DOWN, DECREASE move UP
                 // Get Started Button (Moved Up)
                 Transform.translate(
-                  offset: const Offset(
+                  offset: Offset(
                     0,
-                    -170,
-                  ), // 👈 X: MOVE RIGHT(+)/LEFT(-), Y: MOVE DOWN(+)/UP(-)
+                    -size.height * 0.20,
+                  ),
                   child: GestureDetector(
                     onTap: () => context.go('/login'),
                     child: Stack(

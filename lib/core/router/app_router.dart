@@ -44,6 +44,7 @@ import '../../features/games/seventy_five_screen.dart';
 import '../../features/games/lines_of_symmetry_screen.dart';
 import '../../features/games/memory_matching_screen.dart';
 import '../../features/auth/open_screen.dart';
+import '../../features/auth/signup_screen.dart';
 import '../../features/challenge/challenge_home_screen.dart';
 import '../../features/challenge/bot/challenge_bot_screen.dart';
 import '../../features/challenge/bot/challenge_bot_result_screen.dart';
@@ -59,10 +60,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = authState.isLoggedIn;
       final isLoginRoute = state.matchedLocation == '/login';
+      final isSignupRoute = state.matchedLocation == '/signup';
       final isOpenRoute = state.matchedLocation == '/';
 
-      if (!isLoggedIn && !isLoginRoute && !isOpenRoute) return '/';
-      if (isLoggedIn && (isLoginRoute || isOpenRoute)) return '/student-home';
+      // Hard-lock: If we are on Login or Signup and not logged in, NEVER redirect to landing page
+      if (!isLoggedIn && (isLoginRoute || isSignupRoute)) return null;
+
+      // Only redirect to landing page if truly at an unknown route AND not logged in
+      if (!isLoggedIn && !isLoginRoute && !isSignupRoute && !isOpenRoute) return '/';
+      
+      // Redirect to home if logged in and trying to access auth pages
+      if (isLoggedIn && (isLoginRoute || isOpenRoute || isSignupRoute)) return '/student-home';
+      
       return null;
     },
     routes: [
@@ -73,6 +82,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
       ),
       GoRoute(
         path: '/student-home',
