@@ -54,6 +54,16 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
                 backgroundColor: AppColors.quizPrimary,
               ),
             ),
+          ] else if (quizState.pagination?.hasNext == true) ...[
+            Expanded(
+              child: AppButton(
+                label: 'Next',
+                icon: Icons.arrow_forward,
+                onPressed: () =>
+                    ref.read(quizProvider.notifier).loadNextPage(),
+                backgroundColor: AppColors.quizPrimary,
+              ),
+            ),
           ] else ...[
             Expanded(
               child: AppButton(

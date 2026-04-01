@@ -14,7 +14,8 @@ import 'widgets/time_up_dialog.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String testId;
-  const QuizScreen({super.key, required this.testId});
+  final String subjectId;
+  const QuizScreen({super.key, required this.testId, this.subjectId = ''});
 
   @override
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
@@ -27,7 +28,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   void initState() {
     super.initState();
     Future.microtask(
-      () => ref.read(quizProvider.notifier).initializeQuiz(widget.testId),
+      () => ref.read(quizProvider.notifier).initializeQuiz(widget.testId, subjectId: widget.subjectId),
     );
   }
 
@@ -89,6 +90,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           children: [
             // Top bar
             _buildTopBar(quizState),
+
+            // Progress bar
+            LinearProgressIndicator(
+              value: (() {
+                final total = quizState.pagination?.totalQuestions ?? quizState.questions.length;
+                if (total == 0) return 0.0;
+                return (quizState.answeredCount / total).clamp(0.0, 1.0);
+              })(),
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+              minHeight: 4,
+            ),
             const SizedBox(height: 8),
 
             // Status legend
@@ -124,7 +137,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (_) => const ExitDialog(),
+                builder: (_) => ExitDialog(subjectId: widget.subjectId),
               );
             },
           ),
@@ -149,7 +162,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           QuizTimerWidget(
             timerDisplay: quizState.timerDisplay,
             remainingSeconds: quizState.remainingSeconds,
-            totalSeconds: 600,
+            totalSeconds: quizState.totalDurationSeconds,
           ),
           const SizedBox(width: 8),
           // 50-50 button
@@ -165,7 +178,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '50:50',
+                  'Mystic Eraser',
                   style: TextStyle(
                     color: quizState.canUseFiftyFifty
                         ? AppColors.review
@@ -187,7 +200,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (_) => const ExitDialog(),
+                builder: (_) => ExitDialog(subjectId: widget.subjectId),
               );
             },
           ),

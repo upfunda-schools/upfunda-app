@@ -150,7 +150,10 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                       itemCount: state.filteredTopics.length,
                       itemBuilder: (context, index) {
                         final topic = state.filteredTopics[index];
-                        return _TopicCard(topic: topic);
+                        return _TopicCard(
+                          topic: topic,
+                          subjectId: widget.subjectId,
+                        );
                       },
                     ),
                   ),
@@ -163,7 +166,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
 
 class _TopicCard extends StatelessWidget {
   final Topic topic;
-  const _TopicCard({required this.topic});
+  final String subjectId;
+  const _TopicCard({required this.topic, required this.subjectId});
 
   Color get _statusColor {
     switch (topic.status) {
@@ -276,43 +280,51 @@ class _TopicCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: topic.tests.map((test) {
-              final isCompleted = test.status == 'completed';
+              final Color buttonColor;
+              final String buttonLabel;
+              final IconData buttonIcon;
+              switch (test.status) {
+                case 'completed':
+                  buttonColor = AppColors.success;
+                  buttonLabel = 'Done';
+                  buttonIcon = Icons.check_circle;
+                  break;
+                case 'in_progress':
+                case 'paused':
+                  buttonColor = AppColors.review;
+                  buttonLabel = 'Continue';
+                  buttonIcon = Icons.play_circle_outline;
+                  break;
+                default:
+                  buttonColor = AppColors.primary;
+                  buttonLabel = 'Level ${test.level}';
+                  buttonIcon = Icons.play_arrow;
+              }
               return GestureDetector(
-                onTap: () => context.go('/quiz/${test.testId}'),
+                onTap: () => context.go('/quiz/${test.testId}', extra: subjectId),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isCompleted
-                        ? AppColors.success.withValues(alpha: 0.1)
-                        : AppColors.primary.withValues(alpha: 0.1),
+                    color: buttonColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isCompleted ? AppColors.success : AppColors.primary,
-                      width: 1,
-                    ),
+                    border: Border.all(color: buttonColor, width: 1),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (isCompleted) ...[
-                        const Icon(Icons.check_circle, size: 14, color: AppColors.success),
-                        const SizedBox(width: 4),
-                      ],
+                      Icon(buttonIcon, size: 14, color: buttonColor),
+                      const SizedBox(width: 4),
                       Text(
-                        'Level ${test.level}',
+                        buttonLabel,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isCompleted ? AppColors.success : AppColors.primary,
+                          color: buttonColor,
                         ),
                       ),
-                      if (!isCompleted) ...[
-                        const SizedBox(width: 4),
-                        Icon(Icons.play_arrow, size: 14, color: AppColors.primary),
-                      ],
                     ],
                   ),
                 ),

@@ -30,6 +30,10 @@ abstract class ApiService {
 
   Future<SubmitTestResponse> submitTest(String testId);
 
+  Future<void> pauseTest(String testId);
+
+  Future<void> resumeTest(String testId);
+
   // Challenge (bot) endpoints
   Future<BotChallengeSession> startChallenge();
 

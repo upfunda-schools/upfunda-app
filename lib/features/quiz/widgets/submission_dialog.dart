@@ -1,17 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/submit_model.dart';
+import '../../../providers/quiz_provider.dart';
 
-class SubmissionDialog extends StatelessWidget {
+class SubmissionDialog extends ConsumerWidget {
   final SubmitTestResponse result;
 
   const SubmissionDialog({super.key, required this.result});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final incorrect = result.totalCount - result.correctCount;
 
     return Dialog(
@@ -176,8 +178,12 @@ class SubmissionDialog extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    final subjectId = ref.read(quizProvider).subjectId;
+                    final router = GoRouter.of(context);
                     Navigator.of(context).pop();
-                    context.go('/worksheets');
+                    router.go(subjectId.isNotEmpty
+                        ? '/worksheets-list/$subjectId'
+                        : '/worksheets');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
