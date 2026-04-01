@@ -140,6 +140,16 @@ class DioApiService implements ApiService {
   }
 
   @override
+  Future<void> pauseTest(String testId) async {
+    await _dio.post('/student/test/$testId/pause');
+  }
+
+  @override
+  Future<void> resumeTest(String testId) async {
+    await _dio.post('/student/test/$testId/resume');
+  }
+
+  @override
   Future<BotChallengeSession> startChallenge() async {
     final response = await _dio.post(
       '/mobile/v1/challenge/start',

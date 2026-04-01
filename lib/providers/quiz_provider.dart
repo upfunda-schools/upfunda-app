@@ -39,10 +39,12 @@ class AnswerState {
 class QuizState {
   final String testId;
   final String testName;
+  final String subjectId;
   final List<Question> questions;
   final String currentQuestionId;
   final Map<String, AnswerState> answers;
   final int remainingSeconds;
+  final int totalDurationSeconds;
   final bool checkDetails;
   final Pagination? pagination;
   final bool isLoading;
@@ -63,10 +65,12 @@ class QuizState {
   const QuizState({
     this.testId = '',
     this.testName = '',
+    this.subjectId = '',
     this.questions = const [],
     this.currentQuestionId = '',
     this.answers = const {},
     this.remainingSeconds = 0,
+    this.totalDurationSeconds = 0,
     this.isTimed = false,
     this.checkDetails = false,
     this.pagination,
@@ -84,10 +88,12 @@ class QuizState {
   QuizState copyWith({
     String? testId,
     String? testName,
+    String? subjectId,
     List<Question>? questions,
     String? currentQuestionId,
     Map<String, AnswerState>? answers,
     int? remainingSeconds,
+    int? totalDurationSeconds,
     bool? isTimed,
     bool? checkDetails,
     Pagination? pagination,
@@ -104,10 +110,12 @@ class QuizState {
       QuizState(
         testId: testId ?? this.testId,
         testName: testName ?? this.testName,
+        subjectId: subjectId ?? this.subjectId,
         questions: questions ?? this.questions,
         currentQuestionId: currentQuestionId ?? this.currentQuestionId,
         answers: answers ?? this.answers,
         remainingSeconds: remainingSeconds ?? this.remainingSeconds,
+        totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
         isTimed: isTimed ?? this.isTimed,
         checkDetails: checkDetails ?? this.checkDetails,
         pagination: pagination ?? this.pagination,
@@ -164,16 +172,35 @@ class QuizNotifier extends StateNotifier<QuizState> {
 
   QuizNotifier(this._api) : super(const QuizState());
 
-  Future<void> initializeQuiz(String testId) async {
+  Future<void> initializeQuiz(String testId, {String subjectId = ''}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final data = await _api.getTestDetails(testId);
+      // Page 1 gives us alreadyAnswered (all pages) and pagination info
+      final TestDetailsResponse firstPage =
+          await _api.getTestDetails(testId, page: 1);
+      final pageSize = firstPage.pagination.pageSize;
+      final totalQuestions = firstPage.pagination.totalQuestions;
+      final answeredCount = firstPage.alreadyAnswered.length;
+      final allAnswered = totalQuestions > 0 && answeredCount >= totalQuestions;
+
+      // Compute which page to land on for resume
+      int targetPage = 1;
+      TestDetailsResponse data = firstPage;
+      if (!allAnswered && answeredCount > 0) {
+        targetPage = (answeredCount ~/ pageSize) + 1;
+        if (targetPage > 1 && targetPage <= firstPage.pagination.totalPages) {
+          data = await _api.getTestDetails(testId, page: targetPage);
+        }
+      }
+
+      // Build answers map: initialize current page + restore alreadyAnswered
+      final answeredIds =
+          firstPage.alreadyAnswered.map((a) => a.questionId).toSet();
       final answers = <String, AnswerState>{};
       for (final q in data.questions) {
         answers[q.questionId] = const AnswerState();
       }
-      // Populate already answered
-      for (final a in data.alreadyAnswered) {
+      for (final a in firstPage.alreadyAnswered) {
         answers[a.questionId] = AnswerState(
           selectedOption: a.selectedOptionId,
           status: 'ANSWERED',
@@ -181,32 +208,55 @@ class QuizNotifier extends StateNotifier<QuizState> {
         );
       }
 
-      final limit = (data.pagination.totalQuestions * 0.2).ceil();
+      // Land on first unanswered question on the target page
+      String currentQuestionId;
+      if (data.questions.isEmpty) {
+        currentQuestionId = '';
+      } else if (allAnswered) {
+        currentQuestionId = data.questions.first.questionId;
+      } else {
+        final firstUnanswered = data.questions.firstWhere(
+          (q) => !answeredIds.contains(q.questionId),
+          orElse: () => data.questions.first,
+        );
+        currentQuestionId = firstUnanswered.questionId;
+      }
+
+      // If quiz was paused, resume it so the backend recalculates end time
+      if (firstPage.timer?.isPaused == true) {
+        try {
+          await _api.resumeTest(testId);
+        } catch (_) {}
+      }
+
+      final limit = (totalQuestions * 0.2).ceil();
+      final remainingSeconds =
+          firstPage.timer?.remainingSeconds ?? firstPage.durationSeconds;
 
       state = state.copyWith(
         testId: data.testId,
         testName: data.testName,
+        subjectId: subjectId,
         questions: data.questions,
-        currentQuestionId: data.questions.first.questionId,
+        currentQuestionId: currentQuestionId,
         answers: answers,
-        remainingSeconds: data.timer?.remainingSeconds ?? data.durationSeconds,
-        isTimed: (data.timer?.remainingSeconds ?? data.durationSeconds) > 0,
+        remainingSeconds: remainingSeconds,
+        isTimed: remainingSeconds > 0,
+        totalDurationSeconds: firstPage.durationSeconds,
         pagination: data.pagination,
         isLoading: false,
         fiftyFiftyLimit: limit,
         fiftyFiftyUsageCount: 0,
         fiftyFiftyUsed: {},
         hiddenOptions: {},
-        questionStartTime: {
-          data.questions.first.questionId:
-              DateTime.now().millisecondsSinceEpoch,
-        },
+        questionStartTime: currentQuestionId.isNotEmpty
+            ? {currentQuestionId: DateTime.now().millisecondsSinceEpoch}
+            : {},
         questionTimeSpent: {},
         checkDetails: false,
         submitResult: null,
       );
 
-      // Only start countdown if server gave a non-zero duration
       if (state.remainingSeconds > 0) {
         _startTimer();
       }
@@ -369,10 +419,37 @@ class QuizNotifier extends StateNotifier<QuizState> {
     return result;
   }
 
+  Future<void> pauseQuiz() async {
+    _timer?.cancel();
+    try {
+      await _api.pauseTest(state.testId);
+    } catch (_) {}
+  }
+
   void goToNext() {
     if (state.isLastQuestion) return;
     final nextId = state.questions[state.currentIndex + 1].questionId;
     setCurrentQuestionId(nextId);
+  }
+
+  Future<void> loadNextPage() async {
+    final pagination = state.pagination;
+    if (pagination == null || !pagination.hasNext) return;
+    try {
+      final nextPage = pagination.currentPage + 1;
+      final data = await _api.getTestDetails(state.testId, page: nextPage);
+      final answers = Map<String, AnswerState>.from(state.answers);
+      for (final q in data.questions) {
+        answers.putIfAbsent(q.questionId, () => const AnswerState());
+      }
+      state = state.copyWith(
+        questions: data.questions,
+        currentQuestionId: data.questions.first.questionId,
+        answers: answers,
+        pagination: data.pagination,
+        checkDetails: false,
+      );
+    } catch (_) {}
   }
 
   @override

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../providers/quiz_provider.dart';
 
-class ExitDialog extends StatelessWidget {
-  const ExitDialog({super.key});
+class ExitDialog extends ConsumerWidget {
+  final String subjectId;
+  const ExitDialog({super.key, this.subjectId = ''});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Exit Quiz?'),
@@ -19,9 +22,11 @@ class ExitDialog extends StatelessWidget {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
+            final router = GoRouter.of(context);
             Navigator.of(context).pop();
-            context.go('/worksheets');
+            await ref.read(quizProvider.notifier).pauseQuiz();
+            router.go(subjectId.isNotEmpty ? '/worksheets-list/$subjectId' : '/worksheets');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.incorrect,

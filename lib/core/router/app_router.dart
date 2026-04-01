@@ -110,7 +110,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/quiz/:id',
         builder: (context, state) {
           final testId = state.pathParameters['id']!;
-          return QuizScreen(testId: testId);
+          final subjectId = state.extra as String? ?? '';
+          return QuizScreen(testId: testId, subjectId: subjectId);
         },
       ),
       GoRoute(
