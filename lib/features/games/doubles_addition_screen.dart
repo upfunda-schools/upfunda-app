@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class DoublesAdditionScreen extends StatefulWidget {
   const DoublesAdditionScreen({super.key});
@@ -22,6 +23,7 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
   bool _isCorrect = false;
   String _feedbackMessage = '';
   bool _isSoundEnabled = true;
+  late final AudioPlayer _audioPlayer;
 
   // Animation keys for AnimatedSwitcher pulse
   int _scoreKey = 0;
@@ -77,6 +79,7 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _questionAnim, curve: Curves.easeOut));
 
+    _audioPlayer = AudioPlayer();
     _generateQuestion(initial: true);
   }
 
@@ -84,6 +87,7 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
   void dispose() {
     _questionAnim.dispose();
     _answerController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -137,7 +141,20 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
       }
     });
 
-    if (_isSoundEnabled) _playHaptic(correct);
+    if (_isSoundEnabled) {
+      _playHaptic(correct);
+      _playSound(correct);
+    }
+  }
+
+  Future<void> _playSound(bool isCorrect) async {
+    try {
+      final source = isCorrect
+          ? AssetSource('audio/correct_sound_effect.mp3')
+          : AssetSource('audio/wrong_sound_effect.mp3');
+      await _audioPlayer.stop();
+      await _audioPlayer.play(source);
+    } catch (_) {}
   }
 
   void _playHaptic(bool correct) {

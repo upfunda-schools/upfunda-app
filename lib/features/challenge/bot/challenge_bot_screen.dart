@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/challenge_model.dart';
@@ -26,8 +27,8 @@ class ChallengeBotScreen extends ConsumerStatefulWidget {
 class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
   String? _selectedOptionId;
   bool _answered = false;
+  late final AudioPlayer _audioPlayer;
   late Stopwatch _stopwatch;
-  Timer? _ticker;
 
   @override
   void initState() {
@@ -36,21 +37,18 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
     Future.microtask(
       () => ref.read(challengeBotProvider.notifier).startChallenge(),
     );
+    _audioPlayer = AudioPlayer();
   }
 
   @override
   void dispose() {
-    _ticker?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
   void _startTimer() {
     _stopwatch.reset();
     _stopwatch.start();
-    _ticker?.cancel();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {});
-    });
   }
 
   void _onOptionTap(String optionId, String questionId) {
@@ -59,8 +57,14 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
       _selectedOptionId = optionId;
       _answered = true;
     });
+
+    final currentQuestion = ref.read(challengeBotProvider).session?.questions[ref.read(challengeBotProvider).currentIndex];
+    if (currentQuestion != null) {
+      final isCorrect = optionId == currentQuestion.correctOptionId;
+      _playSound(isCorrect);
+    }
+
     _stopwatch.stop();
-    _ticker?.cancel();
     final elapsed = _stopwatch.elapsed.inSeconds;
 
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -76,6 +80,18 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
     });
   }
 
+  Future<void> _playSound(bool isCorrect) async {
+    try {
+      final source = isCorrect
+          ? AssetSource('audio/correct_sound_effect.mp3')
+          : AssetSource('audio/wrong_sound_effect.mp3');
+      await _audioPlayer.stop();
+      await _audioPlayer.play(source);
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(challengeBotProvider);
@@ -86,7 +102,6 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
         _startTimer();
       }
       if (next.isFinished) {
-        _ticker?.cancel();
         context.pushReplacement('/challenge/bot/result');
       }
     });
@@ -133,14 +148,13 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
 
     final question = questions[index];
     final progress = (index + 1) / questions.length;
-    final elapsed = _stopwatch.elapsed.inSeconds;
 
     return Scaffold(
       backgroundColor: AppColors.quizBg,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(session, index, questions.length, elapsed),
+            _buildHeader(session, index, questions.length),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -184,6 +198,10 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                           margin: Margins.zero,
                           padding: HtmlPaddings.zero,
                         ),
+                        'img': Style(
+                          margin: Margins.zero,
+                          padding: HtmlPaddings.zero,
+                        ),
                         '*': Style(color: Colors.white),
                       },
                     ),
@@ -214,14 +232,13 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
   }
 
   Widget _buildHeader(
-      BotChallengeSession session, int index, int total, int elapsed) {
+      BotChallengeSession session, int index, int total) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              _ticker?.cancel();
               ref.read(challengeBotProvider.notifier).reset();
               context.pop();
             },
@@ -242,20 +259,52 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
               ],
             ),
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${elapsed}s',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-          ),
+          _ChallengeTimer(stopwatch: _stopwatch),
         ],
+      ),
+    );
+  }
+}
+
+class _ChallengeTimer extends StatefulWidget {
+  final Stopwatch stopwatch;
+  const _ChallengeTimer({required this.stopwatch});
+
+  @override
+  State<_ChallengeTimer> createState() => _ChallengeTimerState();
+}
+
+class _ChallengeTimerState extends State<_ChallengeTimer> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && widget.stopwatch.isRunning) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '${widget.stopwatch.elapsed.inSeconds}s',
+        style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.w600),
       ),
     );
   }

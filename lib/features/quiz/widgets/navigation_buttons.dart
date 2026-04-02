@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/quiz_provider.dart';
 import '../../../shared/widgets/app_button.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'submission_dialog.dart';
 
 class NavigationButtons extends ConsumerStatefulWidget {
@@ -14,6 +15,31 @@ class NavigationButtons extends ConsumerStatefulWidget {
 
 class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
   bool _isSubmitting = false;
+  late final AudioPlayer _audioPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playSound(bool isCorrect) async {
+    try {
+      final source = isCorrect
+          ? AssetSource('audio/correct_sound_effect.mp3')
+          : AssetSource('audio/wrong_sound_effect.mp3');
+      await _audioPlayer.stop();
+      await _audioPlayer.play(source);
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +59,12 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
                 label: 'Check',
                 onPressed: hasAnswer
                     ? () {
-                        ref
+                        final isCorrect = ref
                             .read(quizProvider.notifier)
                             .checkAnswer(quizState.currentQuestionId);
+                        
+                        _playSound(isCorrect);
+
                         ref
                             .read(quizProvider.notifier)
                             .submitAnswer(quizState.currentQuestionId);

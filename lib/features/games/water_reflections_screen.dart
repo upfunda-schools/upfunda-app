@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data
@@ -85,16 +86,25 @@ class WaterReflectionsScreen extends StatefulWidget {
 }
 
 class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
-  late _Pattern _pattern;
-  int? _selectedIndex;
-  int _score = 0;
   int _level = 1;
+  int _score = 0;
+  int? _selectedIndex;
+  late _Pattern _pattern;
   String? _feedback; // 'correct' | 'wrong' | null
+  bool _isSoundEnabled = true;
+  late final AudioPlayer _audioPlayer;
 
   @override
   void initState() {
     super.initState();
     _pattern = _generatePattern();
+    _audioPlayer = AudioPlayer();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   void _reset() {
@@ -115,6 +125,8 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
     setState(() => _feedback = correct ? 'correct' : 'wrong');
     if (correct) setState(() => _score += 10);
 
+    _playSound(correct);
+
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (!mounted) return;
       if (correct) {
@@ -131,6 +143,19 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
         });
       }
     });
+  }
+
+  Future<void> _playSound(bool isCorrect) async {
+    if (!_isSoundEnabled) return;
+    try {
+      final source = isCorrect
+          ? AssetSource('audio/correct_sound_effect.mp3')
+          : AssetSource('audio/wrong_sound_effect.mp3');
+      await _audioPlayer.stop();
+      await _audioPlayer.play(source);
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
   }
 
   // ── Build ──────────────────────────────────────────────────────────────────
@@ -199,6 +224,14 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF1D4ED8),
               ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => setState(() => _isSoundEnabled = !_isSoundEnabled),
+            icon: Icon(
+              _isSoundEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              size: 20,
+              color: const Color(0xFF2563EB),
             ),
           ),
           TextButton.icon(

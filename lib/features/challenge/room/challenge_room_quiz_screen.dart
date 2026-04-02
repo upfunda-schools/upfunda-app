@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/challenge_model.dart';
@@ -29,19 +30,18 @@ class _ChallengeRoomQuizScreenState
   String? _selectedOptionId;
   bool _answered = false;
   late Stopwatch _stopwatch;
-  Timer? _ticker;
+  late final AudioPlayer _audioPlayer;
 
   @override
   void initState() {
     super.initState();
     _stopwatch = Stopwatch()..start();
-    _ticker = Timer.periodic(
-        const Duration(seconds: 1), (_) => setState(() {}));
+    _audioPlayer = AudioPlayer();
   }
 
   @override
   void dispose() {
-    _ticker?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -51,6 +51,10 @@ class _ChallengeRoomQuizScreenState
       _selectedOptionId = optionId;
       _answered = true;
     });
+    
+    final isCorrect = optionId == question.correctOptionId;
+    _playSound(isCorrect);
+    
     _stopwatch.stop();
     final elapsed = _stopwatch.elapsed.inSeconds;
 
@@ -72,6 +76,18 @@ class _ChallengeRoomQuizScreenState
     });
   }
 
+  Future<void> _playSound(bool isCorrect) async {
+    try {
+      final source = isCorrect
+          ? AssetSource('audio/correct_sound_effect.mp3')
+          : AssetSource('audio/wrong_sound_effect.mp3');
+      await _audioPlayer.stop();
+      await _audioPlayer.play(source);
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(challengeRoomProvider);
@@ -79,7 +95,6 @@ class _ChallengeRoomQuizScreenState
     ref.listen<ChallengeRoomState>(challengeRoomProvider, (prev, next) {
       if (next.status == 'completed' ||
           (next.isQuizFinished && next.result?.status == 'completed')) {
-        _ticker?.cancel();
         context.pushReplacement('/challenge/room/result');
       }
     });
@@ -110,14 +125,13 @@ class _ChallengeRoomQuizScreenState
     }
 
     final question = questions[index];
-    final elapsed = _stopwatch.elapsed.inSeconds;
 
     return Scaffold(
       backgroundColor: AppColors.quizBg,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(state, index, questions.length, elapsed),
+            _buildHeader(state, index, questions.length),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -160,6 +174,10 @@ class _ChallengeRoomQuizScreenState
                           margin: Margins.zero,
                           padding: HtmlPaddings.zero,
                         ),
+                        'img': Style(
+                          margin: Margins.zero,
+                          padding: HtmlPaddings.zero,
+                        ),
                         '*': Style(color: Colors.white),
                       },
                     ),
@@ -186,7 +204,7 @@ class _ChallengeRoomQuizScreenState
   }
 
   Widget _buildHeader(
-      ChallengeRoomState state, int index, int total, int elapsed) {
+      ChallengeRoomState state, int index, int total) {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 12),
       child: Row(
@@ -212,7 +230,6 @@ class _ChallengeRoomQuizScreenState
                 ),
               );
               if (confirm == true && mounted) {
-                _ticker?.cancel();
                 await ref
                     .read(challengeRoomProvider.notifier)
                     .quit();
@@ -237,20 +254,52 @@ class _ChallengeRoomQuizScreenState
               ],
             ),
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${elapsed}s',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-          ),
+          _ChallengeTimer(stopwatch: _stopwatch),
         ],
+      ),
+    );
+  }
+}
+
+class _ChallengeTimer extends StatefulWidget {
+  final Stopwatch stopwatch;
+  const _ChallengeTimer({required this.stopwatch});
+
+  @override
+  State<_ChallengeTimer> createState() => _ChallengeTimerState();
+}
+
+class _ChallengeTimerState extends State<_ChallengeTimer> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && widget.stopwatch.isRunning) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '${widget.stopwatch.elapsed.inSeconds}s',
+        style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.w600),
       ),
     );
   }
