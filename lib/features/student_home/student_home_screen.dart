@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
@@ -37,191 +36,323 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
         ref.read(userProvider.notifier).loadProfile();
       }
     });
+
     final state = ref.watch(userProvider);
     final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth > 900 ? 4 : 2;
+    final isDesktop = screenWidth > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F6FF),
+      backgroundColor: const Color(0xFFFBF9FF),
       body: SafeArea(
         child: state.isLoading && state.homeData == null
             ? const LoaderWidget(message: 'Loading...')
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    // Top bar
-                    Row(
-                      children: [
-                        const Spacer(),
-                        IconButton(
-                          icon: const CircleAvatar(
-                            radius: 18,
-                            backgroundColor: AppColors.primary,
-                            child: Icon(Icons.person, color: Colors.white, size: 20),
-                          ),
-                          onPressed: () => context.go('/profile'),
-                        ),
-                        const SizedBox(width: 4),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert),
-                          onSelected: (v) async {
-                            if (v == 'logout') {
-                              await ref.read(authProvider.notifier).logout();
-                              if (context.mounted) context.go('/login');
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            const PopupMenuItem(
-                              value: 'logout',
-                              child: Text('Logout'),
-                            ),
-                          ],
-                        ),
-                      ],
+                    // --- Background Decorations ---
+                    Positioned(
+                      top: 130,
+                      left: 0,
+                      child: Image.asset(
+                        'assets/images/home/deco_four.png',
+                        width: 90,
+                      ),
+                    ),
+                    Positioned(
+                      top: 140,
+                      right: 15,
+                      child: Image.asset(
+                        'assets/images/home/deco_notebook.png',
+                        width: 55,
+                      ),
+                    ),
+                    Positioned(
+                      top: 270,
+                      right: -10,
+                      child: Image.asset(
+                        'assets/images/home/deco_ruler.png',
+                        width: 65,
+                      ),
+                    ),
+                    Positioned(
+                      top: 200,
+                      left: -30,
+                      child: Image.asset(
+                        'assets/images/home/deco_objects.png',
+                        width: 110,
+                      ),
                     ),
 
-                    // Daily quest banner
-                    if (state.homeData != null) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary.withValues(alpha: 0.15),
-                              AppColors.accent.withValues(alpha: 0.1),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.campaign, color: AppColors.primary),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                    // --- Main Content ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 16.0,
+                      ),
+                      child: Column(
+                        children: [
+                          // Top Header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Image.asset(
+                                'assets/images/home/logo.png',
+                                height: 28,
+                              ),
+                              Row(
                                 children: [
-                                  Text(
-                                    'DAILY QUEST',
-                                    style: GoogleFonts.montserrat(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                      color: AppColors.primary,
+                                  GestureDetector(
+                                    onTap: () => context.go('/profile'),
+                                    child: Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF6C5CE7),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        (state
+                                                    .homeData
+                                                    ?.studentName
+                                                    .isNotEmpty ==
+                                                true)
+                                            ? state.homeData!.studentName[0]
+                                                  .toUpperCase()
+                                            : 'U',
+                                        style: GoogleFonts.montserrat(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                  Text(
-                                    '${state.homeData!.stats.solvedWorksheets}/${state.homeData!.stats.totalWorksheets} worksheets completed',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.grey600,
+                                  const SizedBox(width: 8),
+                                  PopupMenuButton<String>(
+                                    offset: const Offset(0, 40),
+                                    padding: EdgeInsets.zero,
+                                    icon: Image.asset(
+                                      'assets/images/home/menu.png',
+                                      width: 28,
+                                    ),
+                                    onSelected: (value) async {
+                                      if (value == 'logout') {
+                                        await ref.read(authProvider.notifier).logout();
+                                        if (context.mounted) context.go('/login');
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 'logout',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.logout, color: Colors.red, size: 20),
+                                            SizedBox(width: 10),
+                                            Text(
+                                              'Logout',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Daily Quest Indicator
+                          if (state.homeData != null)
+                            Container(
+                              height: 75,
+                              width: double.infinity,
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    'assets/images/home/banner_bg.png',
+                                  ),
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.asset(
+                                    'assets/images/home/megaphone.png',
+                                    width: 35,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Worksheet',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFFA58AFF),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Arithmetic Drill (${state.homeData != null ? state.homeData!.stats.solvedWorksheets : 0}/${state.homeData != null ? state.homeData!.stats.totalWorksheets : 1}) completed',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF6C5CE7),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      '${(state.homeData != null && state.homeData!.stats.totalWorksheets > 0) ? (state.homeData!.stats.solvedWorksheets / state.homeData!.stats.totalWorksheets * 100).toInt() : 10}%',
+                                      style: GoogleFonts.montserrat(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${state.homeData!.stats.overallAccuracy.round()}%',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                          const SizedBox(height: 16),
+
+                          // Greeting
+                          const SizedBox(height: 4),
+                          Column(
+                            children: [
+                              Text(
+                                'Hey',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF9181F2),
                                 ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                '${state.homeData?.studentName ?? 'Student'},',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF9181F2),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                'ready to solve?',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFFF1659C),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Center(
+                            child: Text(
+                              state.profile?.schoolName ?? 'Upfunda School',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black54,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Choose Mission Button
+                          Image.asset(
+                            'assets/images/home/mission_button.png',
+                            width: 210,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Cards Grid
+                          if (state.isLoading)
+                            const GridSkeleton()
+                          else
+                            GridView.count(
+                              crossAxisCount: isDesktop ? 4 : 2,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.8,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => context.go('/worksheets'),
+                                  child: Image.asset(
+                                    'assets/images/home/card_worksheets.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => context.push('/challenge'),
+                                  child: Image.asset(
+                                    'assets/images/home/card_challenge.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () =>
+                                      context.push('/games/master-arithmetic'),
+                                  child: Image.asset(
+                                    'assets/images/home/card_math_gym.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => context.push('/games'),
+                                  child: Image.asset(
+                                    'assets/images/home/card_games.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(height: 24),
+
+                          // Leaderboard Button
+                          GestureDetector(
+                            onTap: () => context.push('/leaderboard'),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/home/leaderboard_button.png',
+                                width: 220,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                    ],
-
-                    // Greeting
-                    Text(
-                      'Hey ${state.homeData?.studentName ?? 'Student'},',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.lightPurple,
-                      ),
-                    ),
-                    Text(
-                      'ready to solve?',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.lightPink,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Mission cards grid
-                    if (state.isLoading) ...[
-                      GridView.count(
-                        crossAxisCount: crossAxisCount,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: List.generate(4, (_) => const SkeletonCard()),
-                      ),
-                    ] else ...[
-                      GridView.count(
-                        crossAxisCount: crossAxisCount,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: 0.85,
-                        children: [
-                          _MissionCard(
-                            title: 'Worksheets',
-                            subtitle: 'Practice & Learn',
-                            icon: Icons.menu_book_rounded,
-                            color: AppColors.primary,
-                            buttonLabel: 'Browse Library',
-                            onTap: () => context.go('/worksheets'),
                           ),
-                          _MissionCard(
-                            title: 'Challenge',
-                            subtitle: 'Battle Friends',
-                            icon: Icons.sports_kabaddi_rounded,
-                            color: AppColors.accent,
-                            buttonLabel: 'Play Now',
-                            onTap: () => context.push('/challenge'),
-                          ),
-                          _MissionCard(
-                            title: 'Master Arithmetic',
-                            subtitle: 'Speed Math',
-                            icon: Icons.calculate_rounded,
-                            color: const Color(0xFF10B981),
-                            buttonLabel: 'Play Now',
-                            onTap: () => context.push('/games/master-arithmetic'),
-                          ),
-                          _MissionCard(
-                            title: 'Games',
-                            subtitle: 'Fun Learning',
-                            icon: Icons.sports_esports_rounded,
-                            color: const Color(0xFFF59E0B),
-                            buttonLabel: 'Play Now',
-                            onTap: () => context.push('/games'),
-                          ),
+                          const SizedBox(height: 40),
                         ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -230,88 +361,19 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   }
 }
 
-class _MissionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final String buttonLabel;
-  final VoidCallback onTap;
-
-  const _MissionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.buttonLabel,
-    required this.onTap,
-  });
+class GridSkeleton extends StatelessWidget {
+  const GridSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 32),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: GoogleFonts.montserrat(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                color: AppColors.grey600,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                buttonLabel,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 0.75,
+      children: List.generate(4, (_) => const SkeletonCard()),
     );
   }
 }
