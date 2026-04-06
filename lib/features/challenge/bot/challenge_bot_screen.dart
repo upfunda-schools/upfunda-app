@@ -185,6 +185,23 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                     const SizedBox(height: 8),
                     Html(
                       data: _stripBase64Images(question.questionText),
+                      extensions: [
+                        TagExtension(
+                          tagsToExtend: {"img"},
+                          builder: (extensionContext) {
+                            final src = extensionContext.attributes["src"] ?? "";
+                            if (src.isEmpty) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Image.network(
+                                src,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                       style: {
                         'body': Style(
                           color: Colors.white,
@@ -195,10 +212,6 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                         ),
                         'p': Style(
                           color: Colors.white,
-                          margin: Margins.zero,
-                          padding: HtmlPaddings.zero,
-                        ),
-                        'img': Style(
                           margin: Margins.zero,
                           padding: HtmlPaddings.zero,
                         ),
@@ -368,6 +381,23 @@ class _OptionTile extends StatelessWidget {
             Expanded(
               child: Html(
                 data: option.optionText,
+                extensions: [
+                  TagExtension(
+                    tagsToExtend: {"img"},
+                    builder: (extensionContext) {
+                      final src = extensionContext.attributes["src"] ?? "";
+                      if (src.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Image.network(
+                          src,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 style: {
                   'body': Style(
                     color: Colors.white,

@@ -248,22 +248,29 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   }
 
   Widget _buildPhoneLayout(QuizState quizState, question) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          QuestionCard(
-            question: question,
-            questionNumber: quizState.currentIndex + 1,
-            totalQuestions: quizState.questions.length,
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              children: [
+                QuestionCard(
+                  question: question,
+                  questionNumber: quizState.currentIndex + 1,
+                  totalQuestions: quizState.questions.length,
+                ),
+                const SizedBox(height: 16),
+                _buildOptionsSection(quizState, question),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          _buildOptionsSection(quizState, question),
-          const SizedBox(height: 8),
-          const NavigationButtons(),
-          const SizedBox(height: 16),
-        ],
-      ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: NavigationButtons(),
+        ),
+      ],
     );
   }
 
