@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/topics_model.dart';
 import '../../providers/test_list_provider.dart';
+import '../../providers/worksheet_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 import '../../shared/widgets/progress_bar.dart';
 
@@ -29,6 +30,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(testListProvider);
+    final isPremiumUser =
+        ref.watch(worksheetProvider).data?.isPremiumUser ?? false;
 
     return Scaffold(
       backgroundColor: AppColors.worksheetListBg,
@@ -153,6 +156,7 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                         return _TopicCard(
                           topic: topic,
                           subjectId: widget.subjectId,
+                          isPremiumUser: isPremiumUser,
                         );
                       },
                     ),
@@ -167,7 +171,12 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
 class _TopicCard extends StatelessWidget {
   final Topic topic;
   final String subjectId;
-  const _TopicCard({required this.topic, required this.subjectId});
+  final bool isPremiumUser;
+  const _TopicCard({
+    required this.topic,
+    required this.subjectId,
+    required this.isPremiumUser,
+  });
 
   Color get _statusColor {
     switch (topic.status) {
@@ -231,12 +240,16 @@ class _TopicCard extends StatelessWidget {
                     color: const Color(0xFFE4B500).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.star, size: 12, color: Color(0xFFE4B500)),
-                      SizedBox(width: 2),
-                      Text(
+                      Icon(
+                        isPremiumUser ? Icons.star : Icons.lock,
+                        size: 12,
+                        color: const Color(0xFFE4B500),
+                      ),
+                      const SizedBox(width: 2),
+                      const Text(
                         'Premium',
                         style: TextStyle(
                           fontSize: 10,
@@ -280,6 +293,37 @@ class _TopicCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: topic.tests.map((test) {
+              final bool locked = topic.isPremium && !isPremiumUser;
+
+              if (locked) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.grey200,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.grey400, width: 1),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock, size: 14, color: AppColors.grey400),
+                      SizedBox(width: 4),
+                      Text(
+                        'Premium Only',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.grey400,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               final Color buttonColor;
               final String buttonLabel;
               final IconData buttonIcon;

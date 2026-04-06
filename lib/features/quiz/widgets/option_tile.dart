@@ -102,6 +102,23 @@ class OptionTile extends StatelessWidget {
             Expanded(
               child: Html(
                 data: text,
+                extensions: [
+                  TagExtension(
+                    tagsToExtend: {"img"},
+                    builder: (extensionContext) {
+                      final src = extensionContext.attributes["src"] ?? "";
+                      if (src.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Image.network(
+                          src,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 style: {
                   'body': Style(
                     fontSize: FontSize(15),

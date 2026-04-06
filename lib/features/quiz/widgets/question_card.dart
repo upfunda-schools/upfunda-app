@@ -55,6 +55,23 @@ class QuestionCard extends StatelessWidget {
           // Question text (HTML)
           Html(
             data: question.text,
+            extensions: [
+              TagExtension(
+                tagsToExtend: {"img"},
+                builder: (extensionContext) {
+                  final src = extensionContext.attributes["src"] ?? "";
+                  if (src.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Image.network(
+                      src,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  );
+                },
+              ),
+            ],
             style: {
               'p': Style(
                 fontSize: FontSize(16),
