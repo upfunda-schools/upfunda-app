@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../core/theme/app_colors.dart';
@@ -61,6 +62,22 @@ class QuestionCard extends StatelessWidget {
                 builder: (extensionContext) {
                   final src = extensionContext.attributes["src"] ?? "";
                   if (src.isEmpty) return const SizedBox.shrink();
+                  if (src.startsWith('data:')) {
+                    try {
+                      final base64Str = src.split(',').last;
+                      final bytes = base64Decode(base64Str);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Image.memory(
+                          bytes,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      );
+                    } catch (_) {
+                      return const SizedBox.shrink();
+                    }
+                  }
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Image.network(

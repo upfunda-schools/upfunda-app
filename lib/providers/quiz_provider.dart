@@ -9,6 +9,8 @@ final quizProvider =
   return QuizNotifier(ref.read(apiServiceProvider));
 });
 
+final quizMuteProvider = StateProvider<bool>((ref) => false);
+
 class AnswerState {
   final String? selectedOption;
   final String status; // ANSWERED, NOT_ANSWERED, MARKED_FOR_REVIEW

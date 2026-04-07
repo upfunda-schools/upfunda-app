@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../providers/quiz_provider.dart';
+import '../../../providers/quiz_provider.dart' show quizProvider, quizMuteProvider;
 import '../../../shared/widgets/app_button.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'submission_dialog.dart';
@@ -30,6 +30,7 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
   }
 
   Future<void> _playSound(bool isCorrect) async {
+    if (ref.read(quizMuteProvider)) return;
     try {
       final source = isCorrect
           ? AssetSource('audio/correct_sound_effect.mp3')
