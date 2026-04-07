@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,13 +10,6 @@ import '../../../data/models/challenge_model.dart';
 import '../../../providers/challenge_bot_provider.dart';
 import '../../../shared/widgets/loader_widget.dart';
 
-String _stripBase64Images(String html) {
-  return html.replaceAll(
-    RegExp(r'<img[^>]+src="data:[^"]*base64[^"]*"[^>]*(/)?>',
-        caseSensitive: false),
-    '',
-  );
-}
 
 class ChallengeBotScreen extends ConsumerStatefulWidget {
   const ChallengeBotScreen({super.key});
@@ -184,13 +178,25 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                     ),
                     const SizedBox(height: 8),
                     Html(
-                      data: _stripBase64Images(question.questionText),
+                      data: question.questionText,
                       extensions: [
                         TagExtension(
                           tagsToExtend: {"img"},
                           builder: (extensionContext) {
                             final src = extensionContext.attributes["src"] ?? "";
                             if (src.isEmpty) return const SizedBox.shrink();
+                            if (src.startsWith('data:')) {
+                              try {
+                                final bytes = base64Decode(src.split(',').last);
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  child: Image.memory(bytes, fit: BoxFit.contain,
+                                      errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                                );
+                              } catch (_) {
+                                return const SizedBox.shrink();
+                              }
+                            }
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Image.network(
@@ -387,6 +393,18 @@ class _OptionTile extends StatelessWidget {
                     builder: (extensionContext) {
                       final src = extensionContext.attributes["src"] ?? "";
                       if (src.isEmpty) return const SizedBox.shrink();
+                      if (src.startsWith('data:')) {
+                        try {
+                          final bytes = base64Decode(src.split(',').last);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Image.memory(bytes, fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                          );
+                        } catch (_) {
+                          return const SizedBox.shrink();
+                        }
+                      }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Image.network(

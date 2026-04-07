@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../providers/quiz_provider.dart';
+import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
 import '../../shared/widgets/loader_widget.dart';
 import 'widgets/question_card.dart';
 import 'widgets/option_tile.dart';
@@ -128,6 +128,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   }
 
   Widget _buildTopBar(QuizState quizState) {
+    final isMuted = ref.watch(quizMuteProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Row(
@@ -158,6 +159,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
           ),
           const Spacer(),
+          // Mute button
+          IconButton(
+            icon: Icon(
+              isMuted ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white70,
+            ),
+            onPressed: () =>
+                ref.read(quizMuteProvider.notifier).state = !isMuted,
+          ),
           // Timer
           QuizTimerWidget(
             timerDisplay: quizState.timerDisplay,
