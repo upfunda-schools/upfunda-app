@@ -2,6 +2,7 @@ class HomeResponse {
   final String studentName;
   final String studentId;
   final String schoolId;
+  final String classId;
   final String sectionId;
   final int upPoints;
   final bool isPremiumUser;
@@ -12,6 +13,7 @@ class HomeResponse {
     required this.studentName,
     required this.studentId,
     required this.schoolId,
+    required this.classId,
     required this.sectionId,
     required this.upPoints,
     required this.isPremiumUser,
@@ -23,6 +25,7 @@ class HomeResponse {
         studentName: json['student_name'] as String? ?? '',
         studentId: json['student_id'] as String? ?? '',
         schoolId: json['school_id'] as String? ?? '',
+        classId: json['class_id'] as String? ?? '',
         sectionId: json['section_id'] as String? ?? '',
         upPoints: json['up_points'] as int? ?? 0,
         isPremiumUser: json['is_premium_user'] as bool? ?? false,

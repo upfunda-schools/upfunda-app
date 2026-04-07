@@ -73,25 +73,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOpenRoute = state.matchedLocation == '/';
 
       // Hard-lock: If we are on Login or Signup and not logged in, NEVER redirect to landing page
-      if (!isLoggedIn && (isLoginRoute || isSignupRoute)) return null;
+      if (!isLoggedIn && (isLoginRoute || isSignupRoute)) {
+        return null;
+      }
 
       // Only redirect to landing page if truly at an unknown route AND not logged in
-      if (!isLoggedIn && !isLoginRoute && !isSignupRoute && !isOpenRoute) return '/';
+      if (!isLoggedIn && !isLoginRoute && !isSignupRoute && !isOpenRoute) {
+        return '/';
+      }
 
       // Redirect to home if logged in and trying to access auth pages
-      if (isLoggedIn && (isLoginRoute || isOpenRoute || isSignupRoute)) return '/student-home';
+      if (isLoggedIn && (isLoginRoute || isOpenRoute || isSignupRoute)) {
+        return '/student-home';
+      }
 
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const OpenScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const OpenScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
@@ -290,8 +290,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ChallengeRoomResultScreen(),
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Page not found: ${state.error}')),
-    ),
+    errorBuilder: (context, state) =>
+        Scaffold(body: Center(child: Text('Page not found: ${state.error}'))),
   );
 });

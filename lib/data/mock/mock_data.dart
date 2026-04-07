@@ -35,6 +35,7 @@ class MockData {
     studentName: 'Arjun',
     studentId: 'student-001',
     schoolId: 'school-001',
+    classId: 'class-001',
     sectionId: 'section-001',
     upPoints: 1250,
     isPremiumUser: true,

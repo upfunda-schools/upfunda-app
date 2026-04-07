@@ -54,4 +54,5 @@ abstract class ApiService {
   Future<ChallengeRoomResult> getChallengeRoomResult(String roomId);
 
   Future<void> quitChallengeRoom(String roomId);
+
 }

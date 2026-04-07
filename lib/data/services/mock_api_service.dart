@@ -97,4 +97,5 @@ class MockApiService implements ApiService {
   @override
   Future<void> quitChallengeRoom(String roomId) =>
       throw UnimplementedError('MockApiService does not support challenge rooms');
+
 }
