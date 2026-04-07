@@ -321,8 +321,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () =>
-                                      context.push('/games/master-arithmetic'),
+                                  onTap: () => context
+                                      .push('/games/master-arithmetic'),
                                   child: Image.asset(
                                     'assets/images/home/card_math_gym.png',
                                     fit: BoxFit.contain,

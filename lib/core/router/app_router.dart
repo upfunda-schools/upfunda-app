@@ -128,6 +128,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MasterArithmeticScreen(),
       ),
       GoRoute(
+        path: '/academic-math',
+        builder: (context, state) => const WorksheetListScreen(subjectId: 'sub-001'),
+      ),
+      GoRoute(
         path: '/games/doubles-addition',
         builder: (context, state) => const DoublesAdditionScreen(),
       ),

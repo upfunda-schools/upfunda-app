@@ -31,7 +31,14 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(worksheetProvider);
     final userState = ref.watch(userProvider);
-    final isPremium = userState.profile?.isPremiumUser ?? false;
+    final isPremium = (userState.profile?.isPremiumUser ?? false) ||
+        (userState.homeData?.isPremiumUser ?? false);
+
+    // Single scale factor relative to iPhone 13 Pro (390 logical px wide).
+    // Clamped so tiny phones don't shrink too much and tablets don't over-expand.
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double scale = (screenWidth / 390.0).clamp(0.80, 1.35);
+    final double safeTop = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,130 +48,62 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: Container(
-                    decoration: const BoxDecoration(color: Colors.white),
+                    color: Colors.white,
                     child: Column(
                       children: [
-                        // Pixel Perfect Header
+                        // ── Header ─────────────────────────────────────────
                         Padding(
                           padding: EdgeInsets.only(
-                            top:
-                                MediaQuery.of(context).padding.top +
-                                25, // 👈 INCREASE move DOWN
-                            left: 10,
-                            right: 15,
-                            bottom: 10,
+                            top: safeTop + 25 * scale,
+                            left: 10 * scale,
+                            right: 15 * scale,
+                            bottom: 10 * scale,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: Image.asset(
-                                      '$_assetPath/Vector_(Stroke).png',
-                                      width: 18,
-                                      color: _navyColor,
+                              Flexible(
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      icon: Image.asset(
+                                        '$_assetPath/Vector_(Stroke).png',
+                                        width: 18 * scale,
+                                        color: _navyColor,
+                                      ),
+                                      onPressed: () =>
+                                          context.go('/student-home'),
                                     ),
-                                    onPressed: () =>
-                                        context.go('/student-home'),
-                                  ),
-                                  Text(
-                                    'Worksheets',
-                                    style: GoogleFonts.montserrat(
-                                      color: _navyColor,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                width: 140, // Reserved space
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: isPremium
-                                      ? Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Color(0xFFFFD700),
-                                                Color(0xFFFFA500)
-                                              ],
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(alpha: 0.1),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.workspace_premium,
-                                                color: Colors.white,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                'PREMIUM',
-                                                style: GoogleFonts.montserrat(
-                                                  color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w800,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : GestureDetector(
-                                          onTap: () {},
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF1B0B2A),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(
-                                                  Icons.lock_outline,
-                                                  color: Colors.white,
-                                                  size: 14,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Unlock Premium',
-                                                  style: GoogleFonts.montserrat(
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                    SizedBox(width: 4 * scale),
+                                    Flexible(
+                                      child: Text(
+                                        'Worksheets',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.montserrat(
+                                          color: _navyColor,
+                                          fontSize: 18 * scale,
+                                          fontWeight: FontWeight.w700,
                                         ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                              SizedBox(width: 8 * scale),
+                              _buildPremiumOrUnlock(isPremium, scale),
                             ],
                           ),
                         ),
-                        // Stats Cards
+
+                        // ── Stats cards (Accuracy + Task Tracker) ──────────
                         if (state.data != null)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 25),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 25 * scale,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
@@ -179,83 +118,85 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                     iconColor: const Color(0xFFFF6781),
                                     textColor: const Color(0xFFFF6781),
                                     navyColor: _navyColor,
+                                    scale: scale,
                                   ),
                                 ),
-                                const SizedBox(width: 2),
+                                SizedBox(width: 2 * scale),
                                 Expanded(
                                   child: _StatsPostIt(
                                     assetPath: _assetPath,
-                                    bgAsset:
-                                        'Objects.png', // Green Post-it asset
-                                    iconAsset:
-                                        'Group.png', // Checkmark/Group icon
+                                    bgAsset: 'Objects.png',
+                                    iconAsset: 'Group.png',
                                     label: 'Task Tracker',
                                     value: '${state.data!.pendingWorksheets}',
                                     valueLabel: 'Pending',
                                     iconColor: const Color(0xFF25D366),
                                     textColor: const Color(0xFF25D366),
                                     navyColor: _navyColor,
+                                    scale: scale,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        // Wave and Grid
+
+                        // ── Wave + Category grid ────────────────────────────
                         Transform.translate(
-                          offset: const Offset(0, -40),
+                          offset: Offset(0, -40 * scale),
                           child: Stack(
                             children: [
+                              // Navy wave background
                               Image.asset(
-                                '$_assetPath/vector.png', // Hero background wave
+                                '$_assetPath/Vector.png',
                                 fit: BoxFit.fitWidth,
                                 width: double.infinity,
                               ),
+
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 130,
-                                ), // 👈 INCREASE move DOWN
+                                padding: EdgeInsets.only(top: 130 * scale),
                                 child: Column(
                                   children: [
+                                    // Category heading
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20 * scale,
                                       ),
                                       child: Text(
                                         'Select a Category and solve\nthe worksheets',
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.montserrat(
-                                          fontSize: 16,
+                                          fontSize: 16 * scale,
                                           fontWeight: FontWeight.w700,
                                           color: const Color(0xFF374151),
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(
-                                      height: 0,
-                                    ), // 👈 INCREASE move DOWN, DECREASE move UP
+
+                                    // Category grid
                                     if (state.data != null)
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10 * scale,
                                         ),
                                         child: Center(
                                           child: Wrap(
-                                            spacing: 12,
-                                            runSpacing: 10,
+                                            alignment: WrapAlignment.center,
+                                            spacing: 15 * scale,
+                                            runSpacing: 15 * scale,
                                             children: List.generate(
                                               state.data!.subjects.length,
                                               (index) {
                                                 final subject =
                                                     state.data!.subjects[index];
                                                 return SizedBox(
-                                                  width:
-                                                      170, // 👈 Subject card width
-                                                  height:
-                                                      220, // 👈 Subject card height
-                                                  child: _CategoryCardAssetBased(
+                                                  width: 170 * scale,
+                                                  height: 220 * scale,
+                                                  child:
+                                                      _CategoryCardAssetBased(
                                                     assetPath: _assetPath,
                                                     subject: subject,
                                                     index: index,
+                                                    scale: scale,
                                                     onTap: () => context.go(
                                                       '/worksheets-list/${subject.subjectId}',
                                                     ),
@@ -266,22 +207,18 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                           ),
                                         ),
                                       ),
-                                    const SizedBox(
-                                      height: 0,
-                                    ), // 👈 INCREASE move DOWN, DECREASE move UP
+
+                                    // Download report button
                                     GestureDetector(
-                                      onTap: () {
-                                        // TODO: Implement Download Report functionality
-                                      },
+                                      onTap: () {},
                                       child: Image.asset(
-                                        '$_assetPath/Leader_Board_Button.png', // The red "Download Report" button asset
-                                        height: 45,
+                                        '$_assetPath/Leader_Board_Button.png',
+                                        height: 45 * scale,
                                         fit: BoxFit.contain,
                                       ),
                                     ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ), // 👈 Bottom padding for scrollability
+
+                                    SizedBox(height: 20 * scale),
                                   ],
                                 ),
                               ),
@@ -296,7 +233,45 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
             ),
     );
   }
+
+  Widget _buildPremiumOrUnlock(bool isPremium, double scale) {
+    return isPremium ? _buildPremiumBadge(scale) : _buildUnlockButton(scale);
+  }
+
+  Widget _buildPremiumBadge(double scale) {
+    return Image.asset(
+      'assets/images/home/premium_main_2.png',
+      height: 32 * scale,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Container(
+        height: 32 * scale,
+        width: 95 * scale,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(16 * scale),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnlockButton(double scale) {
+    return Image.asset(
+      'assets/images/home/premium_main_2.png',
+      height: 32 * scale,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Container(
+        height: 32 * scale,
+        width: 95 * scale,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(16 * scale),
+        ),
+      ),
+    );
+  }
 }
+
+// ── Stats post-it card ────────────────────────────────────────────────────────
 
 class _StatsPostIt extends StatelessWidget {
   final String assetPath;
@@ -308,6 +283,7 @@ class _StatsPostIt extends StatelessWidget {
   final Color iconColor;
   final Color textColor;
   final Color navyColor;
+  final double scale;
 
   const _StatsPostIt({
     required this.assetPath,
@@ -319,6 +295,7 @@ class _StatsPostIt extends StatelessWidget {
     required this.iconColor,
     required this.textColor,
     required this.navyColor,
+    required this.scale,
   });
 
   @override
@@ -326,9 +303,13 @@ class _StatsPostIt extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Image.asset('$assetPath/$bgAsset', width: 160, fit: BoxFit.contain),
+        Image.asset(
+          '$assetPath/$bgAsset',
+          width: 160 * scale,
+          fit: BoxFit.contain,
+        ),
         Positioned(
-          top: 75, // 👈 INCREASE move DOWN, DECREASE move UP
+          top: 75 * scale,
           child: Column(
             children: [
               Row(
@@ -336,22 +317,22 @@ class _StatsPostIt extends StatelessWidget {
                 children: [
                   Image.asset(
                     '$assetPath/$iconAsset',
-                    width: 18,
+                    width: 18 * scale,
                     color: iconColor,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6 * scale),
                   Text(
                     label,
                     style: GoogleFonts.fredoka(
-                      fontSize: 11.5,
+                      fontSize: 11.5 * scale,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF374151),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6 * scale),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
@@ -359,7 +340,7 @@ class _StatsPostIt extends StatelessWidget {
                   Text(
                     value.replaceAll('%', ''),
                     style: GoogleFonts.fredoka(
-                      fontSize: 38,
+                      fontSize: 38 * scale,
                       fontWeight: FontWeight.w700,
                       color: textColor,
                     ),
@@ -368,7 +349,7 @@ class _StatsPostIt extends StatelessWidget {
                     Text(
                       '%',
                       style: GoogleFonts.fredoka(
-                        fontSize: 16,
+                        fontSize: 16 * scale,
                         fontWeight: FontWeight.w700,
                         color: textColor,
                       ),
@@ -376,11 +357,11 @@ class _StatsPostIt extends StatelessWidget {
                 ],
               ),
               Transform.translate(
-                offset: const Offset(0, -5),
+                offset: Offset(0, -5 * scale),
                 child: Text(
                   valueLabel,
                   style: GoogleFonts.fredoka(
-                    fontSize: 12,
+                    fontSize: 12 * scale,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF374151),
                   ),
@@ -394,22 +375,25 @@ class _StatsPostIt extends StatelessWidget {
   }
 }
 
+// ── Category card ─────────────────────────────────────────────────────────────
+
 class _CategoryCardAssetBased extends StatelessWidget {
   final String assetPath;
   final SubjectSummary subject;
   final int index;
   final VoidCallback onTap;
+  final double scale;
 
   const _CategoryCardAssetBased({
     required this.assetPath,
     required this.subject,
     required this.index,
     required this.onTap,
+    required this.scale,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Subject specific backgrounds (blobs)
     final List<String> bgAssets = [
       'Rectangle_17.png',
       'Rectangle_18.png',
@@ -417,7 +401,6 @@ class _CategoryCardAssetBased extends StatelessWidget {
       'Rectangle_26.png',
     ];
 
-    // Exact mapping for Title+Header assets
     final String subjectKey = subject.name.toLowerCase();
     String contentAsset = 'Academic_Math.png';
     String iconAsset = 'vaadin_academy-cap.png';
@@ -425,16 +408,16 @@ class _CategoryCardAssetBased extends StatelessWidget {
 
     if (subjectKey.contains('logical')) {
       contentAsset = 'Logical_Reasoning.png';
-      iconAsset = 'Vector-1.png'; // Puzzle piece
+      iconAsset = 'Vector-1.png';
       themeColor = const Color(0xFF00A3FF);
     } else if (subjectKey.contains('mental')) {
       contentAsset = 'Mental_Math.png';
-      iconAsset = 'KERTAS1.png'; // Brain icon
-      themeColor = const Color(0xFF6366F1); // Modern Indigo/Purple
+      iconAsset = 'KERTAS1.png';
+      themeColor = const Color(0xFF8D72CC);
     } else if (subjectKey.contains('olympiad')) {
       contentAsset = 'Olympiad_Math.png';
-      iconAsset = 'Union.png'; // Trophy
-      themeColor = const Color(0xFF4ADE80);
+      iconAsset = 'Union.png';
+      themeColor = const Color(0xFF48AC56);
     }
 
     final String bgAsset = bgAssets[index % bgAssets.length];
@@ -444,57 +427,69 @@ class _CategoryCardAssetBased extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 1. Blob Background
-          Image.asset('$assetPath/$bgAsset', width: 170, fit: BoxFit.contain),
+          // Blob background
+          Image.asset(
+            '$assetPath/$bgAsset',
+            width: 170 * scale,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 170 * scale,
+              height: 220 * scale,
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(24 * scale),
+                border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+              ),
+            ),
+          ),
 
-          // Use Positioned with left/right 0 to ensure horizontal centering
           Positioned(
-            top: 35, // 👈 INCREASE move DOWN, DECREASE move UP
+            top: 35 * scale,
             left: 0,
             right: 0,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 2. Circular Icon
+                // Circular icon
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8 * scale),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
                   child: Image.asset(
                     '$assetPath/$iconAsset',
-                    width: 26,
-                    height: 26,
-                    color: subjectKey.contains('academic')
-                        ? null
-                        : themeColor, // Use original color for Academy Math
+                    width: 26 * scale,
+                    height: 26 * scale,
+                    color: subjectKey.contains('academic') ? null : themeColor,
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 15),
-                // 3. Title Asset
+                SizedBox(height: 15 * scale),
+
+                // Subject title image
                 Image.asset(
                   '$assetPath/$contentAsset',
-                  width: 120,
-                  height: 35,
+                  width: 120 * scale,
+                  height: 35 * scale,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 4),
-                // 4. Dynamic Progress Bar Cluster
+                SizedBox(height: 4 * scale),
+
+                // Progress cluster
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: EdgeInsets.symmetric(horizontal: 14 * scale),
                   child: Column(
                     children: [
-                      // Header: Grade and Percentage
+                      // Grade + percentage row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Grade 5', // Static for now or can be dynamic from User
+                            'Grade 5',
                             style: GoogleFonts.fredoka(
-                              fontSize: 10,
+                              fontSize: 10 * scale,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF374151),
                             ),
@@ -502,36 +497,36 @@ class _CategoryCardAssetBased extends StatelessWidget {
                           Text(
                             '${subject.completedPercentage.round()}%',
                             style: GoogleFonts.fredoka(
-                              fontSize: 11,
+                              fontSize: 11 * scale,
                               fontWeight: FontWeight.w700,
                               color: themeColor.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      // The Progress Bar
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: LinearProgressIndicator(
-                                          value:
-                                              subject.completedPercentage / 100,
-                                          backgroundColor: Colors.white,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  themeColor),
-                                          minHeight: 5,
-                                        ),
-                                      ),
-                      const SizedBox(height: 6),
-                      // Footer: Mastered and To Do
+                      SizedBox(height: 4 * scale),
+
+                      // Progress bar
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10 * scale),
+                        child: LinearProgressIndicator(
+                          value: subject.completedPercentage / 100,
+                          backgroundColor: Colors.white,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(themeColor),
+                          minHeight: 5 * scale,
+                        ),
+                      ),
+                      SizedBox(height: 6 * scale),
+
+                      // Mastered + To Do row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Mastered: ${subject.solved}',
                             style: GoogleFonts.fredoka(
-                              fontSize: 8.5,
+                              fontSize: 8.5 * scale,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF4B5563),
                             ),
@@ -539,7 +534,7 @@ class _CategoryCardAssetBased extends StatelessWidget {
                           Text(
                             'To Do: ${subject.open}',
                             style: GoogleFonts.fredoka(
-                              fontSize: 8.5,
+                              fontSize: 8.5 * scale,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF4B5563),
                             ),
