@@ -61,23 +61,29 @@ class SubmitTestResponse {
 }
 
 class LeaderboardEntry {
+  final String? id;
   final int rank;
   final String studentName;
   final String studentId;
   final double score;
+  final String? avatar;
 
   LeaderboardEntry({
+    this.id,
     required this.rank,
     required this.studentName,
     required this.studentId,
     required this.score,
+    this.avatar,
   });
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
       LeaderboardEntry(
+        id: json['id'] as String?,
         rank: json['rank'] as int? ?? 0,
-        studentName: json['student_name'] as String? ?? '',
+        studentName: (json['student_name'] ?? json['name']) as String? ?? '',
         studentId: json['student_id'] as String? ?? '',
         score: (json['score'] as num?)?.toDouble() ?? 0,
+        avatar: json['avatar'] as String?,
       );
 }

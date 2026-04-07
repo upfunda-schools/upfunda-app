@@ -65,6 +65,7 @@ class DioApiService implements ApiService {
       name: data['student_name'] ?? '',
       upPoints: data['up_points'] ?? 0,
       schoolId: data['school_id'] ?? '',
+      classId: data['class_id'] ?? '',
       schoolName: data['school_name'],
       className: data['class_name'],
       country: data['country'],
