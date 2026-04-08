@@ -15,28 +15,35 @@ class NavigationButtons extends ConsumerStatefulWidget {
 
 class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
   bool _isSubmitting = false;
-  late final AudioPlayer _audioPlayer;
+  late final AudioPlayer _correctPlayer;
+  late final AudioPlayer _wrongPlayer;
 
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
+    _correctPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
+    _wrongPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
+    
+    // Pre-load sounds to ensure instant playback when needed
+    _correctPlayer.setSource(AssetSource('audio/correct_sound_effect.mp3'));
+    _wrongPlayer.setSource(AssetSource('audio/wrong_sound_effect.mp3'));
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _correctPlayer.dispose();
+    _wrongPlayer.dispose();
     super.dispose();
   }
 
   Future<void> _playSound(bool isCorrect) async {
     if (ref.read(quizMuteProvider)) return;
     try {
-      final source = isCorrect
-          ? AssetSource('audio/correct_sound_effect.mp3')
-          : AssetSource('audio/wrong_sound_effect.mp3');
-      await _audioPlayer.stop();
-      await _audioPlayer.play(source);
+      final player = isCorrect ? _correctPlayer : _wrongPlayer;
+      
+      // Stop and play to ensure it restarts from zero for every click
+      await player.stop();
+      await player.resume();
     } catch (e) {
       debugPrint('Error playing sound: $e');
     }
@@ -85,6 +92,7 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
               ),
             ),
           ] else if (quizState.pagination?.hasNext == true) ...[
+
             Expanded(
               child: AppButton(
                 label: 'Next',
