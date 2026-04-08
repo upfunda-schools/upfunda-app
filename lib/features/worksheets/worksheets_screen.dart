@@ -402,20 +402,16 @@ class _CategoryCardAssetBased extends StatelessWidget {
     ];
 
     final String subjectKey = subject.name.toLowerCase();
-    String contentAsset = 'Academic_Math.png';
     String iconAsset = 'vaadin_academy-cap.png';
     Color themeColor = const Color(0xFFEF2E73);
 
     if (subjectKey.contains('logical')) {
-      contentAsset = 'Logical_Reasoning.png';
       iconAsset = 'Vector-1.png';
       themeColor = const Color(0xFF00A3FF);
     } else if (subjectKey.contains('mental')) {
-      contentAsset = 'Mental_Math.png';
       iconAsset = 'KERTAS1.png';
       themeColor = const Color(0xFF8D72CC);
     } else if (subjectKey.contains('olympiad')) {
-      contentAsset = 'Olympiad_Math.png';
       iconAsset = 'Union.png';
       themeColor = const Color(0xFF48AC56);
     }
@@ -462,18 +458,31 @@ class _CategoryCardAssetBased extends StatelessWidget {
                     '$assetPath/$iconAsset',
                     width: 26 * scale,
                     height: 26 * scale,
-                    color: subjectKey.contains('academic') ? null : themeColor,
+                    color: (subjectKey.contains('academic') ||
+                            subjectKey.contains('academy'))
+                        ? null
+                        : themeColor,
                     fit: BoxFit.contain,
                   ),
                 ),
                 SizedBox(height: 15 * scale),
 
-                // Subject title image
-                Image.asset(
-                  '$assetPath/$contentAsset',
-                  width: 120 * scale,
+                // Subject title text using Cherry Bomb One
+                SizedBox(
+                  width: 150 * scale,
                   height: 35 * scale,
-                  fit: BoxFit.contain,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        subject.name,
+                        style: GoogleFonts.cherryBombOne(
+                          fontSize: 22 * scale,
+                          color: const Color(0xFF2C2C4B),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 4 * scale),
 
