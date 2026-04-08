@@ -90,10 +90,17 @@ class QuestionCard extends StatelessWidget {
               ),
             ],
             style: {
+              'body': Style(
+                fontSize: FontSize(16),
+                lineHeight: LineHeight(1.6),
+                color: AppColors.grey800,
+                fontWeight: FontWeight.w700,
+              ),
               'p': Style(
                 fontSize: FontSize(16),
                 lineHeight: LineHeight(1.6),
                 color: AppColors.grey800,
+                fontWeight: FontWeight.w700,
               ),
               'strong': Style(
                 fontWeight: FontWeight.w700,

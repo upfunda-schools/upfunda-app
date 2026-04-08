@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
+import '../../data/models/quiz_model.dart';
 import '../../shared/widgets/loader_widget.dart';
 import 'widgets/question_card.dart';
 import 'widgets/option_tile.dart';
@@ -307,6 +308,43 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   }
 
   Widget _buildOptionsSection(QuizState quizState, question) {
+    if (quizState.checkDetails) {
+      final currentAnswer = quizState.answers[quizState.currentQuestionId];
+      
+      String yourAnswerText = '';
+      String correctAnswerText = '';
+
+      if (question.isFillType) {
+        yourAnswerText = currentAnswer?.selectedOption ?? 'No answer';
+        correctAnswerText = question.solution?.answer ?? '';
+      } else {
+        QuestionOption? selectedOpt;
+        for (var o in question.options) {
+          if (o.optionId == currentAnswer?.selectedOption) {
+            selectedOpt = o;
+            break;
+          }
+        }
+        yourAnswerText = selectedOpt?.text ?? 'No answer';
+        
+        QuestionOption? correctOpt;
+        for (var o in question.options) {
+          if (o.optionId == question.solution?.correctOptionId) {
+            correctOpt = o;
+            break;
+          }
+        }
+        correctAnswerText = correctOpt?.text ?? '';
+      }
+
+      return SolutionPanel(
+        isCorrect: currentAnswer?.isCorrect ?? false,
+        yourAnswer: yourAnswerText,
+        correctAnswer: correctAnswerText,
+        explanation: question.solution?.explanation ?? '',
+      );
+    }
+
     final currentAnswer = quizState.answers[quizState.currentQuestionId];
     final hiddenOpts =
         quizState.hiddenOptions[quizState.currentQuestionId] ?? [];
@@ -628,6 +666,155 @@ class MysticEraserDialog extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class SolutionPanel extends StatelessWidget {
+  final bool isCorrect;
+  final String yourAnswer;
+  final String correctAnswer;
+  final String explanation;
+
+  const SolutionPanel({
+    super.key,
+    required this.isCorrect,
+    required this.yourAnswer,
+    required this.correctAnswer,
+    required this.explanation,
+  });
+
+  String _stripHtml(String html) {
+    if (html.isEmpty) return '';
+    // Replace layout tags with newlines to preserve basic structure
+    String text = html
+        .replaceAll(RegExp(r'</p>|</div>|<br\s*/?>'), '\n')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .trim();
+    return text;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cleanYourAnswer = _stripHtml(yourAnswer);
+    final cleanCorrectAnswer = _stripHtml(correctAnswer);
+    final cleanExplanation = _stripHtml(explanation);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Answer and Solution',
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.w700, // BOLD
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Notice Box
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF9C3), // Light yellow
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFEF08A), width: 1),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.rocket_launch, color: Color(0xFFEAB308), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "You're learning! Check the details below!",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700, // BOLD
+                      color: const Color(0xFF854D0E),
+                    ),
+                  ),
+                ),
+                const Icon(Icons.auto_awesome, color: Color(0xFFFEF08A), size: 16),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Answer details
+          _buildInfoRow('Your answer:', cleanYourAnswer, isCorrect ? AppColors.success : AppColors.incorrect),
+          const SizedBox(height: 8),
+          _buildInfoRow('Correct answer:', cleanCorrectAnswer, AppColors.success),
+          
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(color: Color(0xFFE5E7EB)),
+          ),
+
+          // Explanation
+          if (cleanExplanation.isNotEmpty) ...[
+            Text(
+              'Explanation:',
+              style: GoogleFonts.montserrat(
+                fontSize: 15,
+                fontWeight: FontWeight.w700, // BOLD
+                color: const Color(0xFF374151),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              cleanExplanation,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                fontWeight: FontWeight.w600, // SEMI-BOLD
+                color: const Color(0xFF4B5563),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, Color valueColor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 15,
+            fontWeight: FontWeight.w700, // BOLD
+            color: const Color(0xFF6B7280),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w700, // BOLD
+              color: valueColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
