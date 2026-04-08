@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
 import '../../shared/widgets/loader_widget.dart';
 import 'widgets/question_card.dart';
 import 'widgets/option_tile.dart';
 import 'widgets/fill_up_input.dart';
-import 'widgets/quiz_timer.dart';
 import 'widgets/navigation_buttons.dart';
 import 'widgets/status_legend.dart';
 import 'widgets/exit_dialog.dart';
 import 'widgets/time_up_dialog.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -165,16 +168,23 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               isMuted ? Icons.volume_off : Icons.volume_up,
               color: Colors.white70,
             ),
-            onPressed: () =>
-                ref.read(quizMuteProvider.notifier).state = !isMuted,
-          ),
-          // Timer
-          QuizTimerWidget(
-            timerDisplay: quizState.timerDisplay,
-            remainingSeconds: quizState.remainingSeconds,
-            totalSeconds: quizState.totalDurationSeconds,
+            onPressed: () async {
+              final newMute = !isMuted;
+              ref.read(quizMuteProvider.notifier).state = newMute;
+              
+              if (!newMute) {
+                // Play a sample sound when unmuting so the user knows it's working
+                try {
+                  // Using a fresh instance for every effect is the most robust way on Web
+                  AudioPlayer().play(AssetSource('audio/correct_sound_effect.mp3'), volume: 0.4);
+                } catch (e) {
+                  debugPrint('Error playing unmute sound: $e');
+                }
+              }
+            },
           ),
           const SizedBox(width: 8),
+
           // 50-50 button
           if (quizState.currentQuestion != null &&
               !quizState.currentQuestion!.isFillType)
@@ -199,10 +209,22 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 ),
               ),
               onPressed: quizState.canUseFiftyFifty
-                  ? () => ref
-                      .read(quizProvider.notifier)
-                      .useFiftyFifty(quizState.currentQuestionId)
+                  ? () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => MysticEraserDialog(
+                          remainingUses: quizState.fiftyFiftyLimit -
+                              quizState.fiftyFiftyUsageCount,
+                          onConfirm: () {
+                            ref
+                                .read(quizProvider.notifier)
+                                .useFiftyFifty(quizState.currentQuestionId);
+                          },
+                        ),
+                      );
+                    }
                   : null,
+
             ),
           // Exit button
           IconButton(
@@ -332,3 +354,281 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     );
   }
 }
+
+class MysticEraserDialog extends StatelessWidget {
+  final VoidCallback onConfirm;
+  final int remainingUses;
+
+  const MysticEraserDialog({
+    super.key,
+    required this.onConfirm,
+    this.remainingUses = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = (screenWidth * 0.92).clamp(300.0, 400.0);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Main White Box
+          Container(
+            width: dialogWidth,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title Row
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_outlined,
+                      color: Color(0xFFA358FF),
+                      size: 26,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Use Mystic Eraser?',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Warning Box (Points...)
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFD97706),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Point Reduction Warning',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF92400E),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 13,
+                                  color: const Color(0xFFB45309),
+                                  height: 1.4,
+                                ),
+                                children: [
+                                  const TextSpan(
+                                      text:
+                                          'Using this clue will reduce your points for this question from '),
+                                  TextSpan(
+                                    text: '+10 UP',
+                                    style: GoogleFonts.montserrat(
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const TextSpan(text: ' to '),
+                                  TextSpan(
+                                    text: '+5 UP.',
+                                    style: GoogleFonts.montserrat(
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Bullet list (What it does)
+                Text(
+                  'What the Mystic Eraser does:',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildBulletPoint('Eliminates 2 wrong answer options'),
+                _buildBulletPoint(
+                    'Leaves you with 2 choices (including the correct answer)'),
+                _buildBulletPoint('Can only be used once per question'),
+                _buildBulletPoint('Limited to 20% of quiz questions'),
+
+                const SizedBox(height: 18),
+                Text(
+                  'You have $remainingUses choices remaining in this quiz.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF3B82F6),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Are you sure you want to use the Mystic Eraser?',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF374151),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Actions: Cancel / Yes
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          onConfirm();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA358FF),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Yes, Use Eraser',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          // Corner close button
+          Positioned(
+            right: -8,
+            top: -8,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B98),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Icon(Icons.circle, size: 6, color: Color(0xFF6B7280)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: const Color(0xFF4B5563),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

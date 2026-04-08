@@ -614,17 +614,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 // Join now link
                                 GestureDetector(
                                   onTap: () => context.go('/signup'),
-                                  child: Image.asset(
-                                    "assets/log in page/Don't have an account_ Join now.png",
-                                    height:
-                                        (sh * 0.018).clamp(12.0, 16.0),
-                                    errorBuilder: (_, __, ___) =>
-                                        const Text(
-                                      "Don't have an account? Join now",
-                                      style: TextStyle(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.montserrat(
                                         fontSize: 12,
-                                        color: Colors.grey,
+                                        color: const Color(0xFF6B7280),
                                       ),
+                                      children: [
+                                        const TextSpan(
+                                            text: "Don't have an account? "),
+                                        TextSpan(
+                                          text: 'Join now',
+                                          style: GoogleFonts.montserrat(
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF3B82F6),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -634,20 +640,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 // Forgot password link
                                 GestureDetector(
                                   onTap: _handleForgotPassword,
-                                  child: Image.asset(
-                                    'assets/log in page/Forget Password_.png',
-                                    height:
-                                        (sh * 0.018).clamp(12.0, 16.0),
-                                    errorBuilder: (_, __, ___) =>
-                                        const Text(
-                                      'Forget Password?',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.orange,
-                                      ),
+                                  child: Text(
+                                    'Forget Password?',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFFF59E0B),
                                     ),
                                   ),
                                 ),
+
                               ],
                             ),
                           ),

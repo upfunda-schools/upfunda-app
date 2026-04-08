@@ -636,11 +636,14 @@ class _TopicCard extends StatelessWidget {
                             SizedBox(width: 8 * scale),
                           ];
                         }(),
-                        _buildActionButton(context, assetPath),
-                        if (!assetPath.contains('Olympiad')) ...[
-                          SizedBox(width: 6 * scale),
-                          _buildActivityButton(assetPath),
+                        if (topic.status != 'completed') ...[
+                          _buildActionButton(context, assetPath),
+                          if (!assetPath.contains('Olympiad'))
+                            SizedBox(width: 6 * scale),
                         ],
+                        if (!assetPath.contains('Olympiad'))
+                          _buildActivityButton(assetPath),
+
                       ],
                     ),
                   ),
@@ -685,6 +688,9 @@ class _TopicCard extends StatelessWidget {
   }
 
   Widget _buildActionButton(BuildContext context, String assetPath) {
+    if (topic.status == 'completed') {
+      return const SizedBox.shrink();
+    }
     if (topic.isPremium && !isPremiumUser) {
       return _SharedUnlockPremiumButton(scale: scale, assetPath: assetPath);
     }
