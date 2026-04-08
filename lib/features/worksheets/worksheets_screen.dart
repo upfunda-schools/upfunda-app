@@ -210,10 +210,10 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
 
                                     // Download report button
                                     GestureDetector(
-                                      onTap: () {},
+                                      onTap: () {}, // Handle report download here
                                       child: Image.asset(
-                                        '$_assetPath/Leader_Board_Button.png',
-                                        height: 45 * scale,
+                                        'assets/images/home/Leader_Board_Button.png',
+                                        height: 38 * scale,
                                         fit: BoxFit.contain,
                                       ),
                                     ),

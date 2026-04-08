@@ -339,7 +339,17 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             ),
                           const SizedBox(height: 24),
 
-                          // Removed defunct Leaderboard Button
+                          const SizedBox(height: 12),
+                          // Leaderboard button
+                          GestureDetector(
+                            onTap: () => context.push('/challenge'), // Temporary link to challenge until a dedicated leaderboard exists
+                            child: Image.asset(
+                              'assets/5. Home Page/Leader_Board_Button.png',
+                              width: 220,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
                         ],
                       ),
                     ),

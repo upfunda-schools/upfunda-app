@@ -615,21 +615,34 @@ class _TopicCard extends StatelessWidget {
 
                 SizedBox(height: 20 * scale),
 
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      _buildLevelBadge(context, 1),
-                      SizedBox(width: 4 * scale),
-                      _buildLevelBadge(context, 2),
-                      SizedBox(width: 4 * scale),
-                      _buildLevelBadge(context, 3),
-                      SizedBox(width: 8 * scale),
-                      _buildActionButton(context, assetPath),
-                      SizedBox(width: 6 * scale),
-                      _buildActivityButton(assetPath),
-                    ],
+                SizedBox(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: topic.tests.length < 2
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...() {
+                          final quizCount = topic.tests.length;
+                          if (quizCount < 2 || quizCount > 3) return <Widget>[];
+                          return [
+                            for (int i = 1; i <= quizCount; i++) ...[
+                              _buildLevelBadge(context, i),
+                              if (i < quizCount) SizedBox(width: 4 * scale),
+                            ],
+                            SizedBox(width: 8 * scale),
+                          ];
+                        }(),
+                        _buildActionButton(context, assetPath),
+                        if (!assetPath.contains('Olympiad')) ...[
+                          SizedBox(width: 6 * scale),
+                          _buildActivityButton(assetPath),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -680,19 +693,16 @@ class _TopicCard extends StatelessWidget {
       orElse: () => topic.tests.last,
     );
 
-    // Olympiad math uses its own start button asset
-    final String actionPath = topic.status == 'not_started'
-        ? (assetPath.contains('10. Olympiad path')
-            ? '$assetPath/OBJECTS-3.png'
-            : 'assets/7. Academy Path/start2.png')
-        : '$assetPath/OBJECTS-4.png';
+    final isOlympiad = assetPath.contains('10. Olympiad path');
+    final isNotStarted = topic.status == 'not_started';
 
-    final isTopicCompleted = topic.status == 'completed';
-
+    final String actionPath = isOlympiad
+        ? (isNotStarted ? '$assetPath/OBJECTS-3.png' : '$assetPath/OBJECTS-1.png')
+        : (isNotStarted
+            ? 'assets/7. Academy Path/start2.png'
+            : '$assetPath/OBJECTS-4.png');
     return GestureDetector(
-      onTap: isTopicCompleted
-          ? null
-          : () => context.go('/quiz/${next.testId}', extra: subjectId),
+      onTap: () => context.go('/quiz/${next.testId}', extra: subjectId),
       child: Image.asset(
         actionPath,
         height: 34 * scale,
