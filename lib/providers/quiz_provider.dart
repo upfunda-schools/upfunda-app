@@ -323,10 +323,10 @@ class QuizNotifier extends StateNotifier<QuizState> {
     if (question.isFillType) {
       final expectedAnswers = question.solution!.answer
           .split('||')
-          .map((a) => a.trim().toLowerCase())
+          .map((a) => a.replaceAll(RegExp(r'<[^>]*>'), '').replaceAll('&nbsp;', ' ').trim().toLowerCase())
           .toList();
-      isCorrect =
-          expectedAnswers.contains(answer.selectedOption!.trim().toLowerCase());
+      final userResponse = (answer.selectedOption ?? '').trim().toLowerCase();
+      isCorrect = expectedAnswers.contains(userResponse);
     } else {
       isCorrect = answer.selectedOption == question.solution?.correctOptionId;
     }

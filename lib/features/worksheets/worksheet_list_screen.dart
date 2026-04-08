@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/test_list_provider.dart';
+import 'package:dio/dio.dart';
+import '../../core/utils/env_config.dart';
 import '../../providers/worksheet_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/topics_model.dart';
 
 class WorksheetListScreen extends ConsumerStatefulWidget {
@@ -469,7 +472,7 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   }
 }
 
-class _TopicCard extends StatelessWidget {
+class _TopicCard extends ConsumerWidget {
   final Topic topic;
   final String subjectId;
   final bool isPremiumUser;
@@ -487,7 +490,7 @@ class _TopicCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = topic.status == 'completed';
     final isNotStarted = topic.status == 'not_started';
 
@@ -617,35 +620,45 @@ class _TopicCard extends StatelessWidget {
 
                 SizedBox(
                   width: double.infinity,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: topic.tests.length < 2
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ...() {
-                          final quizCount = topic.tests.length;
-                          if (quizCount < 2 || quizCount > 3) return <Widget>[];
-                          return [
-                            for (int i = 1; i <= quizCount; i++) ...[
-                              _buildLevelBadge(context, i),
-                              if (i < quizCount) SizedBox(width: 4 * scale),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ...() {
+                                final quizCount = topic.tests.length;
+                                if (quizCount < 1 || quizCount > 3) return <Widget>[];
+                                return [
+                                  for (int i = 1; i <= quizCount; i++) ...[
+                                    _buildLevelBadge(context, i),
+                                    if (i < quizCount) SizedBox(width: 4 * scale),
+                                  ],
+                                ];
+                              }(),
                             ],
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (topic.status != 'completed') ...[
+                            _buildActionButton(context, assetPath),
                             SizedBox(width: 8 * scale),
-                          ];
-                        }(),
-                        if (topic.status != 'completed') ...[
-                          _buildActionButton(context, assetPath),
+                          ],
                           if (!assetPath.contains('Olympiad'))
-                            SizedBox(width: 6 * scale),
+                            GestureDetector(
+                              onTap: () => _showProjectDialog(context, ref, topic),
+                              child: _buildProjectButton(scale, assetPath),
+                            ),
                         ],
-                        if (!assetPath.contains('Olympiad'))
-                          _buildActivityButton(assetPath),
-
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -656,6 +669,100 @@ class _TopicCard extends StatelessWidget {
     );
   }
 
+  Future<void> _showProjectDialog(BuildContext context, WidgetRef ref, Topic topic) async {
+
+    String htmlDetails = topic.projectDetails ?? '';
+    
+    // If project details are missing (e.g. older API), try a one-off fetch from the student API
+    // This is isolated logic specifically for the project button to get "correct data"
+    if (htmlDetails.isEmpty) {
+      try {
+        final profile = ref.read(userProvider).profile;
+        if (profile != null) {
+          final dio = Dio(BaseOptions(
+            baseUrl: EnvConfig.apiBaseUrl,
+            headers: {'X-Profile-ID': profile.studentId},
+          ));
+          
+          // Get auth token
+          final token = await ref.read(firebaseAuthServiceProvider).getIdToken();
+          if (token != null) {
+            dio.options.headers['Authorization'] = 'Bearer $token';
+          }
+          
+          final response = await dio.get('/student/subject/$subjectId/topics');
+          final topics = (response.data['topics'] as List?);
+          if (topics != null) {
+            final match = topics.firstWhere((t) => (t['id'] ?? t['topic_id']) == topic.id, orElse: () => null);
+            if (match != null && match['project_details'] != null) {
+              htmlDetails = match['project_details'];
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Project fetch failed: $e');
+      }
+    }
+
+    String instructions = '';
+    String description = 'Practice ${topic.name} using real-life items';
+
+    if (htmlDetails.isNotEmpty) {
+      try {
+        final cleanHtml = htmlDetails
+            .replaceAll(RegExp(r'</li>|</div>|</p>'), '\n')
+            .replaceAll(RegExp(r'<br\s*/?>'), '\n')
+            .replaceAll(RegExp(r'<[^>]*>'), '')
+            .replaceAll('&nbsp;', ' ')
+            .replaceAll(RegExp(r'\n+'), '\n')
+            .trim();
+            
+        final lines = cleanHtml.split('\n').where((line) => line.trim().isNotEmpty).toList();
+        
+        if (lines.isNotEmpty) {
+          description = lines[0];
+          if (lines.length > 1) {
+            instructions = lines.sublist(1).join('\n');
+          }
+        }
+      } catch (e) {
+        instructions = htmlDetails.replaceAll(RegExp(r'<[^>]*>'), '');
+      }
+    }
+
+    if (instructions.isEmpty) {
+      instructions = 'Explore and practice ${topic.name} through hands-on activities and real-world examples to strengthen your understanding.';
+    }
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => ProjectDialog(
+        topicName: topic.name,
+        instructions: instructions,
+        description: description,
+        imagePath: 'assets/images/project_manager.jpg', 
+      ),
+    );
+  }
+
+  Widget _buildProjectButton(double scale, String assetPath) {
+    String projectButtonPath;
+    if (assetPath.contains('8. Logical Reasoning')) {
+      projectButtonPath = 'assets/Quiz Buttons/mental math project button.png';
+    } else if (assetPath.contains('9. Mental Math')) {
+      projectButtonPath = 'assets/Quiz Buttons/logical project button.png';
+    } else {
+      projectButtonPath = 'assets/Quiz Buttons/Academic Math project button.png';
+    }
+
+    return Image.asset(
+      projectButtonPath,
+      height: 34 * scale,
+      fit: BoxFit.contain,
+    );
+  }
   Widget _buildLevelBadge(BuildContext context, int level) {
     final test = topic.tests.firstWhere(
       (t) => t.level == level,
@@ -716,13 +823,8 @@ class _TopicCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildActivityButton(String assetPath) => Image.asset(
-        '$assetPath/OBJECTS-1.png',
-        height: 34 * scale,
-        fit: BoxFit.contain,
-      );
 }
+
 
 class _SharedUnlockPremiumButton extends StatelessWidget {
   final double scale;
@@ -763,5 +865,231 @@ class _SharedUnlockPremiumButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ProjectDialog extends StatelessWidget {
+  final String topicName;
+  final String instructions;
+  final String description;
+  final String imagePath;
+
+  const ProjectDialog({
+    super.key,
+    required this.topicName,
+    required this.instructions,
+    required this.description,
+    required this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Single scale factor relative to iPhone 13 Pro (390 logical px wide).
+    final screenWidth = MediaQuery.of(context).size.width;
+    final double scale = (screenWidth / 390.0).clamp(0.85, 1.25);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 24 * scale),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // ── Main Dialog Card ──────────────
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(20 * scale, 56 * scale, 20 * scale, 24 * scale),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24 * scale),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Topic Name & Title ──────────────
+                Text(
+                  topicName.toUpperCase(),
+                  style: GoogleFonts.outfit(
+                    fontSize: 12 * scale,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFD91E5B),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                SizedBox(height: 4 * scale),
+                Text(
+                  'Project Instructions',
+                  style: GoogleFonts.outfit(
+                    fontSize: 22 * scale,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF2D2D2D),
+                  ),
+                ),
+                SizedBox(height: 16 * scale),
+
+                // ── Description Box ──────────────
+                Container(
+                  padding: EdgeInsets.all(12 * scale),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDF2F5),
+                    borderRadius: BorderRadius.circular(16 * scale),
+                    border: Border.all(color: const Color(0xFFFFD1E1)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lightbulb_outline, color: Color(0xFFD91E5B), size: 20),
+                      SizedBox(width: 10 * scale),
+                      Expanded(
+                        child: Text(
+                          description,
+                          style: GoogleFonts.outfit(
+                            fontSize: 14 * scale,
+                            height: 1.4,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF555555),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20 * scale),
+
+                // ── Instructions List ──────────────
+                Text(
+                  'Steps to Follow:',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16 * scale,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF2D2D2D),
+                  ),
+                ),
+                SizedBox(height: 12 * scale),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: _parseInstructions(instructions, scale),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24 * scale),
+
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD91E5B),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    minimumSize: Size(double.infinity, 48 * scale),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14 * scale),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'GOT IT!',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16 * scale,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      SizedBox(width: 10 * scale),
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.white,
+                        size: 20 * scale,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Top Header Image ──────────────
+          Positioned(
+            top: -40 * scale,
+            child: Container(
+              width: 80 * scale,
+              height: 80 * scale,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFD91E5B), width: 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD91E5B).withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.assignment_outlined,
+                    color: Color(0xFFD91E5B),
+                    size: 40,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _parseInstructions(String raw, double scale) {
+    // Split by newlines or bullets
+    final lines = raw
+        .split(RegExp(r'\d+\.|\*|\n|-'))
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+
+    return lines.map((line) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 10 * scale),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 6 * scale),
+              width: 6 * scale,
+              height: 6 * scale,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD91E5B),
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: 12 * scale),
+            Expanded(
+              child: Text(
+                line.trim(),
+                style: GoogleFonts.outfit(
+                  fontSize: 14 * scale,
+                  height: 1.5,
+                  color: const Color(0xFF444444),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 }

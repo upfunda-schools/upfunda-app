@@ -106,7 +106,30 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
               minHeight: 4,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
+            // Topic Heading
+            if (quizState.testName.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  quizState.testName.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.cherryBombOne(
+                    color: Colors.white,
+                    fontSize: 18,
+                    letterSpacing: 1.0,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
 
             // Status legend
             Padding(
@@ -690,6 +713,8 @@ class SolutionPanel extends StatelessWidget {
     String text = html
         .replaceAll(RegExp(r'</p>|</div>|<br\s*/?>'), '\n')
         .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll(RegExp(r'\n+'), '\n')
         .trim();
     return text;
   }

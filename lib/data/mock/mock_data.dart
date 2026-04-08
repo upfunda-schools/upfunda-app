@@ -93,7 +93,7 @@ class MockData {
     teacherGated: false,
     topics: [
       Topic(
-        topicId: 'topic-001',
+        id: 'topic-001',
         name: 'Fractions',
         isPremium: false,
         status: 'completed',
@@ -104,7 +104,7 @@ class MockData {
         ],
       ),
       Topic(
-        topicId: 'topic-002',
+        id: 'topic-002',
         name: 'Decimals',
         isPremium: false,
         status: 'in_progress',
@@ -115,7 +115,7 @@ class MockData {
         ],
       ),
       Topic(
-        topicId: 'topic-003',
+        id: 'topic-003',
         name: 'Percentages',
         isPremium: false,
         status: 'not_started',
@@ -126,7 +126,7 @@ class MockData {
         ],
       ),
       Topic(
-        topicId: 'topic-004',
+        id: 'topic-004',
         name: 'Algebra Basics',
         isPremium: true,
         status: 'not_started',
@@ -136,7 +136,7 @@ class MockData {
         ],
       ),
       Topic(
-        topicId: 'topic-005',
+        id: 'topic-005',
         name: 'Geometry',
         isPremium: false,
         status: 'in_progress',
