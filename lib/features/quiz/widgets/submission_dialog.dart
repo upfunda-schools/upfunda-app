@@ -65,7 +65,7 @@ class SubmissionDialog extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${result.score.round()}%',
+                          '${result.totalCount > 0 ? (result.correctCount * 100 ~/ result.totalCount) : 0}%',
                           style: GoogleFonts.montserrat(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
