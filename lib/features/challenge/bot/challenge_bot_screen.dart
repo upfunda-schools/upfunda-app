@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/challenge_model.dart';
 import '../../../providers/challenge_bot_provider.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/loader_widget.dart';
 
 
@@ -21,6 +22,8 @@ class ChallengeBotScreen extends ConsumerStatefulWidget {
 class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
   String? _selectedOptionId;
   bool _answered = false;
+  bool _checked = false;
+  int _elapsed = 0;
   late final AudioPlayer _audioPlayer;
   late Stopwatch _stopwatch;
 
@@ -45,33 +48,38 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
     _stopwatch.start();
   }
 
-  void _onOptionTap(String optionId, String questionId) {
-    if (_answered) return;
+  void _onOptionTap(String optionId) {
+    if (_answered || _checked) return;
+    _stopwatch.stop();
     setState(() {
       _selectedOptionId = optionId;
       _answered = true;
+      _elapsed = _stopwatch.elapsed.inSeconds;
     });
+  }
 
-    final currentQuestion = ref.read(challengeBotProvider).session?.questions[ref.read(challengeBotProvider).currentIndex];
-    if (currentQuestion != null) {
-      final isCorrect = optionId == currentQuestion.correctOptionId;
-      _playSound(isCorrect);
-    }
+  void _onCheck(String correctOptionId) {
+    final isCorrect = _selectedOptionId == correctOptionId;
+    _playSound(isCorrect);
+    setState(() => _checked = true);
+  }
 
-    _stopwatch.stop();
-    final elapsed = _stopwatch.elapsed.inSeconds;
-
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      ref
-          .read(challengeBotProvider.notifier)
-          .submitAnswer(questionId, optionId, elapsed);
-      setState(() {
-        _selectedOptionId = null;
-        _answered = false;
-      });
-      _startTimer();
+  void _onNext(String questionId) {
+    ref
+        .read(challengeBotProvider.notifier)
+        .submitAnswer(questionId, _selectedOptionId!, _elapsed);
+    setState(() {
+      _selectedOptionId = null;
+      _answered = false;
+      _checked = false;
     });
+    _startTimer();
+  }
+
+  void _onSubmit(String questionId) {
+    ref
+        .read(challengeBotProvider.notifier)
+        .submitAnswer(questionId, _selectedOptionId!, _elapsed);
   }
 
   Future<void> _playSound(bool isCorrect) async {
@@ -142,6 +150,7 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
 
     final question = questions[index];
     final progress = (index + 1) / questions.length;
+    final isLastQuestion = index == questions.length - 1;
 
     return Scaffold(
       backgroundColor: AppColors.quizBg,
@@ -231,10 +240,9 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                         _OptionTile(
                           option: opt,
                           selected: _selectedOptionId == opt.optionId,
-                          answered: _answered,
+                          checked: _checked,
                           correctOptionId: question.correctOptionId,
-                          onTap: () =>
-                              _onOptionTap(opt.optionId, question.questionId),
+                          onTap: () => _onOptionTap(opt.optionId),
                         )),
 
                     const SizedBox(height: 16),
@@ -244,8 +252,49 @@ class _ChallengeBotScreenState extends ConsumerState<ChallengeBotScreen> {
                 ),
               ),
             ),
+            _buildNavigationButtons(question, isLastQuestion),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons(BotQuestion question, bool isLastQuestion) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      child: Row(
+        children: [
+          if (!_checked)
+            Expanded(
+              child: AppButton(
+                label: 'Check',
+                onPressed: _selectedOptionId != null
+                    ? () => _onCheck(question.correctOptionId)
+                    : null,
+                backgroundColor: _selectedOptionId != null
+                    ? AppColors.quizPrimary
+                    : AppColors.grey400,
+              ),
+            )
+          else if (!isLastQuestion)
+            Expanded(
+              child: AppButton(
+                label: 'Next',
+                icon: Icons.arrow_forward,
+                onPressed: () => _onNext(question.questionId),
+                backgroundColor: AppColors.quizPrimary,
+              ),
+            )
+          else
+            Expanded(
+              child: AppButton(
+                label: 'Submit',
+                icon: Icons.check_circle_outline,
+                onPressed: () => _onSubmit(question.questionId),
+                backgroundColor: AppColors.success,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -332,14 +381,14 @@ class _ChallengeTimerState extends State<_ChallengeTimer> {
 class _OptionTile extends StatelessWidget {
   final ChallengeOption option;
   final bool selected;
-  final bool answered;
+  final bool checked;
   final String correctOptionId;
   final VoidCallback onTap;
 
   const _OptionTile({
     required this.option,
     required this.selected,
-    required this.answered,
+    required this.checked,
     required this.correctOptionId,
     required this.onTap,
   });
@@ -348,17 +397,28 @@ class _OptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     Color borderColor = Colors.white24;
     Color bgColor = Colors.white.withValues(alpha: 0.06);
+    Widget? trailingIcon;
 
-    if (selected) {
-      final isCorrect = option.optionId == correctOptionId;
-      borderColor = isCorrect ? AppColors.correct : AppColors.incorrect;
-      bgColor = isCorrect
-          ? AppColors.correct.withValues(alpha: 0.15)
-          : AppColors.incorrect.withValues(alpha: 0.15);
+    if (!checked) {
+      if (selected) {
+        borderColor = Colors.white54;
+        bgColor = Colors.white.withValues(alpha: 0.15);
+      }
+    } else {
+      final isThisCorrect = option.optionId == correctOptionId;
+      if (isThisCorrect) {
+        borderColor = AppColors.correct;
+        bgColor = AppColors.correct.withValues(alpha: 0.15);
+        trailingIcon = const Icon(Icons.check_circle, color: AppColors.correct, size: 22);
+      } else if (selected) {
+        borderColor = AppColors.incorrect;
+        bgColor = AppColors.incorrect.withValues(alpha: 0.15);
+        trailingIcon = const Icon(Icons.cancel, color: AppColors.incorrect, size: 22);
+      }
     }
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: checked ? null : onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -432,6 +492,7 @@ class _OptionTile extends StatelessWidget {
                 },
               ),
             ),
+            if (trailingIcon != null) trailingIcon,
           ],
         ),
       ),
