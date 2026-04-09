@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:audioplayers/audioplayers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
 import '../../data/models/quiz_model.dart';
@@ -192,19 +191,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               isMuted ? Icons.volume_off : Icons.volume_up,
               color: Colors.white70,
             ),
-            onPressed: () async {
+            onPressed: () {
               final newMute = !isMuted;
               ref.read(quizMuteProvider.notifier).state = newMute;
-              
-              if (!newMute) {
-                // Play a sample sound when unmuting so the user knows it's working
-                try {
-                  // Using a fresh instance for every effect is the most robust way on Web
-                  AudioPlayer().play(AssetSource('audio/correct_sound_effect.mp3'), volume: 0.4);
-                } catch (e) {
-                  debugPrint('Error playing unmute sound: $e');
-                }
-              }
             },
           ),
           const SizedBox(width: 8),
