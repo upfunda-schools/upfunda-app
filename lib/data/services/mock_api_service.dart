@@ -7,6 +7,7 @@ import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
 import '../models/challenge_model.dart';
 import '../models/challenge_room_model.dart';
+import '../models/profile_model.dart';
 import 'api_service.dart';
 
 class MockApiService implements ApiService {
@@ -14,6 +15,12 @@ class MockApiService implements ApiService {
   Future<UserProfile> getUserProfile() async {
     await Future.delayed(const Duration(milliseconds: 400));
     return MockData.userProfile;
+  }
+
+  @override
+  Future<List<StudentProfile>> getStudentProfiles() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return []; // Return empty for mock for now
   }
 
   @override
@@ -70,7 +77,7 @@ class MockApiService implements ApiService {
       throw UnimplementedError('MockApiService does not support challenge');
 
   @override
-  Future<ChallengeRoomCreated> createChallengeRoom() =>
+  Future<ChallengeRoomCreated> createChallengeRoom({required String classId}) =>
       throw UnimplementedError('MockApiService does not support challenge rooms');
 
   @override
