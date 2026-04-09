@@ -257,7 +257,7 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                 ),
                 SizedBox(width: 4 * scale),
                 isPremiumUser
-                    ? _buildPremiumBadge(scale)
+                    ? const SizedBox.shrink()
                     : _buildUnlockPremiumButton(scale, assetPath),
               ],
             ),
@@ -346,25 +346,9 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
     );
   }
 
-  Widget _buildPremiumBadge(double scale) {
-    return Image.asset(
-      'assets/images/home/premium_main_2.png',
-      height: 32 * scale,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => Container(
-        height: 32 * scale,
-        width: 95 * scale,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(16 * scale),
-        ),
-      ),
-    );
-  }
-
   Widget _buildUnlockPremiumButton(double scale, String assetPath) {
     return Image.asset(
-      'assets/images/home/premium_main_2.png',
+      'assets/Updated 2/Premium Button.png',
       height: 32 * scale,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => Container(
@@ -648,7 +632,10 @@ class _TopicCard extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (topic.status != 'completed') ...[
-                            _buildActionButton(context, assetPath),
+                            Transform.translate(
+                              offset: Offset(5 * scale, 0),
+                              child: _buildActionButton(context, assetPath),
+                            ),
                             SizedBox(width: 8 * scale),
                           ],
                           if (!assetPath.contains('Olympiad'))
@@ -750,11 +737,11 @@ class _TopicCard extends ConsumerWidget {
   Widget _buildProjectButton(double scale, String assetPath) {
     String projectButtonPath;
     if (assetPath.contains('8. Logical Reasoning')) {
-      projectButtonPath = 'assets/Quiz Buttons/mental math project button.png';
+      projectButtonPath = 'assets/Updated 2/Project 5.png'; // Blue
     } else if (assetPath.contains('9. Mental Math')) {
-      projectButtonPath = 'assets/Quiz Buttons/logical project button.png';
+      projectButtonPath = 'assets/Updated 2/Project 6.png'; // Purple
     } else {
-      projectButtonPath = 'assets/Quiz Buttons/Academic Math project button.png';
+      projectButtonPath = 'assets/Updated 2/Project 3.png'; // Pink (Academic Math)
     }
 
     return Image.asset(
@@ -776,7 +763,9 @@ class _TopicCard extends ConsumerWidget {
       statusStr = 'On progress';
     }
 
-    final String assetPath = 'assets/Quiz Buttons/Quiz $statusStr $level.png';
+    // Map level 1,2,3 to new asset indices 7,8,9
+    final int assetIndex = level + 6;
+    final String assetPath = 'assets/Updated 2/Quiz $statusStr $assetIndex.png';
     final bool isPremiumLocked = topic.isPremium && !isPremiumUser;
 
     final bool isCompleted = test.status == 'completed';
@@ -809,11 +798,9 @@ class _TopicCard extends ConsumerWidget {
     final isOlympiad = assetPath.contains('10. Olympiad path');
     final isNotStarted = topic.status == 'not_started';
 
-    final String actionPath = isOlympiad
-        ? (isNotStarted ? '$assetPath/OBJECTS-3.png' : '$assetPath/OBJECTS-1.png')
-        : (isNotStarted
-            ? 'assets/7. Academy Path/start2.png'
-            : '$assetPath/OBJECTS-4.png');
+    final String actionPath = isNotStarted
+        ? (isOlympiad ? 'assets/Updated 2/Start2.png' : 'assets/Updated 2/Start1.png')
+        : (isOlympiad ? '$assetPath/OBJECTS-1.png' : 'assets/Updated 2/COntinue 1.png');
     return GestureDetector(
       onTap: () => context.go('/quiz/${next.testId}', extra: subjectId),
       child: Image.asset(
@@ -838,7 +825,7 @@ class _SharedUnlockPremiumButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.asset(
-      'assets/Quiz Buttons/Premium Button.png',
+      'assets/Updated 2/Premium Button.png',
       height: 38 * scale,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => Container(
