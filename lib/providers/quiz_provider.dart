@@ -151,6 +151,11 @@ class QuizState {
   int get answeredCount =>
       answers.values.where((a) => a.status == 'ANSWERED').length;
 
+  int get correctCount => answers.values.where((a) => a.isCorrect).length;
+
+  int get incorrectCount =>
+      answers.values.where((a) => a.status == 'ANSWERED' && !a.isCorrect).length;
+
   int get unansweredCount => questions.length - answeredCount;
 
   int get reviewCount =>

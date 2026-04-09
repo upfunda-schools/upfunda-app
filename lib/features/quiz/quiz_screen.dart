@@ -135,9 +135,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: StatusLegend(
-                answered: quizState.answeredCount,
-                unanswered: quizState.unansweredCount,
-                review: quizState.reviewCount,
+                correct: quizState.correctCount,
+                incorrect: quizState.incorrectCount,
               ),
             ),
             const SizedBox(height: 12),
