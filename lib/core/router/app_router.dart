@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../utils/profile_storage.dart';
 import '../../providers/auth_provider.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/profile/profile_screen.dart';
@@ -45,6 +46,7 @@ import '../../features/games/lines_of_symmetry_screen.dart';
 import '../../features/games/memory_matching_screen.dart';
 import '../../features/auth/open_screen.dart';
 import '../../features/auth/signup_screen.dart';
+import '../../features/profile/select_profile_screen.dart';
 import '../../features/challenge/challenge_home_screen.dart';
 import '../../features/challenge/bot/challenge_bot_screen.dart';
 import '../../features/challenge/bot/challenge_bot_result_screen.dart';
@@ -67,10 +69,22 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: notifier,
     redirect: (context, state) {
-      final isLoggedIn = ref.read(authProvider).isLoggedIn;
+      final authState = ref.read(authProvider);
+      final isLoggedIn = authState.isLoggedIn;
       final isLoginRoute = state.matchedLocation == '/login';
       final isSignupRoute = state.matchedLocation == '/signup';
       final isOpenRoute = state.matchedLocation == '/';
+      final isSelectProfileRoute = state.matchedLocation == '/select-profile';
+      final needsProfileSelection =
+          authState.requiresProfileSelection && ProfileStorage.profileId == null;
+
+      // Keep the user on login/open while the sign-in flow is still resolving
+      // profiles, so we don't briefly render a default student home first.
+      // This also covers app startup with a cached Firebase session where
+      // _listenToAuthChanges sets isLoading=true while fetching profile count.
+      if ((isLoginRoute || isOpenRoute) && authState.isLoading) {
+        return null;
+      }
 
       // Hard-lock: If we are on Login or Signup and not logged in, NEVER redirect to landing page
       if (!isLoggedIn && (isLoginRoute || isSignupRoute)) {
@@ -82,9 +96,25 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/';
       }
 
-      // Redirect to home if logged in and trying to access auth pages
-      if (isLoggedIn && (isLoginRoute || isOpenRoute || isSignupRoute)) {
+      // Login is the only place that should kick off profile selection.
+      if (isLoggedIn && isLoginRoute) {
+        if (needsProfileSelection) {
+          return '/select-profile';
+        }
         return '/student-home';
+      }
+
+      // Signed-in users should not stay on landing or signup pages.
+      if (isLoggedIn && (isOpenRoute || isSignupRoute)) {
+        if (needsProfileSelection) {
+          return '/select-profile';
+        }
+        return '/student-home';
+      }
+
+      // After login, block student routes until the profile is chosen.
+      if (isLoggedIn && needsProfileSelection && !isSelectProfileRoute) {
+        return '/select-profile';
       }
 
       return null;
@@ -103,6 +133,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/select-profile',
+        builder: (context, state) => const SelectProfileScreen(),
       ),
       GoRoute(
         path: '/worksheets',

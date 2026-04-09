@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/utils/profile_storage.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
@@ -15,12 +16,23 @@ class StudentHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
+  bool _canLoadStudentData() {
+    final authState = ref.read(authProvider);
+    return !authState.requiresProfileSelection || ProfileStorage.profileId != null;
+  }
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       final uid = ref.read(firebaseUserProvider).valueOrNull?.uid ?? '';
-      if (uid.isNotEmpty) {
+      final userState = ref.read(userProvider);
+      // Skip if data was already loaded (e.g. coming from _selectProfile),
+      // or if no profile has been selected yet (would fetch wrong student).
+      if (uid.isNotEmpty &&
+          _canLoadStudentData() &&
+          ProfileStorage.profileId != null &&
+          userState.homeData == null) {
         ref.read(userProvider.notifier).loadHome();
         ref.read(userProvider.notifier).loadProfile();
       }
@@ -31,7 +43,10 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   Widget build(BuildContext context) {
     ref.listen(firebaseUserProvider, (prev, next) {
       final uid = next.valueOrNull?.uid ?? '';
-      if (uid.isNotEmpty && (prev?.valueOrNull?.uid ?? '') != uid) {
+      if (uid.isNotEmpty &&
+          (prev?.valueOrNull?.uid ?? '') != uid &&
+          _canLoadStudentData() &&
+          ProfileStorage.profileId != null) {
         ref.read(userProvider.notifier).loadHome();
         ref.read(userProvider.notifier).loadProfile();
       }
@@ -112,12 +127,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       ),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        (state
-                                                    .homeData
-                                                    ?.studentName
-                                                    .isNotEmpty ==
+                                        (state.profile?.name.isNotEmpty ==
                                                 true)
-                                            ? state.homeData!.studentName[0]
+                                            ? state.profile!.name[0]
                                                   .toUpperCase()
                                             : 'U',
                                         style: GoogleFonts.montserrat(
@@ -138,6 +150,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     ),
                                     onSelected: (value) async {
                                       if (value == 'logout') {
+                                        ref.read(userProvider.notifier).clear();
                                         await ref.read(authProvider.notifier).logout();
                                         if (context.mounted) context.go('/login');
                                       }
@@ -254,7 +267,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                '${state.homeData?.studentName ?? 'Student'},',
+                                '${state.profile?.name ?? 'Student'},',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700,

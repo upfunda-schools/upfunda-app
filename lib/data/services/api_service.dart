@@ -6,9 +6,12 @@ import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
 import '../models/challenge_model.dart';
 import '../models/challenge_room_model.dart';
+import '../models/profile_model.dart';
 
 abstract class ApiService {
   Future<UserProfile> getUserProfile();
+
+  Future<List<StudentProfile>> getStudentProfiles();
 
   // Mobile v1 endpoints
   Future<HomeResponse> getHome();
@@ -38,7 +41,7 @@ abstract class ApiService {
   Future<BotChallengeSession> startChallenge();
 
   // Challenge Room (friend) endpoints
-  Future<ChallengeRoomCreated> createChallengeRoom();
+  Future<ChallengeRoomCreated> createChallengeRoom({required String classId});
 
   Future<ChallengeRoomJoined> joinChallengeRoom(String roomCode);
 
