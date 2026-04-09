@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/challenge_model.dart';
 import '../../../data/models/challenge_room_model.dart';
 import '../../../providers/challenge_room_provider.dart';
+import '../../../shared/widgets/app_button.dart';
 
 
 class ChallengeRoomQuizScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,8 @@ class _ChallengeRoomQuizScreenState
     extends ConsumerState<ChallengeRoomQuizScreen> {
   String? _selectedOptionId;
   bool _answered = false;
+  bool _checked = false;
+  int _elapsed = 0;
   late Stopwatch _stopwatch;
   late final AudioPlayer _audioPlayer;
 
@@ -39,35 +42,43 @@ class _ChallengeRoomQuizScreenState
     super.dispose();
   }
 
-  void _onOptionTap(RoomChallengeQuestion question, String optionId) {
-    if (_answered) return;
+  void _onOptionTap(String optionId) {
+    if (_answered || _checked) return;
+    _stopwatch.stop();
     setState(() {
       _selectedOptionId = optionId;
       _answered = true;
+      _elapsed = _stopwatch.elapsed.inSeconds;
     });
-    
-    final isCorrect = optionId == question.correctOptionId;
-    _playSound(isCorrect);
-    
-    _stopwatch.stop();
-    final elapsed = _stopwatch.elapsed.inSeconds;
+  }
 
-    Future.delayed(const Duration(milliseconds: 600), () async {
-      if (!mounted) return;
-      await ref.read(challengeRoomProvider.notifier).submitAnswer(
-            question.questionId,
-            optionId,
-            elapsed,
-          );
-      if (mounted) {
-        setState(() {
-          _selectedOptionId = null;
-          _answered = false;
-        });
-        _stopwatch.reset();
-        _stopwatch.start();
-      }
+  void _onCheck(String correctOptionId) {
+    final isCorrect = _selectedOptionId == correctOptionId;
+    _playSound(isCorrect);
+    setState(() => _checked = true);
+  }
+
+  void _onNext(String questionId) {
+    ref.read(challengeRoomProvider.notifier).submitAnswer(
+          questionId,
+          _selectedOptionId!,
+          _elapsed,
+        );
+    setState(() {
+      _selectedOptionId = null;
+      _answered = false;
+      _checked = false;
     });
+    _stopwatch.reset();
+    _stopwatch.start();
+  }
+
+  void _onSubmit(String questionId) {
+    ref.read(challengeRoomProvider.notifier).submitAnswer(
+          questionId,
+          _selectedOptionId!,
+          _elapsed,
+        );
   }
 
   Future<void> _playSound(bool isCorrect) async {
@@ -119,6 +130,7 @@ class _ChallengeRoomQuizScreenState
     }
 
     final question = questions[index];
+    final isLastQuestion = index == questions.length - 1;
 
     return Scaffold(
       backgroundColor: AppColors.quizBg,
@@ -205,19 +217,58 @@ class _ChallengeRoomQuizScreenState
                     ...question.options
                         .map((opt) => _RoomOptionTile(
                               option: opt,
-                              selected:
-                                  _selectedOptionId == opt.optionId,
-                              answered: _answered,
+                              selected: _selectedOptionId == opt.optionId,
+                              checked: _checked,
                               correctOptionId: question.correctOptionId,
-                              onTap: () =>
-                                  _onOptionTap(question, opt.optionId),
+                              onTap: () => _onOptionTap(opt.optionId),
                             )),
                   ],
                 ),
               ),
             ),
+            _buildNavigationButtons(question, isLastQuestion),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons(RoomChallengeQuestion question, bool isLastQuestion) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      child: Row(
+        children: [
+          if (!_checked)
+            Expanded(
+              child: AppButton(
+                label: 'Check',
+                onPressed: _selectedOptionId != null
+                    ? () => _onCheck(question.correctOptionId)
+                    : null,
+                backgroundColor: _selectedOptionId != null
+                    ? AppColors.quizPrimary
+                    : AppColors.grey400,
+              ),
+            )
+          else if (!isLastQuestion)
+            Expanded(
+              child: AppButton(
+                label: 'Next',
+                icon: Icons.arrow_forward,
+                onPressed: () => _onNext(question.questionId),
+                backgroundColor: AppColors.quizPrimary,
+              ),
+            )
+          else
+            Expanded(
+              child: AppButton(
+                label: 'Submit',
+                icon: Icons.check_circle_outline,
+                onPressed: () => _onSubmit(question.questionId),
+                backgroundColor: AppColors.success,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -327,14 +378,14 @@ class _ChallengeTimerState extends State<_ChallengeTimer> {
 class _RoomOptionTile extends StatelessWidget {
   final ChallengeOption option;
   final bool selected;
-  final bool answered;
+  final bool checked;
   final String correctOptionId;
   final VoidCallback onTap;
 
   const _RoomOptionTile({
     required this.option,
     required this.selected,
-    required this.answered,
+    required this.checked,
     required this.correctOptionId,
     required this.onTap,
   });
@@ -343,17 +394,28 @@ class _RoomOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     Color borderColor = Colors.white24;
     Color bgColor = Colors.white.withValues(alpha: 0.06);
+    Widget? trailingIcon;
 
-    if (selected) {
-      final isCorrect = option.optionId == correctOptionId;
-      borderColor = isCorrect ? AppColors.correct : AppColors.incorrect;
-      bgColor = isCorrect
-          ? AppColors.correct.withValues(alpha: 0.15)
-          : AppColors.incorrect.withValues(alpha: 0.15);
+    if (!checked) {
+      if (selected) {
+        borderColor = Colors.white54;
+        bgColor = Colors.white.withValues(alpha: 0.15);
+      }
+    } else {
+      final isThisCorrect = option.optionId == correctOptionId;
+      if (isThisCorrect) {
+        borderColor = AppColors.correct;
+        bgColor = AppColors.correct.withValues(alpha: 0.15);
+        trailingIcon = const Icon(Icons.check_circle, color: AppColors.correct, size: 22);
+      } else if (selected) {
+        borderColor = AppColors.incorrect;
+        bgColor = AppColors.incorrect.withValues(alpha: 0.15);
+        trailingIcon = const Icon(Icons.cancel, color: AppColors.incorrect, size: 22);
+      }
     }
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: checked ? null : onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding:
@@ -428,6 +490,7 @@ class _RoomOptionTile extends StatelessWidget {
                 },
               ),
             ),
+            if (trailingIcon != null) trailingIcon,
           ],
         ),
       ),
