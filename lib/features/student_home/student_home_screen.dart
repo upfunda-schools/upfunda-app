@@ -111,7 +111,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Image.asset(
-                                'assets/images/upfunda_logo1.png',
+                                'assets/images/home/logo.png',
                                 height: 35,
                               ),
                               Row(
