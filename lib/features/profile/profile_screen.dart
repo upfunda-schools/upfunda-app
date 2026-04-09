@@ -86,6 +86,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ],
                   ),
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    // Handle subscription
+                  },
+                  child: Image.asset(
+                    'assets/Updated 2/Premium Main.png',
+                    height: 32,
+                    fit: BoxFit.contain,
+                  ),
                 ),
             ],
           ),

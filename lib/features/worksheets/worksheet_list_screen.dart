@@ -348,12 +348,12 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
 
   Widget _buildUnlockPremiumButton(double scale, String assetPath) {
     return Image.asset(
-      'assets/Updated 2/Premium Button.png',
+      'assets/Updated 2/Premium Main.png',
       height: 32 * scale,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => Container(
         height: 32 * scale,
-        width: 95 * scale,
+        width: 100 * scale,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(16 * scale),
