@@ -70,10 +70,10 @@ class ChallengeRoomNotifier extends StateNotifier<ChallengeRoomState> {
 
   ChallengeRoomNotifier(this._api) : super(const ChallengeRoomState());
 
-  Future<void> createRoom() async {
+  Future<void> createRoom(String classId) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final created = await _api.createChallengeRoom();
+      final created = await _api.createChallengeRoom(classId: classId);
       state = state.copyWith(
         roomId: created.roomId,
         roomCode: created.roomCode,
@@ -109,7 +109,7 @@ class ChallengeRoomNotifier extends StateNotifier<ChallengeRoomState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final result = await _api.startChallengeRoom(roomId);
-      _stopPolling();
+      _startPolling();
       state = state.copyWith(
         status: 'active',
         result: result,
@@ -178,7 +178,15 @@ class ChallengeRoomNotifier extends StateNotifier<ChallengeRoomState> {
     try {
       final result = await _api.getChallengeRoomResult(roomId);
 
-      // Fix: host is always players[0], guest is always players[1]
+      // Guest: host has started the room but we have no questions yet.
+      // Call startRoom BEFORE updating state so the 'waiting'→'active' transition
+      // fires correctly in the lobby listener and triggers navigation to the quiz.
+      if (result.status == 'active' && state.questions.isEmpty) {
+        _stopPolling();
+        await startRoom();
+        return;
+      }
+
       final opponentIndex = state.isHost ? 1 : 0;
       final opponentAnswered = result.players.length > opponentIndex
           ? result.players[opponentIndex].answered
@@ -195,11 +203,6 @@ class ChallengeRoomNotifier extends StateNotifier<ChallengeRoomState> {
 
       if (result.status == 'completed') {
         _stopPolling();
-      } else if (result.status == 'active' && state.questions.isEmpty) {
-        // Guest detected room became active via polling but has no questions.
-        // GetResult never returns questions — call startRoom to fetch them.
-        _stopPolling();
-        await startRoom();
       }
     } catch (_) {
       // Ignore poll errors silently

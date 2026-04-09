@@ -67,19 +67,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    final bool success;
     if (_isPhoneMode) {
-      success = await authState.phoneLogin(
-        phone: '$_countryCode$value',
-        password: password,
-      );
+      await authState.phoneLogin(phone: '$_countryCode$value', password: password);
     } else {
-      success = await authState.login(email: value, password: password);
+      await authState.login(email: value, password: password);
     }
-
-    if (success && mounted) {
-      context.go('/student-home');
-    }
+    // Navigation is driven by the router redirect, which reads profileCount from authProvider.
   }
 
   Future<void> _handleForgotPassword() async {

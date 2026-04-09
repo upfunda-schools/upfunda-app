@@ -8,6 +8,8 @@ import '../models/quiz_model.dart';
 import '../models/submit_model.dart';
 import '../models/challenge_model.dart';
 import '../models/challenge_room_model.dart';
+import '../models/profile_model.dart';
+import '../../core/utils/profile_storage.dart';
 import 'api_service.dart';
 import 'firebase_auth_service.dart';
 
@@ -30,6 +32,10 @@ class DioApiService implements ApiService {
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
+        final profileId = ProfileStorage.profileId;
+        if (profileId != null) {
+          options.headers['X-Profile-ID'] = profileId;
+        }
         return handler.next(options);
       },
       onError: (error, handler) async {
@@ -51,23 +57,20 @@ class DioApiService implements ApiService {
 
   @override
   Future<UserProfile> getUserProfile() async {
-    // Profile endpoint uses Bearer token, but for now we'll use home data
-    // as a workaround since we don't have Firebase auth set up
-    final response = await _dio.get(
-      '/mobile/v1/home',
-      queryParameters: _userParams(),
-    );
-    final data = response.data;
+    final response = await _dio.get('/user/profile');
+    final data = response.data as Map<String, dynamic>;
     return UserProfile(
-      id: data['student_id'] ?? '',
+      id: data['user_id'] ?? data['id'] ?? '',
       email: data['email'] ?? '',
-      role: 'student',
-      name: data['student_name'] ?? '',
+      role: data['role'] ?? 'student',
+      name: data['name'] ?? data['student_name'] ?? '',
       upPoints: data['up_points'] ?? 0,
       schoolId: data['school_id'] ?? '',
       classId: data['class_id'] ?? '',
       schoolName: data['school_name'],
       className: data['class_name'],
+      sectionName: data['section_name'],
+      gender: data['gender'],
       country: data['country'],
       phone: data['phone'],
       studentId: data['student_id'] ?? '',
@@ -141,6 +144,15 @@ class DioApiService implements ApiService {
   }
 
   @override
+  Future<List<StudentProfile>> getStudentProfiles() async {
+    final response = await _dio.get('/student/profiles');
+    final list = response.data as List<dynamic>? ?? [];
+    return list
+        .map((e) => StudentProfile.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
   Future<void> pauseTest(String testId) async {
     await _dio.post('/student/test/$testId/pause');
   }
@@ -161,11 +173,10 @@ class DioApiService implements ApiService {
   }
 
   @override
-  Future<ChallengeRoomCreated> createChallengeRoom() async {
+  Future<ChallengeRoomCreated> createChallengeRoom({required String classId}) async {
     final response = await _dio.post(
-      '/mobile/v1/challenge-room/create',
-      queryParameters: _userParams(),
-      data: {},
+      '/student/challenge-room/create',
+      data: {'class_id': classId},
     );
     return ChallengeRoomCreated.fromJson(response.data as Map<String, dynamic>);
   }
@@ -173,8 +184,7 @@ class DioApiService implements ApiService {
   @override
   Future<ChallengeRoomJoined> joinChallengeRoom(String roomCode) async {
     final response = await _dio.post(
-      '/mobile/v1/challenge-room/join',
-      queryParameters: _userParams(),
+      '/student/challenge-room/join',
       data: {'room_code': roomCode},
     );
     return ChallengeRoomJoined.fromJson(response.data as Map<String, dynamic>);
@@ -183,8 +193,7 @@ class DioApiService implements ApiService {
   @override
   Future<ChallengeRoomResult> startChallengeRoom(String roomId) async {
     final response = await _dio.post(
-      '/mobile/v1/challenge-room/start',
-      queryParameters: _userParams(),
+      '/student/challenge-room/start',
       data: {'room_id': roomId},
     );
     return ChallengeRoomResult.fromJson(response.data as Map<String, dynamic>);
@@ -198,8 +207,7 @@ class DioApiService implements ApiService {
     required int timeTakenSeconds,
   }) async {
     final response = await _dio.post(
-      '/mobile/v1/challenge-room/submit-answer',
-      queryParameters: _userParams(),
+      '/student/challenge-room/submit-answer',
       data: {
         'room_id': roomId,
         'question_id': questionId,
@@ -213,8 +221,7 @@ class DioApiService implements ApiService {
   @override
   Future<ChallengeRoomResult> getChallengeRoomResult(String roomId) async {
     final response = await _dio.post(
-      '/mobile/v1/challenge-room/result',
-      queryParameters: _userParams(),
+      '/student/challenge-room/result',
       data: {'room_id': roomId},
     );
     return ChallengeRoomResult.fromJson(response.data as Map<String, dynamic>);
@@ -223,8 +230,7 @@ class DioApiService implements ApiService {
   @override
   Future<void> quitChallengeRoom(String roomId) async {
     await _dio.post(
-      '/mobile/v1/challenge-room/quit',
-      queryParameters: _userParams(),
+      '/student/challenge-room/quit',
       data: {'room_id': roomId},
     );
   }
