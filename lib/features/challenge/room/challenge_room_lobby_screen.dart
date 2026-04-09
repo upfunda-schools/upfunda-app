@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/challenge_room_provider.dart';
+import '../../../providers/user_provider.dart';
 
 class ChallengeRoomLobbyScreen extends ConsumerStatefulWidget {
   const ChallengeRoomLobbyScreen({super.key});
@@ -168,9 +169,10 @@ class _CreateTab extends ConsumerWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
-                      onPressed: () => ref
-                          .read(challengeRoomProvider.notifier)
-                          .createRoom(),
+                      onPressed: () {
+                        final classId = ref.read(userProvider).profile?.classId ?? '';
+                        ref.read(challengeRoomProvider.notifier).createRoom(classId);
+                      },
                       child: const Text('Create Room',
                           style: TextStyle(
                               fontWeight: FontWeight.w700, fontSize: 15)),
@@ -230,7 +232,8 @@ class _CreateTab extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (state.status == 'waiting') ...[
+                  if (state.status == 'waiting' &&
+                      (state.result?.players.length ?? 0) < 2) ...[
                     const CircularProgressIndicator(
                         color: AppColors.primary),
                     const SizedBox(height: 12),

@@ -37,15 +37,20 @@ class UserState {
 
 class UserNotifier extends StateNotifier<UserState> {
   final dynamic _api;
+  int _profileRequestId = 0;
+  int _homeRequestId = 0;
 
   UserNotifier(this._api) : super(const UserState());
 
   Future<void> loadProfile() async {
+    final requestId = ++_profileRequestId;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final profile = await _api.getUserProfile();
+      if (requestId != _profileRequestId) return;
       state = state.copyWith(profile: profile, isLoading: false);
     } catch (e) {
+      if (requestId != _profileRequestId) return;
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -54,16 +59,21 @@ class UserNotifier extends StateNotifier<UserState> {
   }
 
   Future<void> loadHome() async {
+    final requestId = ++_homeRequestId;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final home = await _api.getHome();
+      if (requestId != _homeRequestId) return;
       state = state.copyWith(homeData: home, isLoading: false);
     } catch (e) {
+      if (requestId != _homeRequestId) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   void clear() {
+    _profileRequestId++;
+    _homeRequestId++;
     state = const UserState();
   }
 }
