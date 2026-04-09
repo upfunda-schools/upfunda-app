@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -84,6 +85,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                     ],
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    // Handle subscription
+                  },
+                  child: Image.asset(
+                    'assets/Updated 2/Premium Main.png',
+                    height: 32,
+                    fit: BoxFit.contain,
                   ),
                 ),
             ],
@@ -210,7 +222,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final success = await ref
+                          .read(authProvider.notifier)
+                          .resetPassword(email: profile.email);
+
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? 'Password reset email sent to ${profile.email}'
+                                  : ref.read(authProvider).error ??
+                                      'Reset failed',
+                            ),
+                            backgroundColor:
+                                success ? Colors.green : Colors.red,
+                          ),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE4B500),
                       foregroundColor: Colors.white,

@@ -235,33 +235,19 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
   }
 
   Widget _buildPremiumOrUnlock(bool isPremium, double scale) {
-    return isPremium ? _buildPremiumBadge(scale) : _buildUnlockButton(scale);
+    return isPremium ? const SizedBox.shrink() : _buildUnlockButton(scale);
   }
 
-  Widget _buildPremiumBadge(double scale) {
-    return Image.asset(
-      'assets/images/home/premium_main_2.png',
-      height: 32 * scale,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => Container(
-        height: 32 * scale,
-        width: 95 * scale,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(16 * scale),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildUnlockButton(double scale) {
     return Image.asset(
-      'assets/images/home/premium_main_2.png',
+      'assets/Updated 2/Premium Main.png',
       height: 32 * scale,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => Container(
         height: 32 * scale,
-        width: 95 * scale,
+        width: 100 * scale,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(16 * scale),

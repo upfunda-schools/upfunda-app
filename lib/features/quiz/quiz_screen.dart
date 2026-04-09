@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../core/theme/app_colors.dart';
@@ -135,9 +136,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: StatusLegend(
-                answered: quizState.answeredCount,
-                unanswered: quizState.unansweredCount,
-                review: quizState.reviewCount,
+                correct: quizState.correctCount,
+                incorrect: quizState.incorrectCount,
               ),
             ),
             const SizedBox(height: 12),
@@ -365,6 +365,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         yourAnswer: yourAnswerText,
         correctAnswer: correctAnswerText,
         explanation: question.solution?.explanation ?? '',
+        questionId: quizState.currentQuestionId,
       );
     }
 
@@ -698,6 +699,25 @@ class SolutionPanel extends StatelessWidget {
   final String yourAnswer;
   final String correctAnswer;
   final String explanation;
+  final String? questionId;
+
+  static const List<String> quotes = [
+    "Great job! You got it right! 🌟",
+    "Awesome work! You're so smart! ⭐",
+    "Perfect! You're doing amazing! 🎉",
+    "Excellent! Keep up the good work! 👏",
+    "Wonderful! You're a star! ✨",
+    "Fantastic! You nailed it! 🚀",
+    "Super! You're brilliant! 💫",
+    "Amazing! You're getting better! 🎯",
+    "Outstanding! Well done! 🏆",
+    "Incredible! You rock! 🌈",
+    "Brilliant! You're awesome! 💎",
+    "Terrific! You're learning fast! 🌸",
+    "Marvelous! Keep going! 🦄",
+    "Splendid! You're a champion! 🎪",
+    "Fabulous! You're unstoppable! 🎨"
+  ];
 
   const SolutionPanel({
     super.key,
@@ -705,6 +725,7 @@ class SolutionPanel extends StatelessWidget {
     required this.yourAnswer,
     required this.correctAnswer,
     required this.explanation,
+    this.questionId,
   });
 
   String _stripHtml(String html) {
@@ -724,6 +745,13 @@ class SolutionPanel extends StatelessWidget {
     final cleanYourAnswer = _stripHtml(yourAnswer);
     final cleanCorrectAnswer = _stripHtml(correctAnswer);
     final cleanExplanation = _stripHtml(explanation);
+
+    // Random quote for correct answer
+    String? quote;
+    if (isCorrect) {
+      final seed = questionId?.hashCode ?? Random().nextInt(1000);
+      quote = quotes[Random(seed).nextInt(quotes.length)];
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -753,31 +781,67 @@ class SolutionPanel extends StatelessWidget {
           const SizedBox(height: 16),
           
           // Notice Box
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF9C3), // Light yellow
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFEF08A), width: 1),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.rocket_launch, color: Color(0xFFEAB308), size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "You're learning! Check the details below!",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700, // BOLD
-                      color: const Color(0xFF854D0E),
+          isCorrect
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7), // Light green
+                    borderRadius: BorderRadius.circular(12),
+                    border: const Border(
+                      left: BorderSide(color: Color(0xFF22C55E), width: 4),
                     ),
                   ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          quote ?? "Great job! You got it right! 🌟",
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700, // BOLD
+                            color: const Color(0xFF166534), // Dark green
+                          ),
+                        ),
+                      ),
+                      const Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.auto_awesome, color: Color(0xFFBBF7D0), size: 24),
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Icon(Icons.celebration, color: Color(0xFF4ADE80), size: 14),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF9C3), // Light yellow
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFEF08A), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.rocket_launch, color: Color(0xFFEAB308), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "You're learning! Check the details below!",
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700, // BOLD
+                            color: const Color(0xFF854D0E),
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.auto_awesome, color: Color(0xFFFEF08A), size: 16),
+                    ],
+                  ),
                 ),
-                const Icon(Icons.auto_awesome, color: Color(0xFFFEF08A), size: 16),
-              ],
-            ),
-          ),
           const SizedBox(height: 20),
 
           // Answer details

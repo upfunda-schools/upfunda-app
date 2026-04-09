@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
 class StatusLegend extends StatelessWidget {
-  final int answered;
-  final int unanswered;
-  final int review;
+  final int correct;
+  final int incorrect;
 
   const StatusLegend({
     super.key,
-    required this.answered,
-    required this.unanswered,
-    required this.review,
+    required this.correct,
+    required this.incorrect,
   });
 
   @override
@@ -26,18 +24,13 @@ class StatusLegend extends StatelessWidget {
         children: [
           _LegendItem(
             color: AppColors.success,
-            label: 'Answered',
-            count: answered,
+            label: 'Correct',
+            count: correct,
           ),
           _LegendItem(
-            color: AppColors.grey400,
-            label: 'Unanswered',
-            count: unanswered,
-          ),
-          _LegendItem(
-            color: AppColors.review,
-            label: 'Review',
-            count: review,
+            color: AppColors.incorrect,
+            label: 'Incorrect',
+            count: incorrect,
           ),
         ],
       ),
