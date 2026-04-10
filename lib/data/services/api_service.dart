@@ -58,4 +58,17 @@ abstract class ApiService {
 
   Future<void> quitChallengeRoom(String roomId);
 
+
+  Future<List<LeaderboardEntry>> getLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+    required String sectionId,
+  });
+
+  Future<List<LeaderboardEntry>> getClassLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+  });
 }

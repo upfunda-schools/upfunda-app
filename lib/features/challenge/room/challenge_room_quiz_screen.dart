@@ -23,7 +23,6 @@ class ChallengeRoomQuizScreen extends ConsumerStatefulWidget {
 class _ChallengeRoomQuizScreenState
     extends ConsumerState<ChallengeRoomQuizScreen> {
   String? _selectedOptionId;
-  bool _answered = false;
   bool _checked = false;
   int _elapsed = 0;
   late Stopwatch _stopwatch;
@@ -43,16 +42,15 @@ class _ChallengeRoomQuizScreenState
   }
 
   void _onOptionTap(String optionId) {
-    if (_answered || _checked) return;
-    _stopwatch.stop();
+    if (_checked) return;
     setState(() {
       _selectedOptionId = optionId;
-      _answered = true;
-      _elapsed = _stopwatch.elapsed.inSeconds;
     });
   }
 
   void _onCheck(String correctOptionId) {
+    _stopwatch.stop();
+    _elapsed = _stopwatch.elapsed.inSeconds;
     final isCorrect = _selectedOptionId == correctOptionId;
     _playSound(isCorrect);
     setState(() => _checked = true);
@@ -66,7 +64,6 @@ class _ChallengeRoomQuizScreenState
         );
     setState(() {
       _selectedOptionId = null;
-      _answered = false;
       _checked = false;
     });
     _stopwatch.reset();

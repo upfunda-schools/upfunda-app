@@ -112,7 +112,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             children: [
                               Image.asset(
                                 'assets/images/home/logo.png',
-                                height: 28,
+                                height: 35,
                               ),
                               Row(
                                 children: [
@@ -355,7 +355,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           const SizedBox(height: 12),
                           // Leaderboard button
                           GestureDetector(
-                            onTap: () => context.push('/challenge'), // Temporary link to challenge until a dedicated leaderboard exists
+                            onTap: () => context.push('/leaderboard'),
                             child: Image.asset(
                               'assets/5. Home Page/Leader_Board_Button.png',
                               width: 220,

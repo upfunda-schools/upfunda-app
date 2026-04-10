@@ -77,13 +77,15 @@ class LeaderboardEntry {
     this.avatar,
   });
 
+  String get name => studentName;
+
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
       LeaderboardEntry(
         id: json['id'] as String?,
         rank: json['rank'] as int? ?? 0,
         studentName: (json['student_name'] ?? json['name']) as String? ?? '',
         studentId: json['student_id'] as String? ?? '',
-        score: (json['score'] as num?)?.toDouble() ?? 0,
+        score: (json['up_points'] ?? json['score'] ?? 0).toDouble(),
         avatar: json['avatar'] as String?,
       );
 }

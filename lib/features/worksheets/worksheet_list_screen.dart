@@ -42,12 +42,20 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   }
 
   Color _getHeaderColor(String subjectId) {
-    if (subjectId == 'sub-004') return const Color(0xFF44A5BA); // Logic Blue
+    if (subjectId == 'sub-004') {
+      return const Color(0xFF44A5BA); // Logic Blue
+    }
     final state = ref.read(testListProvider);
     final name = state.data?.subjectName.toLowerCase() ?? '';
-    if (name.contains('logical')) return const Color(0xFF44A5BA);
-    if (name.contains('mental')) return const Color(0xFF8D72CC); // Lavender/Purple
-    if (name.contains('olympiad')) return const Color(0xFF48AC56); // Green
+    if (name.contains('logical')) {
+      return const Color(0xFF44A5BA);
+    }
+    if (name.contains('mental')) {
+      return const Color(0xFF8D72CC); // Lavender/Purple
+    }
+    if (name.contains('olympiad')) {
+      return const Color(0xFF48AC56); // Green
+    }
     return const Color(0xFFD91E5B); // Academic Math Pink
   }
 
@@ -65,7 +73,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(testListProvider);
     final userState = ref.watch(userProvider);
-    final isPremiumUser = (userState.profile?.isPremiumUser ?? false) ||
+    final isPremiumUser =
+        (userState.profile?.isPremiumUser ?? false) ||
         (userState.homeData?.isPremiumUser ?? false);
     final subjectName = state.data?.subjectName ?? 'Topics';
     final assetPath = _getAssetPath(widget.subjectId);
@@ -105,7 +114,9 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
               Column(
                 children: [
                   // Proper spacing for top status bar
-                  SizedBox(height: MediaQuery.of(context).padding.top + 8 * scale),
+                  SizedBox(
+                    height: MediaQuery.of(context).padding.top + 8 * scale,
+                  ),
 
                   // Header (back button, subject title, premium controls)
                   _buildHeader(
@@ -166,21 +177,19 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                         margin: EdgeInsets.only(top: 110 * scale),
                         width: double.infinity,
                         color: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 22 * scale,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 22 * scale),
                         child: Column(
                           children: [
-                              ...state.filteredTopics.map(
-                                (topic) => _TopicCard(
-                                  topic: topic,
-                                  subjectId: widget.subjectId,
-                                  isPremiumUser: isPremiumUser,
-                                  scale: scale,
-                                  assetPath: assetPath,
-                                  themeColor: themeColor,
-                                ),
+                            ...state.filteredTopics.map(
+                              (topic) => _TopicCard(
+                                topic: topic,
+                                subjectId: widget.subjectId,
+                                isPremiumUser: isPremiumUser,
+                                scale: scale,
+                                assetPath: assetPath,
+                                themeColor: themeColor,
                               ),
+                            ),
                             const SizedBox(height: 50),
                           ],
                         ),
@@ -192,7 +201,6 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
             ],
           ),
         ),
-
       ),
     );
   }
@@ -208,8 +216,9 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   ) {
     final bool isAcademic = assetPath.contains('Academy Path');
     final subjects = ref.watch(worksheetProvider).data?.subjects ?? [];
-    final currentIndex =
-        subjects.indexWhere((s) => s.subjectId == widget.subjectId);
+    final currentIndex = subjects.indexWhere(
+      (s) => s.subjectId == widget.subjectId,
+    );
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12 * scale),
@@ -233,9 +242,11 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                           '$assetPath/Vector (Stroke).png',
                           width: 22 * scale,
                           color: Colors.white,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Icon(Icons.arrow_back,
-                                  color: Colors.white, size: 24 * scale),
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 24 * scale,
+                          ),
                         ),
                         onPressed: () => context.go('/worksheets'),
                       ),
@@ -275,7 +286,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                               ? currentIndex - 1
                               : subjects.length - 1;
                           context.pushReplacement(
-                              '/worksheets-list/${subjects[targetIndex].subjectId}');
+                            '/worksheets-list/${subjects[targetIndex].subjectId}',
+                          );
                         }
                       : null,
                   child: Image.asset(
@@ -293,33 +305,33 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                             fit: BoxFit.contain,
                           )
                         : assetPath.toLowerCase().contains('logical reasoning')
-                            ? Image.asset(
-                                '$assetPath/Logical Reasoning-1.png',
-                                height: 22 * scale,
-                                fit: BoxFit.contain,
-                              )
-                            : assetPath.toLowerCase().contains('mental math')
-                                ? Image.asset(
-                                    '$assetPath/Mental Math-1.png',
-                                    height: 22 * scale,
-                                    fit: BoxFit.contain,
-                                  )
-                                : assetPath.toLowerCase().contains('olympiad path')
-                                    ? Image.asset(
-                                        '$assetPath/Olympiad Math-1.png',
-                                        height: 22 * scale,
-                                        fit: BoxFit.contain,
-                                      )
-                                    : Text(
-                                        subjectName.toUpperCase(),
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.montserrat(
-                                          color: Colors.white,
-                                          fontSize: 16 * scale,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
+                        ? Image.asset(
+                            '$assetPath/Logical Reasoning-1.png',
+                            height: 22 * scale,
+                            fit: BoxFit.contain,
+                          )
+                        : assetPath.toLowerCase().contains('mental math')
+                        ? Image.asset(
+                            '$assetPath/Mental Math-1.png',
+                            height: 22 * scale,
+                            fit: BoxFit.contain,
+                          )
+                        : assetPath.toLowerCase().contains('olympiad path')
+                        ? Image.asset(
+                            '$assetPath/Olympiad Math-1.png',
+                            height: 22 * scale,
+                            fit: BoxFit.contain,
+                          )
+                        : Text(
+                            subjectName.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              color: Colors.white,
+                              fontSize: 16 * scale,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(width: 5 * scale),
@@ -330,7 +342,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                               ? currentIndex + 1
                               : 0;
                           context.pushReplacement(
-                              '/worksheets-list/${subjects[targetIndex].subjectId}');
+                            '/worksheets-list/${subjects[targetIndex].subjectId}',
+                          );
                         }
                       : null,
                   child: Image.asset(
@@ -361,9 +374,6 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
       ),
     );
   }
-
-
-
 
   Widget _buildMasterArithmeticButton(double scale) {
     return GestureDetector(
@@ -424,7 +434,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(23 * scale),
           child: TextField(
-            onChanged: (v) => ref.read(testListProvider.notifier).setSearchQuery(v),
+            onChanged: (v) =>
+                ref.read(testListProvider.notifier).setSearchQuery(v),
             textAlignVertical: TextAlignVertical.center,
             style: GoogleFonts.montserrat(
               fontSize: 14 * scale,
@@ -446,7 +457,10 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 12 * scale),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 20 * scale,
+                vertical: 12 * scale,
+              ),
               isDense: true,
             ),
           ),
@@ -491,10 +505,7 @@ class _TopicCard extends ConsumerWidget {
             left: 6 * scale,
             right: -6 * scale,
             bottom: -8 * scale,
-            child: Image.asset(
-              '$assetPath/Rectangle 29.png',
-              fit: BoxFit.fill,
-            ),
+            child: Image.asset('$assetPath/Rectangle 29.png', fit: BoxFit.fill),
           ),
 
           Container(
@@ -527,8 +538,8 @@ class _TopicCard extends ConsumerWidget {
                       isCompleted
                           ? '$assetPath/Completed.png'
                           : isNotStarted
-                              ? '$assetPath/Not Started.png'
-                              : '$assetPath/Inprogress.png',
+                          ? '$assetPath/Not Started.png'
+                          : '$assetPath/Inprogress.png',
                       height: 12 * scale,
                     ),
                   ],
@@ -542,11 +553,8 @@ class _TopicCard extends ConsumerWidget {
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          final progress =
-                              (topic.progressPercentage / 100).clamp(
-                            0.001,
-                            1.0,
-                          );
+                          final progress = (topic.progressPercentage / 100)
+                              .clamp(0.001, 1.0);
 
                           return Stack(
                             clipBehavior: Clip.none,
@@ -560,8 +568,9 @@ class _TopicCard extends ConsumerWidget {
                                     color: const Color(0xFFE0E0E0),
                                     width: 1.0,
                                   ),
-                                  borderRadius:
-                                      BorderRadius.circular(4 * scale),
+                                  borderRadius: BorderRadius.circular(
+                                    4 * scale,
+                                  ),
                                 ),
                               ),
                               FractionallySizedBox(
@@ -570,13 +579,15 @@ class _TopicCard extends ConsumerWidget {
                                   height: 8 * scale,
                                   decoration: BoxDecoration(
                                     color: barColor,
-                                    borderRadius:
-                                        BorderRadius.circular(4 * scale),
+                                    borderRadius: BorderRadius.circular(
+                                      4 * scale,
+                                    ),
                                   ),
                                 ),
                               ),
                               Positioned(
-                                left: (constraints.maxWidth * progress) -
+                                left:
+                                    (constraints.maxWidth * progress) -
                                     11 * scale,
                                 top: -8 * scale,
                                 child: Image.asset(
@@ -607,40 +618,47 @@ class _TopicCard extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ...() {
-                                final quizCount = topic.tests.length;
-                                if (quizCount < 1 || quizCount > 3) return <Widget>[];
-                                return [
-                                  for (int i = 1; i <= quizCount; i++) ...[
-                                    _buildLevelBadge(context, i),
-                                    if (i < quizCount) SizedBox(width: 4 * scale),
-                                  ],
-                                ];
-                              }(),
-                            ],
+                      if (!assetPath.contains('10. Olympiad path'))
+                        Flexible(
+                          child: Transform.translate(
+                            offset: Offset(-8 * scale, 0),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ...() {
+                                    final quizCount = topic.tests.length;
+                                    if (quizCount < 1 || quizCount > 3) {
+                                      return <Widget>[];
+                                    }
+                                    return [
+                                      for (int i = 1; i <= quizCount; i++) ...[
+                                        _buildLevelBadge(context, i),
+                                        if (i < quizCount)
+                                          SizedBox(width: 3 * scale),
+                                      ],
+                                    ];
+                                  }(),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                        )
+                      else
+                        const Spacer(),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (topic.status != 'completed') ...[
-                            Transform.translate(
-                              offset: Offset(5 * scale, 0),
-                              child: _buildActionButton(context, assetPath),
-                            ),
-                            SizedBox(width: 8 * scale),
+                            _buildActionButton(context, assetPath),
+                            SizedBox(width: 4 * scale),
                           ],
                           if (!assetPath.contains('Olympiad'))
                             GestureDetector(
-                              onTap: () => _showProjectDialog(context, ref, topic),
+                              onTap: () =>
+                                  _showProjectDialog(context, ref, topic),
                               child: _buildProjectButton(scale, assetPath),
                             ),
                         ],
@@ -656,31 +674,41 @@ class _TopicCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _showProjectDialog(BuildContext context, WidgetRef ref, Topic topic) async {
-
+  Future<void> _showProjectDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Topic topic,
+  ) async {
     String htmlDetails = topic.projectDetails ?? '';
-    
+
     // If project details are missing (e.g. older API), try a one-off fetch from the student API
     // This is isolated logic specifically for the project button to get "correct data"
     if (htmlDetails.isEmpty) {
       try {
         final profile = ref.read(userProvider).profile;
         if (profile != null) {
-          final dio = Dio(BaseOptions(
-            baseUrl: EnvConfig.apiBaseUrl,
-            headers: {'X-Profile-ID': profile.studentId},
-          ));
-          
+          final dio = Dio(
+            BaseOptions(
+              baseUrl: EnvConfig.apiBaseUrl,
+              headers: {'X-Profile-ID': profile.studentId},
+            ),
+          );
+
           // Get auth token
-          final token = await ref.read(firebaseAuthServiceProvider).getIdToken();
+          final token = await ref
+              .read(firebaseAuthServiceProvider)
+              .getIdToken();
           if (token != null) {
             dio.options.headers['Authorization'] = 'Bearer $token';
           }
-          
+
           final response = await dio.get('/student/subject/$subjectId/topics');
           final topics = (response.data['topics'] as List?);
           if (topics != null) {
-            final match = topics.firstWhere((t) => (t['id'] ?? t['topic_id']) == topic.id, orElse: () => null);
+            final match = topics.firstWhere(
+              (t) => (t['id'] ?? t['topic_id']) == topic.id,
+              orElse: () => null,
+            );
             if (match != null && match['project_details'] != null) {
               htmlDetails = match['project_details'];
             }
@@ -703,9 +731,12 @@ class _TopicCard extends ConsumerWidget {
             .replaceAll('&nbsp;', ' ')
             .replaceAll(RegExp(r'\n+'), '\n')
             .trim();
-            
-        final lines = cleanHtml.split('\n').where((line) => line.trim().isNotEmpty).toList();
-        
+
+        final lines = cleanHtml
+            .split('\n')
+            .where((line) => line.trim().isNotEmpty)
+            .toList();
+
         if (lines.isNotEmpty) {
           description = lines[0];
           if (lines.length > 1) {
@@ -718,7 +749,8 @@ class _TopicCard extends ConsumerWidget {
     }
 
     if (instructions.isEmpty) {
-      instructions = 'Explore and practice ${topic.name} through hands-on activities and real-world examples to strengthen your understanding.';
+      instructions =
+          'Explore and practice ${topic.name} through hands-on activities and real-world examples to strengthen your understanding.';
     }
 
     if (!context.mounted) return;
@@ -729,7 +761,7 @@ class _TopicCard extends ConsumerWidget {
         topicName: topic.name,
         instructions: instructions,
         description: description,
-        imagePath: 'assets/images/project_manager.jpg', 
+        imagePath: 'assets/images/project_manager.jpg',
       ),
     );
   }
@@ -741,15 +773,22 @@ class _TopicCard extends ConsumerWidget {
     } else if (assetPath.contains('9. Mental Math')) {
       projectButtonPath = 'assets/Updated 2/Project 6.png'; // Purple
     } else {
-      projectButtonPath = 'assets/Updated 2/Project 3.png'; // Pink (Academic Math)
+      // Academic Math (Pink) - Project 3 is the pink version of the Activity button
+      projectButtonPath = 'assets/Updated 2/Project 3.png';
     }
 
     return Image.asset(
       projectButtonPath,
-      height: 34 * scale,
+      height: 30 * scale,
       fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Image.asset(
+        'assets/Updated 2/Activity.png',
+        height: 30 * scale,
+        fit: BoxFit.contain,
+      ),
     );
   }
+
   Widget _buildLevelBadge(BuildContext context, int level) {
     final test = topic.tests.firstWhere(
       (t) => t.level == level,
@@ -763,11 +802,51 @@ class _TopicCard extends ConsumerWidget {
       statusStr = 'On progress';
     }
 
-    // Map level 1,2,3 to new asset indices 7,8,9
-    final int assetIndex = level + 6;
-    final String assetPath = 'assets/Updated 2/Quiz $statusStr $assetIndex.png';
-    final bool isPremiumLocked = topic.isPremium && !isPremiumUser;
+    String finalAssetPath;
 
+    // Determine if it's Academic Math or other subject
+    if (assetPath.contains('9. Mental Math')) {
+      // Mental Math (Purple) - Use newly provided assets from mental_math folder
+      int index;
+      if (statusStr == 'Completed') {
+        index = level + 30; // 31, 32, 33
+      } else if (statusStr == 'Not Started') {
+        index = level + 30; // 31, 32, 33
+      } else {
+        // On progress
+        index = level + 18; // 19, 20, 21
+      }
+      finalAssetPath = 'assets/mental_math/Quiz $statusStr $index.png';
+    } else if (assetPath.contains('8. Logical Reasoning')) {
+      // Logical Reasoning (Blue) - Use newly provided assets from logical_reasoning folder
+      int index;
+      if (statusStr == 'Completed') {
+        index = (level == 1) ? 20 : (level == 2 ? 23 : 26);
+      } else if (statusStr == 'Not Started') {
+        index = (level == 1) ? 21 : (level == 2 ? 24 : 27);
+      } else {
+        // On progress
+        index = (level == 1) ? 13 : (level == 2 ? 14 : 15);
+      }
+      finalAssetPath = 'assets/logical_reasoning/Quiz $statusStr $index.png';
+    } else if (assetPath.contains('10. Olympiad path')) {
+      // Olympiad (Green) - Use Quiz Buttons folder (1, 2, 3)
+      finalAssetPath = 'assets/Quiz Buttons/Quiz $statusStr $level.png';
+    } else {
+      // Academic Math (Pink) uses the 21, 24, 27 etc naming scheme from the 'academic math' folder
+      int index;
+      if (statusStr == 'Completed') {
+        index = (level == 1) ? 21 : (level == 2 ? 24 : 27);
+      } else if (statusStr == 'Not Started') {
+        index = (level == 1) ? 19 : (level == 2 ? 22 : 25);
+      } else {
+        // On progress
+        index = (level == 1) ? 10 : (level == 2 ? 11 : 12);
+      }
+      finalAssetPath = 'assets/academic_math/Quiz $statusStr $index.png';
+    }
+
+    final bool isPremiumLocked = topic.isPremium && !isPremiumUser;
     final bool isCompleted = test.status == 'completed';
 
     return GestureDetector(
@@ -775,10 +854,16 @@ class _TopicCard extends ConsumerWidget {
           ? null
           : () => context.go('/quiz/${test.testId}', extra: subjectId),
       child: Image.asset(
-        assetPath,
-        width: 58 * scale,
-        height: 22 * scale,
+        finalAssetPath,
+        width: 80 * scale,
+        height: 30 * scale,
         fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/Quiz Buttons/Quiz $statusStr $level.png',
+          width: 80 * scale,
+          height: 30 * scale,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }
@@ -799,19 +884,22 @@ class _TopicCard extends ConsumerWidget {
     final isNotStarted = topic.status == 'not_started';
 
     final String actionPath = isNotStarted
-        ? (isOlympiad ? 'assets/Updated 2/Start2.png' : 'assets/Updated 2/Start1.png')
-        : (isOlympiad ? '$assetPath/OBJECTS-1.png' : 'assets/Updated 2/COntinue 1.png');
+        ? (isOlympiad
+              ? 'assets/Updated 2/Start2.png'
+              : 'assets/Updated 2/Start1.png')
+        : (isOlympiad
+              ? '$assetPath/OBJECTS-1.png'
+              : 'assets/Updated 2/COntinue 1.png');
     return GestureDetector(
       onTap: () => context.go('/quiz/${next.testId}', extra: subjectId),
       child: Image.asset(
         actionPath,
-        height: 34 * scale,
+        height: 30 * scale,
         fit: BoxFit.contain,
       ),
     );
   }
 }
-
 
 class _SharedUnlockPremiumButton extends StatelessWidget {
   final double scale;
@@ -826,11 +914,13 @@ class _SharedUnlockPremiumButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Image.asset(
       'assets/Updated 2/Premium Button.png',
-      height: 38 * scale,
+      height: 30 * scale,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => Container(
         padding: EdgeInsets.symmetric(
-            horizontal: 10 * scale, vertical: 4 * scale),
+          horizontal: 10 * scale,
+          vertical: 4 * scale,
+        ),
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(15 * scale),
@@ -885,7 +975,12 @@ class ProjectDialog extends StatelessWidget {
           // ── Main Dialog Card ──────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(20 * scale, 56 * scale, 20 * scale, 24 * scale),
+            padding: EdgeInsets.fromLTRB(
+              20 * scale,
+              56 * scale,
+              20 * scale,
+              24 * scale,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24 * scale),
@@ -932,7 +1027,11 @@ class ProjectDialog extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.lightbulb_outline, color: Color(0xFFD91E5B), size: 20),
+                      const Icon(
+                        Icons.lightbulb_outline,
+                        color: Color(0xFFD91E5B),
+                        size: 20,
+                      ),
                       SizedBox(width: 10 * scale),
                       Expanded(
                         child: Text(

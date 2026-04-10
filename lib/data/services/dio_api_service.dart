@@ -70,6 +70,7 @@ class DioApiService implements ApiService {
       schoolName: data['school_name'],
       className: data['class_name'],
       sectionName: data['section_name'],
+      sectionId: data['section_id'],
       gender: data['gender'],
       country: data['country'],
       phone: data['phone'],
@@ -233,5 +234,36 @@ class DioApiService implements ApiService {
       '/student/challenge-room/quit',
       data: {'room_id': roomId},
     );
+  }
+
+  @override
+  Future<List<LeaderboardEntry>> getLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+    required String sectionId,
+  }) async {
+    final response = await _dio.get(
+      '/leaderboard/$type/$schoolId/class/$classId/section/$sectionId',
+    );
+    final list = response.data as List<dynamic>? ?? [];
+    return list
+        .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<List<LeaderboardEntry>> getClassLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+  }) async {
+    final response = await _dio.get(
+      '/leaderboard/$type/$schoolId/class/$classId',
+    );
+    final list = response.data as List<dynamic>? ?? [];
+    return list
+        .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

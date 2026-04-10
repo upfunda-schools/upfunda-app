@@ -102,7 +102,28 @@ class MockApiService implements ApiService {
       throw UnimplementedError('MockApiService does not support challenge rooms');
 
   @override
-  Future<void> quitChallengeRoom(String roomId) =>
-      throw UnimplementedError('MockApiService does not support challenge rooms');
+  Future<void> quitChallengeRoom(String roomId) async {
+    throw UnimplementedError('MockApiService does not support challenge rooms');
+  }
 
+  @override
+  Future<List<LeaderboardEntry>> getLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+    required String sectionId,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return MockData.submitTestResponse.leaderboard;
+  }
+
+  @override
+  Future<List<LeaderboardEntry>> getClassLeaderBoard({
+    required String type,
+    required String schoolId,
+    required String classId,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return MockData.submitTestResponse.leaderboard;
+  }
 }
