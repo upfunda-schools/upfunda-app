@@ -53,6 +53,7 @@ import '../../features/challenge/bot/challenge_bot_result_screen.dart';
 import '../../features/challenge/room/challenge_room_lobby_screen.dart';
 import '../../features/challenge/room/challenge_room_quiz_screen.dart';
 import '../../features/challenge/room/challenge_room_result_screen.dart';
+import '../../features/leaderboard/leaderboard_screen.dart';
 
 class _RouterNotifier extends ChangeNotifier {
   void notify() => notifyListeners();
@@ -326,6 +327,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/challenge/room/result',
         builder: (context, state) => const ChallengeRoomResultScreen(),
+      ),
+      GoRoute(
+        path: '/leaderboard',
+        builder: (context, state) => const LeaderBoardScreen(),
       ),
     ],
     errorBuilder: (context, state) =>

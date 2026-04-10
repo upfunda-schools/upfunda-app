@@ -19,6 +19,7 @@ class UserProfile {
   final String? gender;
   final String? className;
   final String? sectionName;
+  final String? sectionId;
   final int upPoints;
   final String? classId;
   final String? schoolId;
@@ -36,6 +37,7 @@ class UserProfile {
     this.gender,
     this.className,
     this.sectionName,
+    this.sectionId,
     this.upPoints = 0,
     this.classId,
     this.schoolId,
@@ -54,6 +56,7 @@ class UserProfile {
         gender: json['gender'] as String?,
         className: json['class_name'] as String?,
         sectionName: json['section_name'] as String?,
+        sectionId: json['section_id'] as String?,
         upPoints: json['up_points'] as int? ?? 0,
         classId: json['class_id'] as String?,
         schoolId: json['school_id'] as String?,
