@@ -33,6 +33,9 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
     final userState = ref.watch(userProvider);
     final isPremium = (userState.profile?.isPremiumUser ?? false) ||
         (userState.homeData?.isPremiumUser ?? false);
+    final String gradeLabel = userState.profile?.className != null
+        ? 'Grade ${userState.profile!.className}'
+        : '';
 
     // Single scale factor relative to iPhone 13 Pro (390 logical px wide).
     // Clamped so tiny phones don't shrink too much and tablets don't over-expand.
@@ -197,6 +200,7 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                                     subject: subject,
                                                     index: index,
                                                     scale: scale,
+                                                    gradeLabel: gradeLabel,
                                                     onTap: () => context.go(
                                                       '/worksheets-list/${subject.subjectId}',
                                                     ),
@@ -369,6 +373,7 @@ class _CategoryCardAssetBased extends StatelessWidget {
   final int index;
   final VoidCallback onTap;
   final double scale;
+  final String gradeLabel;
 
   const _CategoryCardAssetBased({
     required this.assetPath,
@@ -376,6 +381,7 @@ class _CategoryCardAssetBased extends StatelessWidget {
     required this.index,
     required this.onTap,
     required this.scale,
+    required this.gradeLabel,
   });
 
   @override
@@ -482,7 +488,7 @@ class _CategoryCardAssetBased extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Grade 5',
+                            gradeLabel,
                             style: GoogleFonts.fredoka(
                               fontSize: 10 * scale,
                               fontWeight: FontWeight.w600,

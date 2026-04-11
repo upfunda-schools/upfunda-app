@@ -31,6 +31,10 @@ class WorksheetNotifier extends StateNotifier<WorksheetState> {
 
   WorksheetNotifier(this._api) : super(const WorksheetState());
 
+  void clear() {
+    state = const WorksheetState();
+  }
+
   Future<void> loadSubjects() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
