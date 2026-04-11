@@ -49,6 +49,10 @@ flutter:
     - "assets/10. Olympiad path/"
     - "assets/Quiz Buttons/"
     - "assets/Updated 2/"
+    - "assets/academic_math/"
+    - "assets/logical_reasoning/"
+    - "assets/mental_math/"
+    - "assets/continue button/"
 
 flutter_launcher_icons:
   android: true

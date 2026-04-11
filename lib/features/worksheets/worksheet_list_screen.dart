@@ -507,8 +507,14 @@ class _TopicCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCompleted = topic.status == 'completed';
-    final isNotStarted = topic.status == 'not_started';
+    final String topicStatus = topic.status.toLowerCase();
+    final isCompleted = topicStatus.contains('complete');
+    final isNotStarted = topicStatus.contains('not') || 
+                         (!topicStatus.contains('progress') && !topicStatus.contains('started') && topic.progressPercentage == 0);
+    
+    final hasInProgressQuiz = topic.tests.any((t) =>
+        t.status.toLowerCase().contains('progress') ||
+        (t.status.toLowerCase().contains('started') && !t.status.toLowerCase().contains('not')));
 
     final barColor = themeColor;
     final textColor = themeColor;
@@ -555,7 +561,7 @@ class _TopicCard extends ConsumerWidget {
                     Image.asset(
                       isCompleted
                           ? '$assetPath/Completed.png'
-                          : isNotStarted
+                          : (isNotStarted && !hasInProgressQuiz)
                           ? '$assetPath/Not Started.png'
                           : '$assetPath/Inprogress.png',
                       height: 12 * scale,
@@ -646,19 +652,11 @@ class _TopicCard extends ConsumerWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ...() {
-                                    final quizCount = topic.tests.length;
-                                    if (quizCount < 1 || quizCount > 3) {
-                                      return <Widget>[];
-                                    }
-                                    return [
-                                      for (int i = 1; i <= quizCount; i++) ...[
-                                        _buildLevelBadge(context, i),
-                                        if (i < quizCount)
-                                          SizedBox(width: 3 * scale),
-                                      ],
-                                    ];
-                                  }(),
+                                  for (int i = 1; i <= topic.tests.length; i++) ...[
+                                    _buildLevelBadge(context, i),
+                                    if (i < topic.tests.length)
+                                      SizedBox(width: 2 * scale),
+                                  ],
                                 ],
                               ),
                             ),
@@ -669,9 +667,11 @@ class _TopicCard extends ConsumerWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (topic.status != 'completed') ...[
+                          if ((topic.isPremium && !isPremiumUser) ||
+                              assetPath.contains('10. Olympiad path') ||
+                              isNotStarted) ...[
                             _buildActionButton(context, assetPath),
-                            SizedBox(width: 4 * scale),
+                            SizedBox(width: 2 * scale),
                           ],
                           if (!assetPath.contains('Olympiad'))
                             GestureDetector(
@@ -813,10 +813,30 @@ class _TopicCard extends ConsumerWidget {
       orElse: () => topic.tests.first,
     );
 
+    final nextTest = topic.tests.firstWhere(
+      (t) => !t.status.toLowerCase().contains('complete'),
+      orElse: () => topic.tests.last,
+    );
+
+    final String tStatus = test.status.toLowerCase();
+    final String topicStatus = topic.status.toLowerCase();
+    
+    // Check if topic is active (started or in progress)
+    final bool topicIsActive = topicStatus.contains('progress') ||
+        (topicStatus.contains('started') && !topicStatus.contains('not')) ||
+        topic.progressPercentage > 0;
+
     String statusStr = 'Not Started';
-    if (test.status == 'completed') {
+    // Individual quiz premium check: If topic is premium and user is not, all quizzes are locked
+    final bool isQuizPremiumLocked = topic.isPremium && !isPremiumUser;
+    
+    if (isQuizPremiumLocked) {
+      statusStr = 'Premium';
+    } else if (tStatus.contains('complete')) {
       statusStr = 'Completed';
-    } else if (test.status == 'in_progress') {
+    } else if (tStatus.contains('progress') ||
+        (tStatus.contains('started') && !tStatus.contains('not')) ||
+        (topicIsActive && nextTest.level == level)) {
       statusStr = 'On progress';
     }
 
@@ -871,97 +891,94 @@ class _TopicCard extends ConsumerWidget {
       onTap: (isPremiumLocked || isCompleted)
           ? null
           : () => context.go('/quiz/${test.testId}', extra: subjectId),
-      child: Image.asset(
-        finalAssetPath,
-        width: 80 * scale,
-        height: 30 * scale,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Image.asset(
-          'assets/Quiz Buttons/Quiz $statusStr $level.png',
-          width: 80 * scale,
+      child: Builder(builder: (context) {
+        if (statusStr == 'Premium') {
+          return Image.asset(
+            'assets/continue button/premium_button_for_standard_student.png',
+            width: 75 * scale,
+            height: 30 * scale,
+            fit: BoxFit.contain,
+          );
+        }
+        if (statusStr == 'On progress') {
+          String continueAsset;
+          final String p = assetPath.toLowerCase();
+          if (p.contains('logical') || p.contains('reasoning')) {
+            continueAsset =
+                'assets/continue button/logical_reasoning_continue_button.png';
+          } else if (p.contains('mental') && p.contains('math')) {
+            continueAsset =
+                'assets/continue button/mental_math_continue_button.png';
+          } else if (p.contains('olympiad')) {
+            continueAsset = 'assets/10. Olympiad path/OBJECTS.png';
+          } else {
+            continueAsset =
+                'assets/continue button/academic_continue_button.png';
+          }
+
+          return Image.asset(
+            continueAsset,
+            width: 75 * scale,
+            height: 30 * scale,
+            fit: BoxFit.contain,
+          );
+        }
+
+        return Image.asset(
+          finalAssetPath,
+          width: 75 * scale,
           height: 30 * scale,
           fit: BoxFit.contain,
-        ),
-      ),
+          errorBuilder: (context, error, stackTrace) => Image.asset(
+            'assets/Quiz Buttons/Quiz $statusStr $level.png',
+            width: 75 * scale,
+            height: 30 * scale,
+            fit: BoxFit.contain,
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildActionButton(BuildContext context, String assetPath) {
-    if (topic.status == 'completed') {
-      return const SizedBox.shrink();
-    }
-    if (topic.isPremium && !isPremiumUser) {
-      return _SharedUnlockPremiumButton(scale: scale, assetPath: assetPath);
-    }
-    final next = topic.tests.firstWhere(
-      (t) => t.status != 'completed',
-      orElse: () => topic.tests.last,
-    );
+    // Buttons only shown for Olympiad Math in this 4th position
+    if (assetPath.contains('10. Olympiad path')) {
+      final hasInProgressQuiz = topic.tests.any((t) =>
+          t.status.toLowerCase().contains('progress') ||
+          t.status == 'started');
+      final isTopicStarted = topic.status.toLowerCase().contains('progress') ||
+          topic.status == 'started' ||
+          (topic.progressPercentage > 0 && topic.progressPercentage < 100);
 
-    final isOlympiad = assetPath.contains('10. Olympiad path');
-    final isNotStarted = topic.status == 'not_started';
+      final isInProgress = isTopicStarted || hasInProgressQuiz;
 
-    final String actionPath = isNotStarted
-        ? (isOlympiad
-              ? 'assets/Updated 2/Start2.png'
-              : 'assets/Updated 2/Start1.png')
-        : (isOlympiad
-              ? '$assetPath/OBJECTS-1.png'
-              : 'assets/Updated 2/COntinue 1.png');
-    return GestureDetector(
-      onTap: () => context.go('/quiz/${next.testId}', extra: subjectId),
-      child: Image.asset(
-        actionPath,
-        height: 30 * scale,
-        fit: BoxFit.contain,
-      ),
-    );
+      final String buttonAsset = isInProgress
+          ? 'assets/10. Olympiad path/OBJECTS.png' // Continue
+          : 'assets/10. Olympiad path/OBJECTS-3.png'; // Start
+
+      return GestureDetector(
+        onTap: () {
+          final nextTest = topic.tests.firstWhere(
+            (t) => !t.status.toLowerCase().contains('complete'),
+            orElse: () => topic.tests.last,
+          );
+          context.go('/quiz/${nextTest.testId}', extra: subjectId);
+        },
+        child: Image.asset(
+          buttonAsset,
+          width: 75 * scale,
+          height: 30 * scale,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+
+    // Hide 4th place button for all other subjects (Academic, Logical, Mental Math)
+    return const SizedBox.shrink();
   }
 }
 
-class _SharedUnlockPremiumButton extends StatelessWidget {
-  final double scale;
-  final String assetPath;
 
-  const _SharedUnlockPremiumButton({
-    required this.scale,
-    required this.assetPath,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/Updated 2/Premium Button.png',
-      height: 30 * scale,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 10 * scale,
-          vertical: 4 * scale,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(15 * scale),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.lock, color: Colors.white, size: 10),
-            const SizedBox(width: 4),
-            Text(
-              'UNLOCK',
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontSize: 10 * scale,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _TeacherGatedWidget extends StatelessWidget {
   final double scale;
