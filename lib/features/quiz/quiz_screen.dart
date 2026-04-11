@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
 import '../../data/models/quiz_model.dart';
@@ -25,15 +26,40 @@ class QuizScreen extends ConsumerStatefulWidget {
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends ConsumerState<QuizScreen> {
+class _QuizScreenState extends ConsumerState<QuizScreen>
+    with WidgetsBindingObserver {
   bool _showedTimeUp = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     Future.microtask(
       () => ref.read(quizProvider.notifier).initializeQuiz(widget.testId, subjectId: widget.subjectId),
     );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Stop heartbeat and pause server timer when screen is disposed
+    // (covers in-app back-navigation which doesn't trigger AppLifecycle events)
+    final quizState = ref.read(quizProvider);
+    if (quizState.testId.isNotEmpty && quizState.submitResult == null) {
+      ref.read(quizProvider.notifier).pauseQuiz();
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (lifecycleState == AppLifecycleState.paused ||
+        lifecycleState == AppLifecycleState.inactive ||
+        lifecycleState == AppLifecycleState.hidden) {
+      ref.read(quizProvider.notifier).pauseQuiz();
+    } else if (lifecycleState == AppLifecycleState.resumed) {
+      ref.read(quizProvider.notifier).resumeQuiz();
+    }
   }
 
   @override
@@ -62,6 +88,64 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       return const Scaffold(
         backgroundColor: AppColors.quizBg,
         body: LoaderWidget(message: 'Loading quiz...'),
+      );
+    }
+
+    if (quizState.isTimedOut) {
+      return Scaffold(
+        backgroundColor: AppColors.quizBg,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_off_outlined,
+                      color: Colors.white70, size: 72),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Test Timed Out',
+                    style: GoogleFonts.cherryBombOne(
+                      color: Colors.white,
+                      fontSize: 26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'This test has already timed out. Please contact your teacher if you need to retake it.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => context.go('/worksheets'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.quizBg,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 14),
+                    ),
+                    child: Text(
+                      'Back to Worksheets',
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       );
     }
 

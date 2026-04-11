@@ -37,6 +37,8 @@ abstract class ApiService {
 
   Future<void> resumeTest(String testId);
 
+  Future<void> sendHeartbeat(String testId);
+
   // Challenge (bot) endpoints
   Future<BotChallengeSession> startChallenge();
 

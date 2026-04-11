@@ -7,6 +7,7 @@ import '../../core/utils/profile_storage.dart';
 import '../../data/models/profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/worksheet_provider.dart';
 
 class SelectProfileScreen extends ConsumerStatefulWidget {
   const SelectProfileScreen({super.key});
@@ -53,6 +54,7 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
     ProfileStorage.profileId = profile.profileId;
     ref.read(authProvider.notifier).completeProfileSelection();
     ref.read(userProvider.notifier).clear();
+    ref.read(worksheetProvider.notifier).clear();
     try {
       await Future.wait([
         ref.read(userProvider.notifier).loadHome(),

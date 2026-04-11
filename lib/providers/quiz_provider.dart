@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/quiz_model.dart';
 import '../data/models/submit_model.dart';
 import 'auth_provider.dart';
 
 final quizProvider =
-    StateNotifierProvider<QuizNotifier, QuizState>((ref) {
+    StateNotifierProvider.autoDispose<QuizNotifier, QuizState>((ref) {
   return QuizNotifier(ref.read(apiServiceProvider));
 });
 
@@ -64,6 +65,9 @@ class QuizState {
   final Map<String, int> questionStartTime;
   final Map<String, int> questionTimeSpent;
 
+  // Server reported this test as timed out (HTTP 409)
+  final bool isTimedOut;
+
   const QuizState({
     this.testId = '',
     this.testName = '',
@@ -85,6 +89,7 @@ class QuizState {
     this.fiftyFiftyLimit = 0,
     this.questionStartTime = const {},
     this.questionTimeSpent = const {},
+    this.isTimedOut = false,
   });
 
   QuizState copyWith({
@@ -108,6 +113,7 @@ class QuizState {
     int? fiftyFiftyLimit,
     Map<String, int>? questionStartTime,
     Map<String, int>? questionTimeSpent,
+    bool? isTimedOut,
   }) =>
       QuizState(
         testId: testId ?? this.testId,
@@ -130,6 +136,7 @@ class QuizState {
         fiftyFiftyLimit: fiftyFiftyLimit ?? this.fiftyFiftyLimit,
         questionStartTime: questionStartTime ?? this.questionStartTime,
         questionTimeSpent: questionTimeSpent ?? this.questionTimeSpent,
+        isTimedOut: isTimedOut ?? this.isTimedOut,
       );
 
   Question? get currentQuestion {
@@ -176,11 +183,12 @@ class QuizState {
 class QuizNotifier extends StateNotifier<QuizState> {
   final dynamic _api;
   Timer? _timer;
+  Timer? _heartbeatTimer;
 
   QuizNotifier(this._api) : super(const QuizState());
 
   Future<void> initializeQuiz(String testId, {String subjectId = ''}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, isTimedOut: false);
     try {
       // Page 1 gives us alreadyAnswered (all pages) and pagination info
       final TestDetailsResponse firstPage =
@@ -266,8 +274,17 @@ class QuizNotifier extends StateNotifier<QuizState> {
 
       if (state.remainingSeconds > 0) {
         _startTimer();
+        _startHeartbeat();
       }
     } catch (e) {
+      if (e is DioException) {
+        final data = e.response?.data;
+        final msg = (data is Map ? data['error'] as String? : null) ?? '';
+        if (msg == 'test has timed out') {
+          state = state.copyWith(isLoading: false, isTimedOut: true);
+          return;
+        }
+      }
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -281,6 +298,42 @@ class QuizNotifier extends StateNotifier<QuizState> {
       }
       state = state.copyWith(remainingSeconds: state.remainingSeconds - 1);
     });
+  }
+
+  void _startHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      if (state.testId.isEmpty) return;
+      try {
+        await _api.sendHeartbeat(state.testId);
+      } catch (_) {}
+    });
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+  }
+
+  Future<void> resumeQuiz() async {
+    if (state.testId.isEmpty) return;
+    try {
+      await _api.resumeTest(state.testId);
+      final data = await _api.getTestDetails(state.testId, page: 1);
+      final remaining = data.timer?.remainingSeconds ?? state.remainingSeconds;
+      state = state.copyWith(remainingSeconds: remaining);
+      if (remaining > 0) {
+        _startTimer();
+        _startHeartbeat();
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _stopHeartbeat();
+    super.dispose();
   }
 
   void answerQuestion(String questionId, String option) {
@@ -421,6 +474,7 @@ class QuizNotifier extends StateNotifier<QuizState> {
 
   Future<SubmitTestResponse> submitTest() async {
     _timer?.cancel();
+    _stopHeartbeat();
     final result = await _api.submitTest(state.testId);
     state = state.copyWith(submitResult: result);
     return result;
@@ -428,6 +482,7 @@ class QuizNotifier extends StateNotifier<QuizState> {
 
   Future<void> pauseQuiz() async {
     _timer?.cancel();
+    _stopHeartbeat();
     try {
       await _api.pauseTest(state.testId);
     } catch (_) {}
@@ -459,9 +514,4 @@ class QuizNotifier extends StateNotifier<QuizState> {
     } catch (_) {}
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
 }

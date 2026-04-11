@@ -73,6 +73,9 @@ class MockApiService implements ApiService {
   Future<void> resumeTest(String testId) async {}
 
   @override
+  Future<void> sendHeartbeat(String testId) async {}
+
+  @override
   Future<BotChallengeSession> startChallenge() =>
       throw UnimplementedError('MockApiService does not support challenge');
 
