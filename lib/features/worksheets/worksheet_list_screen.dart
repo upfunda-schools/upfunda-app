@@ -84,6 +84,10 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
     final double scale = (screenWidth / 390.0).clamp(0.80, 1.35);
 
     final themeColor = _getHeaderColor(widget.subjectId);
+    final bool isTeacherGated =
+        state.data != null &&
+        state.data!.teacherGated &&
+        state.filteredTopics.isEmpty;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -93,9 +97,14 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
-        child: SingleChildScrollView(
-          child: Stack(
-            children: [
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(testListProvider.notifier).loadTopics(widget.subjectId),
+          color: themeColor,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Stack(
+              children: [
               // ── 1. Thematic background (now scrollable) ──────────────
               Container(
                 height: 410 * scale,
@@ -131,21 +140,23 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                   _buildMasterArithmeticButton(scale),
                   SizedBox(height: 15 * scale),
                   _buildSearchBar(scale),
-                  SizedBox(height: 15 * scale),
-                  Text(
-                    '${state.filteredTopics.length} TOPICS FOUND',
-                    style: GoogleFonts.cherryBombOne(
-                      color: Colors.white,
-                      fontSize: 16 * scale,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  if (!isTeacherGated) ...[
+                    SizedBox(height: 15 * scale),
+                    Text(
+                      '${state.filteredTopics.length} TOPICS FOUND',
+                      style: GoogleFonts.cherryBombOne(
+                        color: Colors.white,
+                        fontSize: 16 * scale,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                   SizedBox(height: 22 * scale),
 
                   // ── Wave + Banner + Cards stack ───────────────────────────
@@ -163,36 +174,42 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                         ),
                       ),
 
-                      // "SELECT A TOPIC" banner
-                      Positioned(
-                        top: 25 * scale,
-                        child: Image.asset(
-                          '$assetPath/Group 40.png',
-                          width: 220 * scale,
+                      // "SELECT A TOPIC" banner (hidden when teacher-gated)
+                      if (!isTeacherGated)
+                        Positioned(
+                          top: 25 * scale,
+                          child: Image.asset(
+                            '$assetPath/Group 40.png',
+                            width: 220 * scale,
+                          ),
                         ),
-                      ),
 
-                      // Topic cards
+                      // Topic cards or teacher-gated message
                       Container(
                         margin: EdgeInsets.only(top: 110 * scale),
                         width: double.infinity,
                         color: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 22 * scale),
-                        child: Column(
-                          children: [
-                            ...state.filteredTopics.map(
-                              (topic) => _TopicCard(
-                                topic: topic,
-                                subjectId: widget.subjectId,
-                                isPremiumUser: isPremiumUser,
+                        child: isTeacherGated
+                            ? _TeacherGatedWidget(
                                 scale: scale,
-                                assetPath: assetPath,
                                 themeColor: themeColor,
+                              )
+                            : Column(
+                                children: [
+                                  ...state.filteredTopics.map(
+                                    (topic) => _TopicCard(
+                                      topic: topic,
+                                      subjectId: widget.subjectId,
+                                      isPremiumUser: isPremiumUser,
+                                      scale: scale,
+                                      assetPath: assetPath,
+                                      themeColor: themeColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 50),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 50),
-                          ],
-                        ),
                       ),
                     ],
                   ),
@@ -202,7 +219,8 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   // ── Header row (back button + subject name + premium badge) ──────────────
@@ -940,6 +958,44 @@ class _SharedUnlockPremiumButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TeacherGatedWidget extends StatelessWidget {
+  final double scale;
+  final Color themeColor;
+
+  const _TeacherGatedWidget({required this.scale, required this.themeColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 48 * scale, horizontal: 24 * scale),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lock_outline, size: 64 * scale, color: themeColor),
+          SizedBox(height: 16 * scale),
+          Text(
+            'Topics Locked',
+            style: GoogleFonts.cherryBombOne(
+              fontSize: 22 * scale,
+              color: const Color(0xFF2D2D2D),
+            ),
+          ),
+          SizedBox(height: 8 * scale),
+          Text(
+            'Contact your teacher to unlock these topics',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 14 * scale,
+              color: const Color(0xFF374151),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
