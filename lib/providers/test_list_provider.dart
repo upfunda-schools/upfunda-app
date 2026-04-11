@@ -3,7 +3,7 @@ import '../data/models/topics_model.dart';
 import 'auth_provider.dart';
 
 final testListProvider =
-    StateNotifierProvider<TestListNotifier, TestListState>((ref) {
+    StateNotifierProvider.autoDispose<TestListNotifier, TestListState>((ref) {
   return TestListNotifier(ref.read(apiServiceProvider));
 });
 
