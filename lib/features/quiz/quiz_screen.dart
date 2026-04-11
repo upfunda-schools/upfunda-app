@@ -724,6 +724,12 @@ class SolutionPanel extends StatelessWidget {
         .replaceAll(RegExp(r'</p>|</div>|<br\s*/?>'), '\n')
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll('&nbsp;', ' ')
+        .replaceAll('&rarr;', '→')
+        .replaceAll('&larr;', '←')
+        .replaceAll('&deg;', '°')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&amp;', '&')
         .replaceAll(RegExp(r'\n+'), '\n')
         .trim();
     return text;
