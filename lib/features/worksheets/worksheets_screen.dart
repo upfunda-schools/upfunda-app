@@ -182,31 +182,34 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                           horizontal: 10 * scale,
                                         ),
                                         child: Center(
-                                          child: Wrap(
-                                            alignment: WrapAlignment.center,
-                                            spacing: 15 * scale,
-                                            runSpacing: 15 * scale,
-                                            children: List.generate(
-                                              state.data!.subjects.length,
-                                              (index) {
-                                                final subject =
-                                                    state.data!.subjects[index];
-                                                return SizedBox(
-                                                  width: 170 * scale,
-                                                  height: 220 * scale,
-                                                  child:
-                                                      _CategoryCardAssetBased(
-                                                    assetPath: _assetPath,
-                                                    subject: subject,
-                                                    index: index,
-                                                    scale: scale,
-                                                    gradeLabel: gradeLabel,
-                                                    onTap: () => context.go(
-                                                      '/worksheets-list/${subject.subjectId}',
+                                          child: SizedBox(
+                                            width: (170 * 2 + 20) * scale,
+                                            child: Wrap(
+                                              alignment: WrapAlignment.center,
+                                              spacing: 15 * scale,
+                                              runSpacing: 15 * scale,
+                                              children: List.generate(
+                                                state.data!.subjects.length,
+                                                (index) {
+                                                  final subject =
+                                                      state.data!.subjects[index];
+                                                  return SizedBox(
+                                                    width: 170 * scale,
+                                                    height: 220 * scale,
+                                                    child:
+                                                        _CategoryCardAssetBased(
+                                                      assetPath: _assetPath,
+                                                      subject: subject,
+                                                      index: index,
+                                                      scale: scale,
+                                                      gradeLabel: gradeLabel,
+                                                      onTap: () => context.go(
+                                                        '/worksheets-list/${subject.subjectId}',
+                                                      ),
                                                     ),
-                                                  ),
-                                                );
-                                              },
+                                                  );
+                                                },
+                                              ),
                                             ),
                                           ),
                                         ),
