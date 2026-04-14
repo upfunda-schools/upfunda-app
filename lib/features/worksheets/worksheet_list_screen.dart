@@ -194,6 +194,9 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
                             ? _TeacherGatedWidget(
                                 scale: scale,
                                 themeColor: themeColor,
+                                onRefresh: () => ref
+                                    .read(testListProvider.notifier)
+                                    .loadTopics(widget.subjectId),
                               )
                             : Column(
                                 children: [
@@ -813,30 +816,18 @@ class _TopicCard extends ConsumerWidget {
       orElse: () => topic.tests.first,
     );
 
-    final nextTest = topic.tests.firstWhere(
-      (t) => !t.status.toLowerCase().contains('complete'),
-      orElse: () => topic.tests.last,
-    );
-
     final String tStatus = test.status.toLowerCase();
-    final String topicStatus = topic.status.toLowerCase();
-    
-    // Check if topic is active (started or in progress)
-    final bool topicIsActive = topicStatus.contains('progress') ||
-        (topicStatus.contains('started') && !topicStatus.contains('not')) ||
-        topic.progressPercentage > 0;
 
     String statusStr = 'Not Started';
     // Individual quiz premium check: If topic is premium and user is not, all quizzes are locked
     final bool isQuizPremiumLocked = topic.isPremium && !isPremiumUser;
-    
+
     if (isQuizPremiumLocked) {
       statusStr = 'Premium';
     } else if (tStatus.contains('complete')) {
       statusStr = 'Completed';
     } else if (tStatus.contains('progress') ||
-        (tStatus.contains('started') && !tStatus.contains('not')) ||
-        (topicIsActive && nextTest.level == level)) {
+        (tStatus.contains('started') && !tStatus.contains('not'))) {
       statusStr = 'On progress';
     }
 
@@ -983,8 +974,13 @@ class _TopicCard extends ConsumerWidget {
 class _TeacherGatedWidget extends StatelessWidget {
   final double scale;
   final Color themeColor;
+  final VoidCallback? onRefresh;
 
-  const _TeacherGatedWidget({required this.scale, required this.themeColor});
+  const _TeacherGatedWidget({
+    required this.scale,
+    required this.themeColor,
+    this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1004,12 +1000,25 @@ class _TeacherGatedWidget extends StatelessWidget {
           ),
           SizedBox(height: 8 * scale),
           Text(
-            'Contact your teacher to unlock these topics',
+            'Your teacher hasn\'t enabled any topics yet.\nPull down to check for updates.',
             textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 14 * scale,
               color: const Color(0xFF374151),
               fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 16 * scale),
+          TextButton.icon(
+            onPressed: onRefresh,
+            icon: Icon(Icons.refresh, size: 18 * scale, color: themeColor),
+            label: Text(
+              'Refresh',
+              style: GoogleFonts.montserrat(
+                fontSize: 14 * scale,
+                color: themeColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
