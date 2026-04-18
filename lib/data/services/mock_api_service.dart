@@ -129,4 +129,31 @@ class MockApiService implements ApiService {
     await Future.delayed(const Duration(milliseconds: 500));
     return MockData.submitTestResponse.leaderboard;
   }
+
+  @override
+  Future<List<dynamic>> getClasses() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return [
+      {'id': '1', 'grade': '1', 'name': 'First Grade'},
+      {'id': '2', 'grade': '2', 'name': 'Second Grade'},
+      {'id': '3', 'grade': '3', 'name': 'Third Grade'},
+      {'id': '4', 'grade': '4', 'name': 'Fourth Grade'},
+      {'id': '5', 'grade': '5', 'name': 'Fifth Grade'},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getSections(String schoolId, String classId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return [
+      {'id': 's1', 'name': 'A'},
+      {'id': 's2', 'name': 'B'},
+      {'id': 's3', 'name': 'C'},
+    ];
+  }
+
+  @override
+  Future<void> studentSignUp(Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+  }
 }

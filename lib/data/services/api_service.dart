@@ -73,4 +73,9 @@ abstract class ApiService {
     required String schoolId,
     required String classId,
   });
+
+  // Grade Promotion & Add Student
+  Future<List<dynamic>> getClasses();
+  Future<List<dynamic>> getSections(String schoolId, String classId);
+  Future<void> studentSignUp(Map<String, dynamic> data);
 }

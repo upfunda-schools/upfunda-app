@@ -271,4 +271,21 @@ class DioApiService implements ApiService {
         .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  @override
+  Future<List<dynamic>> getClasses() async {
+    final response = await _dio.get('/student/class');
+    return response.data as List<dynamic>? ?? [];
+  }
+
+  @override
+  Future<List<dynamic>> getSections(String schoolId, String classId) async {
+    final response = await _dio.get('/admin/$schoolId/class/$classId');
+    return response.data as List<dynamic>? ?? [];
+  }
+
+  @override
+  Future<void> studentSignUp(Map<String, dynamic> data) async {
+    await _dio.post('/student/signup', data: data);
+  }
 }

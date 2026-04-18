@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 import '../../shared/widgets/skeleton_loader.dart';
+import '../../shared/widgets/student_management_dialogs.dart';
 
 class StudentHomeScreen extends ConsumerStatefulWidget {
   const StudentHomeScreen({super.key});
@@ -153,9 +154,52 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                         ref.read(userProvider.notifier).clear();
                                         await ref.read(authProvider.notifier).logout();
                                         if (context.mounted) context.go('/login');
+                                      } else if (value == 'add_grade') {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => const GradePromotionDialog(),
+                                        );
+                                      } else if (value == 'add_student') {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => const AddStudentDialog(),
+                                        );
                                       }
                                     },
                                     itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 'add_grade',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.grade_rounded, color: Color(0xFF6C5CE7), size: 20),
+                                            SizedBox(width: 10),
+                                            Text(
+                                              'Add Grade',
+                                              style: TextStyle(
+                                                color: Color(0xFF1A1D4D),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'add_student',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.person_add_rounded, color: Color(0xFFF1659C), size: 20),
+                                            SizedBox(width: 10),
+                                            Text(
+                                              'Add Student',
+                                              style: TextStyle(
+                                                color: Color(0xFF1A1D4D),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuDivider(),
                                       const PopupMenuItem(
                                         value: 'logout',
                                         child: Row(
