@@ -47,6 +47,7 @@ import '../../features/games/memory_matching_screen.dart';
 import '../../features/auth/open_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/profile/select_profile_screen.dart';
+import '../../features/profile/add_student_screen.dart';
 import '../../features/challenge/challenge_home_screen.dart';
 import '../../features/challenge/bot/challenge_bot_screen.dart';
 import '../../features/challenge/bot/challenge_bot_result_screen.dart';
@@ -77,7 +78,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOpenRoute = state.matchedLocation == '/';
       final isSelectProfileRoute = state.matchedLocation == '/select-profile';
       final needsProfileSelection =
-          authState.requiresProfileSelection && ProfileStorage.profileId == null;
+          (authState.requiresProfileSelection || authState.profileCount == 0) && 
+          ProfileStorage.profileId == null;
+
+      // If they have 0 profiles, they MUST go to setup, even if an old ID is in storage.
+      final forceProfileSetup = authState.profileCount == 0;
 
       // Keep the user on login/open while the sign-in flow is still resolving
       // profiles, so we don't briefly render a default student home first.
@@ -99,7 +104,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Login is the only place that should kick off profile selection.
       if (isLoggedIn && isLoginRoute) {
-        if (needsProfileSelection) {
+        if (forceProfileSetup || needsProfileSelection) {
           return '/select-profile';
         }
         return '/student-home';
@@ -107,14 +112,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Signed-in users should not stay on landing or signup pages.
       if (isLoggedIn && (isOpenRoute || isSignupRoute)) {
-        if (needsProfileSelection) {
+        if (forceProfileSetup || needsProfileSelection) {
           return '/select-profile';
         }
         return '/student-home';
       }
 
-      // After login, block student routes until the profile is chosen.
-      if (isLoggedIn && needsProfileSelection && !isSelectProfileRoute) {
+      // After login, block student routes until the profile is chosen, except for the setup form.
+      final isAddStudentRoute = state.matchedLocation == '/add-student';
+      if (isLoggedIn && needsProfileSelection && !isSelectProfileRoute && !isAddStudentRoute) {
         return '/select-profile';
       }
 
@@ -138,6 +144,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/select-profile',
         builder: (context, state) => const SelectProfileScreen(),
+      ),
+      GoRoute(
+        path: '/add-student',
+        builder: (context, state) => const AddStudentScreen(),
       ),
       GoRoute(
         path: '/worksheets',

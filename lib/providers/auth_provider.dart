@@ -91,7 +91,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             isLoading: false,
             profileCount: count,
             requiresProfileSelection:
-                ProfileStorage.profileId == null && (count == null || count > 1),
+                ProfileStorage.profileId == null && (count == null || count != 1),
           );
         } else {
           // During login()/phoneLogin() — let those methods handle profile check.
@@ -119,7 +119,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: credential.user,
         profileCount: profileCount,
         requiresProfileSelection:
-            ProfileStorage.profileId == null && (profileCount == null || profileCount > 1),
+            ProfileStorage.profileId == null && (profileCount == null || profileCount != 1),
       );
       return true;
     } on FirebaseAuthException catch (e) {
@@ -154,7 +154,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: credential.user,
         profileCount: profileCount,
         requiresProfileSelection:
-            ProfileStorage.profileId == null && (profileCount == null || profileCount > 1),
+            ProfileStorage.profileId == null && (profileCount == null || profileCount != 1),
       );
       return true;
     } on DioException catch (e) {
@@ -206,6 +206,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> phoneRegister({required String phone, required String password}) async {
+    ProfileStorage.profileId = null;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final dio = Dio(BaseOptions(baseUrl: EnvConfig.apiBaseUrl));
@@ -219,7 +220,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoggedIn: true, 
         isLoading: false, 
         user: credential.user,
-        requiresProfileSelection: false,
+        requiresProfileSelection: true,
       );
       return true;
     } on DioException catch (e) {
@@ -233,6 +234,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> emailRegister({required String email, required String password}) async {
+    ProfileStorage.profileId = null;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final dio = Dio(BaseOptions(baseUrl: EnvConfig.apiBaseUrl));
@@ -246,7 +248,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoggedIn: true, 
         isLoading: false, 
         user: credential.user,
-        requiresProfileSelection: false,
+        requiresProfileSelection: true,
       );
       return true;
     } on DioException catch (e) {

@@ -34,6 +34,10 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
       final api = ref.read(apiServiceProvider);
       final profiles = await api.getStudentProfiles();
       if (mounted) {
+        if (profiles.isEmpty) {
+          context.go('/add-student');
+          return;
+        }
         setState(() {
           _profiles = profiles;
           _isLoading = false;
@@ -41,10 +45,9 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _error = 'Failed to load profiles. Please try again.';
-          _isLoading = false;
-        });
+        // If profile fetch fails (e.g. user record not found in DB yet), 
+        // redirect to add-student to create the first profile.
+        context.go('/add-student');
       }
     }
   }

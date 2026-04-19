@@ -14,11 +14,8 @@ class AddStudentDialog extends ConsumerStatefulWidget {
 class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
   final _nameController = TextEditingController();
   List<dynamic> _classes = [];
-  List<dynamic> _sections = [];
   String? _selectedClassId;
-  String? _selectedSectionId;
   bool _isLoadingClasses = false;
-  bool _isLoadingSections = false;
   bool _isSubmitting = false;
   bool _showConfirm = false;
 
@@ -50,32 +47,9 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
     }
   }
 
-  Future<void> _fetchSections(String classId) async {
-    setState(() {
-      _isLoadingSections = true;
-      _selectedSectionId = null;
-      _sections = [];
-    });
-    try {
-      final user = ref.read(userProvider).profile;
-      final schoolId = user?.schoolId ?? 'd3706d3c-4329-4bd5-b0f8-a9e113c7ae00';
-      final sections = await ref.read(apiServiceProvider).getSections(schoolId, classId);
-      setState(() {
-        _sections = sections;
-        _isLoadingSections = false;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load sections')),
-        );
-      }
-      setState(() => _isLoadingSections = false);
-    }
-  }
 
   Future<void> _submit() async {
-    if (_nameController.text.isEmpty || _selectedClassId == null || _selectedSectionId == null) {
+    if (_nameController.text.isEmpty || _selectedClassId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
       );
@@ -94,7 +68,6 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
         'name': _nameController.text.trim(),
         'email': user?.email ?? '',
         'classId': _selectedClassId,
-        'sectionId': _selectedSectionId,
         'schoolId': user?.schoolId,
         'gender': 'm',
         'dob': '2015-01-01',
@@ -124,7 +97,6 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
   @override
   Widget build(BuildContext context) {
     final selectedClass = _classes.firstWhere((c) => c['id'].toString() == _selectedClassId, orElse: () => null);
-    final selectedSection = _sections.firstWhere((s) => s['id'].toString() == _selectedSectionId, orElse: () => null);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -180,27 +152,11 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
                 )).toList(),
                 onChanged: (val) {
                   setState(() => _selectedClassId = val);
-                  if (val != null) _fetchSections(val);
                 },
               ),
               
               const SizedBox(height: 16),
               
-              // Section Selector
-              if (_selectedClassId != null) ...[
-                _buildLabel('Select Section', const Color(0xFF6366F1)),
-                const SizedBox(height: 8),
-                _buildDropdown(
-                  hint: _isLoadingSections ? 'Loading sections...' : 'Choose a section',
-                  value: _selectedSectionId,
-                  items: _sections.map((s) => DropdownMenuItem(
-                    value: s['id'].toString(),
-                    child: Text('Section ${s['name']}', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
-                  )).toList(),
-                  onChanged: (val) => setState(() => _selectedSectionId = val),
-                ),
-                const SizedBox(height: 24),
-              ],
 
               // Submit Button
               ElevatedButton(
@@ -234,11 +190,6 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
                       child: Divider(height: 1),
                     ),
                     _buildSummaryRow('Selected Grade', 'Grade ${selectedClass?['grade'] ?? selectedClass?['name']}', const Color(0xFFEC4899)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(height: 1),
-                    ),
-                    _buildSummaryRow('Selected Section', 'Section ${selectedSection?['name']}', const Color(0xFF6366F1)),
                   ],
                 ),
               ),
@@ -362,13 +313,10 @@ class GradePromotionDialog extends ConsumerStatefulWidget {
 
 class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
   List<dynamic> _classes = [];
-  List<dynamic> _sections = [];
-  String? _selectedClassId;
-  String? _selectedSectionId;
   bool _isLoadingClasses = false;
-  bool _isLoadingSections = false;
   bool _isSubmitting = false;
   bool _showConfirm = false;
+  String? _selectedClassId;
 
   @override
   void initState() {
@@ -403,46 +351,11 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
     }
   }
 
-  Future<void> _fetchSections(String classId) async {
-    setState(() {
-      _isLoadingSections = true;
-      _selectedSectionId = null;
-      _sections = [];
-    });
-    try {
-      final user = ref.read(userProvider).profile;
-      final schoolId = user?.schoolId ?? 'd3706d3c-4329-4bd5-b0f8-a9e113c7ae00';
-      final sections = await ref.read(apiServiceProvider).getSections(schoolId, classId);
-      
-      String? autoSectionId;
-      if (user?.sectionName != null) {
-        for (var s in sections) {
-          if (s['name'].toString().toLowerCase() == user!.sectionName!.toLowerCase()) {
-            autoSectionId = s['id'].toString();
-            break;
-          }
-        }
-      }
-
-      setState(() {
-        _sections = sections;
-        if (autoSectionId != null) _selectedSectionId = autoSectionId;
-        _isLoadingSections = false;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load sections')),
-        );
-      }
-      setState(() => _isLoadingSections = false);
-    }
-  }
 
   Future<void> _submit() async {
-    if (_selectedClassId == null || _selectedSectionId == null) {
+    if (_selectedClassId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select grade and section')),
+        const SnackBar(content: Text('Please select grade')),
       );
       return;
     }
@@ -459,7 +372,6 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
         'name': user?.name ?? '',
         'email': user?.email ?? '',
         'classId': _selectedClassId,
-        'sectionId': _selectedSectionId,
         'schoolId': user?.schoolId,
         'gender': user?.gender ?? 'm',
         'dob': '2015-01-01',
@@ -489,9 +401,8 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.read(userProvider).profile;
+    final user = ref.watch(userProvider).profile;
     final selectedClass = _classes.firstWhere((c) => c['id'].toString() == _selectedClassId, orElse: () => null);
-    final selectedSection = _sections.firstWhere((s) => s['id'].toString() == _selectedSectionId, orElse: () => null);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -512,9 +423,7 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              _showConfirm 
-                ? 'Please confirm your selection before proceeding.' 
-                : 'Move to a different grade level.',
+              _showConfirm ? 'Please confirm your selection before proceeding.' : 'Move to a different grade level.',
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -536,27 +445,11 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
                 )).toList(),
                 onChanged: (val) {
                   setState(() => _selectedClassId = val);
-                  if (val != null) _fetchSections(val);
                 },
               ),
               
               const SizedBox(height: 16),
               
-              // Section Selector
-              if (_selectedClassId != null) ...[
-                _buildLabel('Select Section', const Color(0xFF6366F1)),
-                const SizedBox(height: 8),
-                _buildDropdown(
-                  hint: _isLoadingSections ? 'Loading sections...' : 'Choose a section',
-                  value: _selectedSectionId,
-                  items: _sections.map((s) => DropdownMenuItem(
-                    value: s['id'].toString(),
-                    child: Text('Section ${s['name']}', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
-                  )).toList(),
-                  onChanged: (val) => setState(() => _selectedSectionId = val),
-                ),
-                const SizedBox(height: 24),
-              ],
 
               // Submit Button
               ElevatedButton(
@@ -590,11 +483,6 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
                       child: Divider(height: 1),
                     ),
                     _buildSummaryRow('New Grade', 'Grade ${selectedClass?['grade'] ?? selectedClass?['name']}', const Color(0xFF6366F1)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(height: 1),
-                    ),
-                    _buildSummaryRow('New Section', 'Section ${selectedSection?['name']}', const Color(0xFF6366F1)),
                   ],
                 ),
               ),
