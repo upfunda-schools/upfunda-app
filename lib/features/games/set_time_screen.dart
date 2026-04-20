@@ -759,7 +759,7 @@ class _SetTimeScreenState extends State<SetTimeScreen>
     return OutlinedButton.icon(
       onPressed: _resetGame,
       icon: const Icon(Icons.refresh_rounded, size: 20),
-      label: const Text('Reset Game',
+        label: const Text('New Round',
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF7C3AED),

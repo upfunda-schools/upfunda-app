@@ -291,6 +291,11 @@ class _TwoDigitAdditionScreenState extends State<TwoDigitAdditionScreen>
             onPressed: () =>
                 setState(() => _isSoundEnabled = !_isSoundEnabled),
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF333333)),
+            tooltip: 'New Round',
+            onPressed: () => _generateQuestion(),
+          ),
           GestureDetector(
             onTap: _toggleChart,
             child: Container(
