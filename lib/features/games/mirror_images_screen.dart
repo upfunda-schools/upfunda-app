@@ -171,10 +171,10 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Row(
         children: [
-          TextButton.icon(
+          IconButton(
             onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF0D9488)),
-            label: Text('Games', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF0D9488))),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF0D9488)),
+            splashRadius: 20,
           ),
           Expanded(
             child: Text(
@@ -183,16 +183,10 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
               style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w800, color: const Color(0xFF0D9488)),
             ),
           ),
-          GestureDetector(
-            onTap: _reset,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D9488),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('Reset', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
-            ),
+          IconButton(
+            onPressed: _reset,
+            icon: const Icon(Icons.refresh_rounded, size: 20, color: Color(0xFF0D9488)),
+            splashRadius: 20,
           ),
         ],
       ),
@@ -226,70 +220,82 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
   }
 
   Widget _buildGameCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFF0D9488).withValues(alpha: 0.12), blurRadius: 20, offset: const Offset(0, 6)),
-        ],
-      ),
-      child: Column(
-        children: [
-          // ── Top: Original + flip icon + placeholder ──
-          Text('Original Pattern', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF374151))),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _PatternGrid(grid: _pattern.original, cellSize: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  children: [
-                    const Icon(Icons.swap_horiz_rounded, size: 32, color: Color(0xFF9CA3AF)),
-                    const SizedBox(height: 4),
-                    Text('flip', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.grey[400])),
-                  ],
-                ),
-              ),
-              _buildPlaceholder(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 340;
+        final cellSize = compact ? 16.0 : 20.0;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF0D9488).withValues(alpha: 0.12), blurRadius: 20, offset: const Offset(0, 6)),
             ],
           ),
+          child: Column(
+            children: [
+              // ── Top: Original + flip icon + placeholder ──
+              Text('Original Pattern', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF374151))),
+              const SizedBox(height: 12),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 10,
+                children: [
+                  _PatternGrid(grid: _pattern.original, cellSize: cellSize),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.swap_horiz_rounded,
+                        size: compact ? 26 : 32,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      const SizedBox(height: 4),
+                      Text('flip', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.grey[400])),
+                    ],
+                  ),
+                  _buildPlaceholder(cellSize),
+                ],
+              ),
 
-          const SizedBox(height: 18),
-          const Divider(color: Color(0xFFE5E7EB), thickness: 1),
-          const SizedBox(height: 14),
+              const SizedBox(height: 18),
+              const Divider(color: Color(0xFFE5E7EB), thickness: 1),
+              const SizedBox(height: 14),
 
-          // ── Bottom: Options ──
-          Text(
-            'Which one is the correct mirror image?',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF374151)),
+              // ── Bottom: Options ──
+              Text(
+                'Which one is the correct mirror image?',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF374151)),
+              ),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: compact ? 0.8 : 0.88,
+                children: List.generate(4, (i) => _buildOptionCard(i, cellSize)),
+              ),
+              const SizedBox(height: 12),
+              if (_feedback != null) _buildFeedback(),
+            ],
           ),
-          const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 0.88,
-            children: List.generate(4, (i) => _buildOptionCard(i)),
-          ),
-          const SizedBox(height: 12),
-          if (_feedback != null) _buildFeedback(),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPlaceholder() {
-    // Same size as the 5×5 grid: 5*24 + 4*4 + 2*8 = 120 + 16 + 16 = 152
-    const size = 5 * 24.0 + 4 * 4.0 + 2 * 8.0;
+  Widget _buildPlaceholder(double cellSize) {
+    const gap = 4.0;
+    const padding = 16.0;
+    final size = 5 * cellSize + 4 * gap + padding;
     return Container(
       width: size,
       height: size,
@@ -299,12 +305,19 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
         border: Border.all(color: const Color(0xFF5EEAD4), width: 2, style: BorderStyle.solid),
       ),
       child: Center(
-        child: Text('?', style: GoogleFonts.montserrat(fontSize: 40, fontWeight: FontWeight.w900, color: const Color(0xFF5EEAD4))),
+        child: Text(
+          '?',
+          style: GoogleFonts.montserrat(
+            fontSize: cellSize * 1.6,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFF5EEAD4),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildOptionCard(int index) {
+  Widget _buildOptionCard(int index, double cellSize) {
     final selected = _selectedIndex == index;
     final showCorrect = _feedback == 'correct' && selected;
     final showWrong = _feedback == 'wrong' && selected;
@@ -356,7 +369,7 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              _PatternGrid(grid: _pattern.options[index], cellSize: 24),
+              _PatternGrid(grid: _pattern.options[index], cellSize: cellSize),
             ],
           ),
         ),
@@ -372,12 +385,15 @@ class _MirrorImagesScreenState extends State<MirrorImagesScreen> {
         Icon(correct ? Icons.check_circle_rounded : Icons.info_rounded, size: 16,
             color: correct ? const Color(0xFF16A34A) : const Color(0xFFDC2626)),
         const SizedBox(width: 6),
-        Text(
-          correct ? 'Perfect! That\'s the correct mirror image!' : 'Not quite. Try again!',
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: correct ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+        Flexible(
+          child: Text(
+            correct ? 'Perfect! That\'s the correct mirror image!' : 'Not quite. Try again!',
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: correct ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ],
@@ -419,14 +435,16 @@ class _PatternGrid extends StatelessWidget {
       decoration: BoxDecoration(color: const Color(0xFFE5E7EB), borderRadius: BorderRadius.circular(10)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: grid.map((row) {
+        children: List.generate(grid.length, (rowIndex) {
+          final row = grid[rowIndex];
           return Padding(
-            padding: const EdgeInsets.only(bottom: gap),
+            padding: EdgeInsets.only(bottom: rowIndex == grid.length - 1 ? 0 : gap),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: row.map((cell) {
+              children: List.generate(row.length, (colIndex) {
+                final cell = row[colIndex];
                 return Padding(
-                  padding: const EdgeInsets.only(right: gap),
+                  padding: EdgeInsets.only(right: colIndex == row.length - 1 ? 0 : gap),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     width: cellSize,

@@ -272,6 +272,11 @@ class _DoublesSubtractionScreenState extends State<DoublesSubtractionScreen>
             onPressed: () =>
                 setState(() => _isSoundEnabled = !_isSoundEnabled),
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF333333)),
+            tooltip: 'New Round',
+            onPressed: () => _generateQuestion(),
+          ),
           GestureDetector(
             onTap: _toggleTable,
             child: Container(

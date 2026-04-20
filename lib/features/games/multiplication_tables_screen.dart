@@ -372,6 +372,11 @@ class _MultiplicationTablesScreenState
             onPressed: () =>
                 setState(() => _isSoundEnabled = !_isSoundEnabled),
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF333333)),
+            tooltip: 'New Round',
+            onPressed: _generateQuestion,
+          ),
         ],
       ),
     );

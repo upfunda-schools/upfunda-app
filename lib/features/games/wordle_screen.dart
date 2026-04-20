@@ -421,17 +421,10 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Row(
         children: [
-          TextButton.icon(
+          IconButton(
             onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF16A34A)),
-            label: Text(
-              'Games',
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF16A34A),
-              ),
-            ),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF16A34A)),
+            splashRadius: 20,
           ),
           Expanded(
             child: Text(
@@ -444,17 +437,10 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
               ),
             ),
           ),
-          TextButton.icon(
+          IconButton(
             onPressed: () => _initGame(),
-            icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF16A34A)),
-            label: Text(
-              'New',
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF16A34A),
-              ),
-            ),
+            icon: const Icon(Icons.refresh_rounded, size: 20, color: Color(0xFF16A34A)),
+            splashRadius: 20,
           ),
         ],
       ),
@@ -571,6 +557,11 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
       ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE'],
     ];
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    const horizontalPadding = 32.0;
+    const keyGap = 4.0;
+    final availableWidth = (screenWidth - horizontalPadding).clamp(260.0, 500.0);
+
     return Column(
       children: rows
           .map(
@@ -578,20 +569,34 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: row.map((key) {
+                children: List.generate(row.length, (index) {
+                  final key = row[index];
                   final isSpecial = key == 'ENTER' || key == 'BACKSPACE';
                   final status = isSpecial ? null : letterStatuses[key];
                   final bg = _keyColor(status);
                   final textColor =
                       status != null && status != _LetterStatus.empty ? Colors.white : Colors.black87;
 
-                  return _KeyButton(
-                    label: key,
-                    background: bg,
-                    textColor: textColor,
-                    onTap: () => _handleKeyPress(key),
+                  final totalGap = keyGap * (row.length - 1);
+                  const specialCount = 2;
+                  final normalCount = row.length - specialCount;
+                  final specialWidth = ((availableWidth * 0.16).clamp(44.0, 54.0));
+                  final normalWidth = row.contains('ENTER')
+                      ? ((availableWidth - totalGap - (specialWidth * specialCount)) / normalCount)
+                          .clamp(24.0, 40.0)
+                      : ((availableWidth - totalGap) / row.length).clamp(24.0, 40.0);
+
+                  return Padding(
+                    padding: EdgeInsets.only(right: index == row.length - 1 ? 0 : keyGap),
+                    child: _KeyButton(
+                      label: key,
+                      width: isSpecial ? specialWidth : normalWidth,
+                      background: bg,
+                      textColor: textColor,
+                      onTap: () => _handleKeyPress(key),
+                    ),
                   );
-                }).toList(),
+                }),
               ),
             ),
           )
@@ -634,7 +639,12 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
           ),
           const SizedBox(width: 10),
-          Text(text, style: GoogleFonts.montserrat(fontSize: 12, color: Colors.grey[700])),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.montserrat(fontSize: 12, color: Colors.grey[700]),
+            ),
+          ),
         ],
       ),
     );
@@ -849,12 +859,14 @@ class _TileState extends State<_Tile> with SingleTickerProviderStateMixin {
 
 class _KeyButton extends StatefulWidget {
   final String label;
+  final double width;
   final Color background;
   final Color textColor;
   final VoidCallback onTap;
 
   const _KeyButton({
     required this.label,
+    required this.width,
     required this.background,
     required this.textColor,
     required this.onTap,
@@ -885,7 +897,6 @@ class _KeyButtonState extends State<_KeyButton> with SingleTickerProviderStateMi
   Widget build(BuildContext context) {
     final isBackspace = widget.label == 'BACKSPACE';
     final isEnter = widget.label == 'ENTER';
-    final isWide = isBackspace || isEnter;
 
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
@@ -898,9 +909,8 @@ class _KeyButtonState extends State<_KeyButton> with SingleTickerProviderStateMi
         scale: _scale,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: isWide ? 54 : 33,
+          width: widget.width,
           height: 44,
-          margin: const EdgeInsets.symmetric(horizontal: 2.5),
           decoration: BoxDecoration(
             color: widget.background,
             borderRadius: BorderRadius.circular(8),
