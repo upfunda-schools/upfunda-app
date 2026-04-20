@@ -401,7 +401,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           GestureDetector(
                             onTap: () => context.push('/leaderboard'),
                             child: Image.asset(
-                              'assets/images/home/Leader_Board_Button.png',
+                              'assets/5. Home Page/Leader_Board_Button.png',
                               width: 220,
                               fit: BoxFit.contain,
                             ),
