@@ -168,6 +168,7 @@ class _NearDoublesScreenState extends State<NearDoublesScreen>
                   isSoundEnabled: _isSoundEnabled,
                   onSoundToggle: () =>
                       setState(() => _isSoundEnabled = !_isSoundEnabled),
+                  onNewRound: _setNewQuestion,
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -249,10 +250,12 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.isSoundEnabled,
     required this.onSoundToggle,
+    required this.onNewRound,
   });
 
   final bool isSoundEnabled;
   final VoidCallback onSoundToggle;
+  final VoidCallback onNewRound;
 
   @override
   Widget build(BuildContext context) {
@@ -291,6 +294,11 @@ class _TopBar extends StatelessWidget {
               color: isSoundEnabled ? const Color(0xFF6C5CE7) : Colors.grey,
             ),
             onPressed: onSoundToggle,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF333333)),
+            tooltip: 'New Round',
+            onPressed: onNewRound,
           ),
         ],
       ),

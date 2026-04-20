@@ -1,61 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'master_arithmetic/master_arithmetic_games.dart';
 
 class MasterArithmeticScreen extends StatelessWidget {
   const MasterArithmeticScreen({super.key});
-
-  static const _games = [
-    _GameInfo(
-      title: 'Doubles Addition',
-      description: 'Add a number to itself\n(e.g. 6 + 6)',
-      icon: Icons.looks_two_rounded,
-      color: Color(0xFFFF7043),
-      route: '/games/doubles-addition',
-    ),
-    _GameInfo(
-      title: 'Near Doubles',
-      description: 'Add numbers that are\none apart (e.g. 6 + 7)',
-      icon: Icons.compare_arrows_rounded,
-      color: Color(0xFF7E57C2),
-      route: '/games/near-doubles',
-    ),
-    _GameInfo(
-      title: 'Making 10s',
-      description: 'Find what\'s missing to\nreach 10 or the next ten',
-      icon: Icons.looks_one_rounded,
-      color: Color(0xFF26C6DA),
-      route: '/games/making-tens',
-    ),
-    _GameInfo(
-      title: 'Making Next 10',
-      description: 'Bridge two-digit\nnumbers to the next ten',
-      icon: Icons.trending_up_rounded,
-      color: Color(0xFFAB47BC),
-      route: '/games/making-next-ten',
-    ),
-    _GameInfo(
-      title: '2 Digit Addition',
-      description: 'Add two-digit numbers\nwith and without\nregrouping',
-      icon: Icons.add_rounded,
-      color: Color(0xFFEC407A),
-      route: '/games/two-digit-addition',
-    ),
-    _GameInfo(
-      title: 'Doubles Subtraction',
-      description: 'Halve even numbers\nusing your doubles\nknowledge',
-      icon: Icons.remove_rounded,
-      color: Color(0xFFFF7043),
-      route: '/games/doubles-subtraction',
-    ),
-    _GameInfo(
-      title: '2 Digit Subtraction',
-      description: 'Subtract two-digit numbers by splitting into tens and ones',
-      icon: Icons.remove_rounded,
-      color: Color(0xFF1976D2),
-      route: '/games/two-digit-subtraction',
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +22,9 @@ class MasterArithmeticScreen extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               padding: EdgeInsets.fromLTRB(25 * scale, 10 * scale, 25 * scale, 40 * scale),
-              itemCount: _games.length,
+              itemCount: kMasterArithmeticGames.length,
               separatorBuilder: (_, __) => SizedBox(height: 16 * scale),
-              itemBuilder: (context, i) => _GameTile(game: _games[i], scale: scale),
+              itemBuilder: (context, i) => _GameTile(game: kMasterArithmeticGames[i], scale: scale),
             ),
           ),
         ],
@@ -163,7 +112,7 @@ class MasterArithmeticScreen extends StatelessWidget {
 }
 
 class _GameTile extends StatelessWidget {
-  final _GameInfo game;
+  final MasterArithmeticGameInfo game;
   final double scale;
 
   const _GameTile({required this.game, required this.scale});
@@ -266,20 +215,4 @@ class _GameTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _GameInfo {
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final String route;
-
-  const _GameInfo({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-    required this.route,
-  });
 }

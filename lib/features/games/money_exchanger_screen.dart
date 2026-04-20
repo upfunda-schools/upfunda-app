@@ -213,11 +213,14 @@ class _MoneyExchangerScreenState extends State<MoneyExchangerScreen> {
           _hasOperator = false;
           _calcRight = '';
           _calcResult = null;
+          break;
         case '×':
           if (_calcLeft.isNotEmpty && !_hasOperator) {
             _hasOperator = true;
             _calcDisplay = '$_calcLeft ×';
+            _calcResult = null;
           }
+          break;
         case '=':
           if (_calcLeft.isNotEmpty && _hasOperator && _calcRight.isNotEmpty) {
             final l = double.tryParse(_calcLeft) ?? 0;
@@ -228,16 +231,20 @@ class _MoneyExchangerScreenState extends State<MoneyExchangerScreen> {
             _calcRight = '';
             _calcDisplay = _calcLeft;
           }
+          break;
         case '⌫':
           if (_hasOperator) {
             if (_calcRight.isNotEmpty) {
               _calcRight = _calcRight.substring(0, _calcRight.length - 1);
               _calcDisplay = _calcRight.isEmpty ? '$_calcLeft ×' : '$_calcLeft × $_calcRight';
+              _calcResult = null;
             }
           } else if (_calcLeft.isNotEmpty) {
             _calcLeft = _calcLeft.substring(0, _calcLeft.length - 1);
             _calcDisplay = _calcLeft.isEmpty ? '0' : _calcLeft;
+            _calcResult = null;
           }
+          break;
         default:
           // digit or dot
           if (_hasOperator) {
@@ -245,11 +252,17 @@ class _MoneyExchangerScreenState extends State<MoneyExchangerScreen> {
             _calcRight = (_calcRight == '0' && key != '.') ? key : _calcRight + key;
             _calcDisplay = '$_calcLeft × $_calcRight';
           } else {
-            if (key == '.' && _calcLeft.contains('.')) return;
-            _calcLeft = (_calcLeft == '0' && key != '.') ? key : _calcLeft + key;
+            final startFreshAfterResult = _calcResult != null;
+            if (startFreshAfterResult) {
+              _calcLeft = key == '.' ? '0.' : key;
+            } else {
+              if (key == '.' && _calcLeft.contains('.')) return;
+              _calcLeft = (_calcLeft == '0' && key != '.') ? key : _calcLeft + key;
+            }
             _calcDisplay = _calcLeft;
           }
           _calcResult = null;
+          break;
       }
     });
   }

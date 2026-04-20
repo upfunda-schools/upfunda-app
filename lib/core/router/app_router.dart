@@ -181,12 +181,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DoublesAdditionScreen(),
       ),
       GoRoute(
+        path: '/games/near-doubles-addition',
+        builder: (context, state) => const NearDoublesScreen(),
+      ),
+      GoRoute(
         path: '/games/near-doubles',
         builder: (context, state) => const NearDoublesScreen(),
       ),
       GoRoute(
+        path: '/games/making-10s',
+        builder: (context, state) => const MakingTensScreen(),
+      ),
+      GoRoute(
         path: '/games/making-tens',
         builder: (context, state) => const MakingTensScreen(),
+      ),
+      GoRoute(
+        path: '/games/making-10s-to-100',
+        builder: (context, state) => const MakingNextTenScreen(),
       ),
       GoRoute(
         path: '/games/making-next-ten',
@@ -213,6 +225,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FindMissingNumbersScreen(),
       ),
       GoRoute(
+        path: '/games/multiplication-tables',
+        builder: (context, state) => const MultiplicationTablesScreen(),
+      ),
+      GoRoute(
         path: '/games/times-tables',
         builder: (context, state) => const MultiplicationTablesScreen(),
       ),
@@ -223,6 +239,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/doubles-halves',
         builder: (context, state) => const DoublesHalvesScreen(),
+      ),
+      GoRoute(
+        path: '/games/division-tables',
+        builder: (context, state) => const DivisionScreen(),
       ),
       GoRoute(
         path: '/games/division',
@@ -239,6 +259,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/games/time-conversion',
         builder: (context, state) => const TimeConversionScreen(),
+      ),
+      GoRoute(
+        path: '/games/sudoku-4x4',
+        builder: (context, state) => const SudokuScreen(),
       ),
       GoRoute(
         path: '/games/sudoku',
