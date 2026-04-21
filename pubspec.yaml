@@ -26,6 +26,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   intl_phone_field: ^3.2.0
   intl: ^0.20.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +55,7 @@ flutter:
     - "assets/logical_reasoning/"
     - "assets/mental_math/"
     - "assets/continue button/"
+    - "assets/images/quick_menu/"
 
 flutter_launcher_icons:
   android: true

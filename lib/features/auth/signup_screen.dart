@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
@@ -26,6 +27,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String _phonePrefix = '+91';
+  bool _agreedToTerms = false;
 
   @override
   void initState() {
@@ -72,6 +74,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      return;
+    }
+
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to the Terms and Conditions'),
+        ),
+      );
       return;
     }
     if (password.length < 8) {
@@ -558,7 +569,82 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9F9F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: InkWell(
+                                      onTap:
+                                          () => setState(
+                                            () => _agreedToTerms = !_agreedToTerms,
+                                          ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Row(
+                                        children: [
+                                          Checkbox(
+                                            value: _agreedToTerms,
+                                            onChanged:
+                                                (val) => setState(
+                                                  () =>
+                                                      _agreedToTerms =
+                                                          val ?? false,
+                                                ),
+                                            activeColor: const Color(
+                                              0xFFFF7067,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            side: BorderSide(
+                                              color: Colors.grey.shade400,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: const TextStyle(
+                                                  color: Color(0xFF555555),
+                                                  fontSize: 12,
+                                                  fontFamily: 'Roboto',
+                                                ),
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'I agree with ',
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        'terms and conditions',
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFFF7067),
+                                                      decoration:
+                                                          TextDecoration
+                                                              .underline,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                    recognizer:
+                                                        TapGestureRecognizer()
+                                                          ..onTap =
+                                                              _showTermsDialog,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
                                   GestureDetector(
                                     onTap: authState.isLoading ? null : _signUp,
                                     child: Stack(
@@ -657,6 +743,217 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  void _showTermsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 500,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFFF7067), Color(0xFFFF908A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.gavel_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'Terms of Service',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: Colors.white70),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                // Scrollable Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTermsSection(
+                          'Acceptance of Terms',
+                          'By accessing and using the services provided by Upfunda Edtech Private Limited ("Company," "we," "our," or "us"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.',
+                        ),
+                        _buildTermsSection(
+                          'Description of Service',
+                          'Upfunda Edtech Private Limited provides an educational technology platform offering interactive learning modules and educational content, assessment tools and progress tracking, math competitions including ILMC (International Logical Math Championship), online classes and educational resources, administrative tools for schools and educators, and personalized learning experiences.',
+                        ),
+                        _buildTermsSection(
+                          'User Accounts',
+                          'Registration\nTo access certain features of our platform, you must register for an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate, current, and complete.\n\nAccount Security\nYou are responsible for safeguarding your account credentials and must immediately notify us of any unauthorized use of your account. We are not liable for any loss or damage arising from your failure to secure your account.',
+                        ),
+                        _buildTermsSection(
+                          'Acceptable Use',
+                          'You agree not to use the platform for any illegal or unauthorized purpose, violate any applicable local, state, national, or international law, transmit any harmful, threatening, abusive, or offensive content, attempt to gain unauthorized access to our systems or other users\' accounts, interfere with or disrupt the platform\'s functionality, use automated systems to access the platform without permission, or share account credentials with unauthorized users.',
+                        ),
+                        _buildTermsSection(
+                          'Intellectual Property',
+                          'Our Content\nAll content on our platform, including but not limited to text, graphics, logos, images, audio clips, video clips, digital downloads, data compilations, and software, is the property of Upfunda Edtech Private Limited and is protected by copyright and other intellectual property laws. Download of any material and distribution without prior permission from Upfunda Academy is considered as infringement of copyright law.\n\nUser Content\nBy submitting content to our platform, you grant us a non-exclusive, worldwide, royalty-free license to use, reproduce, modify, and distribute such content for the purpose of providing our services.',
+                        ),
+                        _buildTermsSection(
+                          'Academic Integrity',
+                          'Our platform is designed for legitimate educational purposes. Users must maintain academic integrity and honesty in all assessments. Cheating, plagiarism, or unauthorized collaboration is strictly prohibited. We reserve the right to invalidate results obtained through dishonest means.',
+                        ),
+                        _buildTermsSection(
+                          'Payment & Privacy',
+                          'Subscription fees are charged in advance and are non-refundable. Prices are subject to change with notice.\n\nYour privacy is important to us. Please review our Privacy Policy to understand our practices regarding your information.',
+                        ),
+                        const SizedBox(height: 10),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Contact Information',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Upfunda Edtech Private Limited\nEmail: contact.upfunda@gmail.com\nPhone: +91 99941 80706',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF777777),
+                            height: 1.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Footer Action
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() => _agreedToTerms = true);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF7067),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 4,
+                        shadowColor: const Color(0xFFFF7067).withValues(
+                          alpha: 0.4,
+                        ),
+                      ),
+                      child: const Text(
+                        'I Accept the Terms',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTermsSection(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF7067),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF333333),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            content,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF666666),
+              height: 1.6,
+              letterSpacing: 0.1,
             ),
           ),
         ],
