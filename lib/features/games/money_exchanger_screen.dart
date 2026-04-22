@@ -162,11 +162,12 @@ class _MoneyExchangerScreenState extends State<MoneyExchangerScreen> {
     final c = _currencies[_random.nextInt(_currencies.length)];
     final amount = 1 + _random.nextInt(maxAmount);
     final rate = _rates[c.code] ?? c.fallbackRate;
+    final displayRate = double.parse(rate.toStringAsFixed(2));
 
     setState(() {
       _currentCurrency = c;
       _currentAmount = amount;
-      _correctAnswer = amount * rate;
+      _correctAnswer = amount * displayRate;
       _feedback = null;
       _answerCtrl.clear();
     });
