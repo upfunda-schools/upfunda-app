@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
 
 class StatusLegend extends StatelessWidget {
   final int correct;
@@ -14,21 +13,28 @@ class StatusLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF43329D).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _LegendItem(
-            color: AppColors.success,
+            asset: 'assets/images/quiz/mdi_tick-circle.png',
             label: 'Correct',
             count: correct,
           ),
+          const SizedBox(width: 24),
+          Container(
+            height: 24,
+            width: 1.5,
+            color: Colors.white24,
+          ),
+          const SizedBox(width: 24),
           _LegendItem(
-            color: AppColors.incorrect,
+            asset: 'assets/images/quiz/icon-park-solid_close-one.png',
             label: 'Incorrect',
             count: incorrect,
           ),
@@ -39,12 +45,12 @@ class StatusLegend extends StatelessWidget {
 }
 
 class _LegendItem extends StatelessWidget {
-  final Color color;
+  final String asset;
   final String label;
   final int count;
 
   const _LegendItem({
-    required this.color,
+    required this.asset,
     required this.label,
     required this.count,
   });
@@ -54,21 +60,22 @@ class _LegendItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 6),
+        Image.asset(asset, height: 24),
+        const SizedBox(width: 10),
         Text(
-          '$count $label',
+          '$label: ',
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          '$count',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ],

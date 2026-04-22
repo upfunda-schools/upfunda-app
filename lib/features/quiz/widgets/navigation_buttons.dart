@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../providers/quiz_provider.dart' show quizProvider, quizMuteProvider;
-import '../../../shared/widgets/app_button.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../providers/quiz_provider.dart';
 import 'submission_dialog.dart';
 
 class NavigationButtons extends ConsumerStatefulWidget {
@@ -14,44 +13,43 @@ class NavigationButtons extends ConsumerStatefulWidget {
 }
 
 class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
-  bool _isSubmitting = false;
-  late final AudioPlayer _correctPlayer;
-  late final AudioPlayer _wrongPlayer;
+  // Use a static player or a more persistent one to avoid "sometimes" issues on Web
+  static final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlayerInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _correctPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
-    _wrongPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
-    
-    // Pre-load sounds to ensure instant playback when needed
-    _correctPlayer.setSource(AssetSource('audio/correct_sound_effect.mp3'));
-    _wrongPlayer.setSource(AssetSource('audio/wrong_sound_effect.mp3'));
+    _initAudio();
   }
 
-  @override
-  void dispose() {
-    _correctPlayer.dispose();
-    _wrongPlayer.dispose();
-    super.dispose();
+  Future<void> _initAudio() async {
+    if (_isPlayerInitialized) return;
+    try {
+      // Pre-set some properties for better web compatibility
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+      _isPlayerInitialized = true;
+    } catch (e) {
+      debugPrint('Audio initialization error: $e');
+    }
   }
 
   Future<void> _playSound(bool isCorrect) async {
-    if (ref.read(quizMuteProvider)) return;
+    final soundFile = isCorrect ? 'correct_sound_effect.mp3' : 'wrong_sound_effect.mp3';
     try {
-      final player = isCorrect ? _correctPlayer : _wrongPlayer;
-      
-      // Stop and play to ensure it restarts from zero for every click
-      await player.stop();
-      await player.resume();
+      debugPrint('Playing sound: $soundFile');
+      // On Web, sometimes play() needs a fresh source or explicit stop
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('audio/$soundFile'), volume: 1.0);
     } catch (e) {
-      debugPrint('Error playing sound: $e');
+      debugPrint('Error playing sound ($soundFile): $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final quizState = ref.watch(quizProvider);
+    final isMuted = ref.watch(quizMuteProvider);
     final currentAnswer = quizState.answers[quizState.currentQuestionId];
     final hasAnswer = currentAnswer?.selectedOption != null;
     final isChecked = quizState.checkDetails;
@@ -60,56 +58,56 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          // Check / Next button
+          // Check / Next / Submit button
           if (!isChecked) ...[
             Expanded(
-              child: AppButton(
-                label: 'Check',
+              child: _build3DButton(
+                text: 'Check',
+                color: const Color(0xFF398DEF),
+                shadowColor: const Color(0xFF1E70BF),
                 onPressed: hasAnswer
                     ? () {
                         final isCorrect = ref
                             .read(quizProvider.notifier)
                             .checkAnswer(quizState.currentQuestionId);
                         
-                        _playSound(isCorrect);
-
+                        if (!isMuted) {
+                          _playSound(isCorrect);
+                        }
+          
                         ref
                             .read(quizProvider.notifier)
                             .submitAnswer(quizState.currentQuestionId);
                       }
                     : null,
-                backgroundColor:
-                    hasAnswer ? AppColors.quizPrimary : AppColors.grey400,
               ),
             ),
           ] else if (!quizState.isLastQuestion) ...[
             Expanded(
-              child: AppButton(
-                label: 'Next',
+              child: _build3DButton(
+                text: 'Next',
                 icon: Icons.arrow_forward,
+                color: const Color(0xFF398DEF),
+                shadowColor: const Color(0xFF1E70BF),
                 onPressed: () => ref.read(quizProvider.notifier).goToNext(),
-                backgroundColor: AppColors.quizPrimary,
-              ),
-            ),
-          ] else if (quizState.pagination?.hasNext == true) ...[
-
-            Expanded(
-              child: AppButton(
-                label: 'Next',
-                icon: Icons.arrow_forward,
-                onPressed: () =>
-                    ref.read(quizProvider.notifier).loadNextPage(),
-                backgroundColor: AppColors.quizPrimary,
               ),
             ),
           ] else ...[
             Expanded(
-              child: AppButton(
-                label: 'Submit',
-                icon: Icons.check_circle_outline,
-                isLoading: _isSubmitting,
-                onPressed: () => _handleSubmit(context),
-                backgroundColor: AppColors.success,
+              child: _build3DButton(
+                text: 'Submit Quiz',
+                color: const Color(0xFF10B981), // Green for submit
+                shadowColor: const Color(0xFF047857),
+                onPressed: () async {
+                  final result = await ref.read(quizProvider.notifier).submitTest();
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => SubmissionDialog(result: result),
+                    );
+                  }
+                },
               ),
             ),
           ],
@@ -118,25 +116,54 @@ class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
     );
   }
 
-  Future<void> _handleSubmit(BuildContext context) async {
-    setState(() => _isSubmitting = true);
-    try {
-      final result = await ref.read(quizProvider.notifier).submitTest();
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => SubmissionDialog(result: result),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
+  Widget _build3DButton({
+    required String text,
+    required Color color,
+    required Color shadowColor,
+    VoidCallback? onPressed,
+    IconData? icon,
+  }) {
+    final bool isEnabled = onPressed != null;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: isEnabled ? shadowColor : const Color(0xFF1E70BF).withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 6),
+          decoration: BoxDecoration(
+            color: isEnabled ? color : const Color(0xFF398DEF).withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  text,
+                  style: GoogleFonts.montserrat(
+                    color: isEnabled ? Colors.white : Colors.white70,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                if (icon != null) ...[
+                  const SizedBox(width: 12),
+                  Icon(icon, color: Colors.white),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

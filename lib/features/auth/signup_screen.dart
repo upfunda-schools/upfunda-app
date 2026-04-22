@@ -266,446 +266,520 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                  Image.asset(
-                                    'assets/images/3. SignUp-Email/Sign Up.png',
-                                    height: 28,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Text(
-                                              'Sign Up',
-                                              style: TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF333333),
-                                              ),
-                                            ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Center(
-                                    child: SizedBox(
-                                      height: 35,
-                                      width: 220,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () => setState(
-                                                () => _isPhoneSelected = false,
-                                              ),
-                                              child: Container(
-                                                alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                  color: !_isPhoneSelected
-                                                      ? const Color(0xFFFF7067)
-                                                      : const Color(0xFFF7F7F7),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
-                                                  border: Border.all(
-                                                    color: Colors.grey
-                                                        .withValues(alpha: 0.1),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  'Email',
-                                                  style: TextStyle(
-                                                    color: !_isPhoneSelected
-                                                        ? Colors.white
-                                                        : Colors.grey.shade400,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 11,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () => setState(
-                                                () => _isPhoneSelected = true,
-                                              ),
-                                              child: Container(
-                                                alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                  color: _isPhoneSelected
-                                                      ? const Color(0xFFFF7067)
-                                                      : const Color(0xFFF7F7F7),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
-                                                  border: Border.all(
-                                                    color: Colors.grey
-                                                        .withValues(alpha: 0.1),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  'Phone',
-                                                  style: TextStyle(
-                                                    color: _isPhoneSelected
-                                                        ? Colors.white
-                                                        : Colors.grey.shade400,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 11,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 18),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: Text(
-                                        _isPhoneSelected
-                                            ? 'Phone Number *'
-                                            : 'Email *',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF333333),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  if (_isPhoneSelected)
-                                    CustomPhoneField(
-                                      controller: _phoneController,
-                                      focusNode: _phoneFocus,
-                                      onCountryChanged: (prefix) => setState(
-                                        () => _phonePrefix = '+$prefix',
-                                      ),
-                                    )
-                                  else
-                                    Container(
-                                      height: 38,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF7F7F7),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                        ),
-                                      ),
-                                      child: TextField(
-                                        controller: _emailController,
-                                        focusNode: _emailFocus,
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter Email',
-                                          hintStyle: TextStyle(
-                                            color: Color(0xFFC4C4C4),
-                                            fontSize: 13,
-                                          ),
-                                          contentPadding: EdgeInsets.only(
-                                            left: 12,
-                                            right: 12,
-                                            bottom: 12,
-                                          ),
-                                          border: InputBorder.none,
-                                        ),
-                                      ),
-                                    ),
-                                  const SizedBox(height: 16),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: const Text(
-                                        'Password *',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF333333),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF7F7F7),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.grey.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Stack(
-                                      alignment: Alignment.centerRight,
-                                      children: [
-                                        TextField(
-                                          controller: _passwordController,
-                                          focusNode: _passFocus,
-                                          obscureText: _obscurePassword,
-                                          textAlignVertical:
-                                              TextAlignVertical.center,
-                                          decoration: const InputDecoration(
-                                            hintText: '................',
-                                            hintStyle: TextStyle(
-                                              color: Color(0xFFC4C4C4),
-                                              fontSize: 18,
-                                            ),
-                                            contentPadding: EdgeInsets.only(
-                                              left: 16,
-                                              right: 50,
-                                              bottom: 16,
-                                            ),
-                                            border: InputBorder.none,
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: 15,
-                                          child: GestureDetector(
-                                            behavior: HitTestBehavior.opaque,
-                                            onTap: () => setState(
-                                              () => _obscurePassword =
-                                                  !_obscurePassword,
-                                            ),
-                                            child: Image.asset(
-                                              'assets/images/signup/Group 7.png',
-                                              width: 22,
-                                              height: 22,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(
-                                                    Icons.visibility_off,
-                                                    size: 18,
-                                                    color: Colors.grey,
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: const Text(
-                                        'Confirm Password *',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF333333),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF7F7F7),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.grey.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Stack(
-                                      alignment: Alignment.centerRight,
-                                      children: [
-                                        TextField(
-                                          controller:
-                                              _confirmPasswordController,
-                                          focusNode: _confirmPassFocus,
-                                          obscureText: _obscureConfirmPassword,
-                                          textAlignVertical:
-                                              TextAlignVertical.center,
-                                          decoration: const InputDecoration(
-                                            hintText: '................',
-                                            hintStyle: TextStyle(
-                                              color: Color(0xFFC4C4C4),
-                                              fontSize: 18,
-                                            ),
-                                            contentPadding: EdgeInsets.only(
-                                              left: 16,
-                                              right: 50,
-                                              bottom: 16,
-                                            ),
-                                            border: InputBorder.none,
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: 15,
-                                          child: GestureDetector(
-                                            behavior: HitTestBehavior.opaque,
-                                            onTap: () => setState(
-                                              () => _obscureConfirmPassword =
-                                                  !_obscureConfirmPassword,
-                                            ),
-                                            child: Image.asset(
-                                              'assets/images/signup/Group 7.png',
-                                              width: 22,
-                                              height: 22,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(
-                                                    Icons.visibility_off,
-                                                    size: 18,
-                                                    color: Colors.grey,
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                      horizontal: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF9F9F9),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: InkWell(
-                                      onTap:
-                                          () => setState(
-                                            () => _agreedToTerms = !_agreedToTerms,
-                                          ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: _agreedToTerms,
-                                            onChanged:
-                                                (val) => setState(
-                                                  () =>
-                                                      _agreedToTerms =
-                                                          val ?? false,
-                                                ),
-                                            activeColor: const Color(
-                                              0xFFFF7067,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            side: BorderSide(
-                                              color: Colors.grey.shade400,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: RichText(
-                                              text: TextSpan(
-                                                style: const TextStyle(
-                                                  color: Color(0xFF555555),
-                                                  fontSize: 12,
-                                                  fontFamily: 'Roboto',
-                                                ),
-                                                children: [
-                                                  const TextSpan(
-                                                    text: 'I agree with ',
-                                                  ),
-                                                  TextSpan(
-                                                    text:
-                                                        'terms and conditions',
-                                                    style: const TextStyle(
-                                                      color: Color(0xFFFF7067),
-                                                      decoration:
-                                                          TextDecoration
-                                                              .underline,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                                    recognizer:
-                                                        TapGestureRecognizer()
-                                                          ..onTap =
-                                                              _showTermsDialog,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  GestureDetector(
-                                    onTap: authState.isLoading ? null : _signUp,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
                                         Image.asset(
-                                          'assets/images/signup/Rectangle 11.png',
-                                          width: double.infinity,
-                                          fit: BoxFit.contain,
+                                          'assets/images/3. SignUp-Email/Sign Up.png',
+                                          height: 28,
                                           errorBuilder:
                                               (context, error, stackTrace) =>
-                                                  const SizedBox.shrink(),
+                                                  const Text(
+                                                    'Sign Up',
+                                                    style: TextStyle(
+                                                      fontSize: 22,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF333333),
+                                                    ),
+                                                  ),
                                         ),
-                                        if (authState.isLoading)
-                                          const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
+                                        const SizedBox(height: 12),
+                                        Center(
+                                          child: SizedBox(
+                                            height: 35,
+                                            width: 220,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: GestureDetector(
+                                                    onTap: () => setState(
+                                                      () => _isPhoneSelected =
+                                                          false,
+                                                    ),
+                                                    child: Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color: !_isPhoneSelected
+                                                            ? const Color(
+                                                                0xFFFF7067,
+                                                              )
+                                                            : const Color(
+                                                                0xFFF7F7F7,
+                                                              ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              30,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: Colors.grey
+                                                              .withValues(
+                                                                alpha: 0.1,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        'Email',
+                                                        style: TextStyle(
+                                                          color:
+                                                              !_isPhoneSelected
+                                                              ? Colors.white
+                                                              : Colors
+                                                                    .grey
+                                                                    .shade400,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 11,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: GestureDetector(
+                                                    onTap: () => setState(
+                                                      () => _isPhoneSelected =
+                                                          true,
+                                                    ),
+                                                    child: Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color: _isPhoneSelected
+                                                            ? const Color(
+                                                                0xFFFF7067,
+                                                              )
+                                                            : const Color(
+                                                                0xFFF7F7F7,
+                                                              ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              30,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: Colors.grey
+                                                              .withValues(
+                                                                alpha: 0.1,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        'Phone',
+                                                        style: TextStyle(
+                                                          color:
+                                                              _isPhoneSelected
+                                                              ? Colors.white
+                                                              : Colors
+                                                                    .grey
+                                                                    .shade400,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 11,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 18),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 4,
+                                            ),
+                                            child: Text(
+                                              _isPhoneSelected
+                                                  ? 'Phone Number *'
+                                                  : 'Email *',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF333333),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        if (_isPhoneSelected)
+                                          CustomPhoneField(
+                                            controller: _phoneController,
+                                            focusNode: _phoneFocus,
+                                            onCountryChanged: (prefix) =>
+                                                setState(
+                                                  () =>
+                                                      _phonePrefix = '+$prefix',
+                                                ),
                                           )
                                         else
-                                          Image.asset(
-                                            'assets/images/signup/Group 9.png',
-                                            height: 22,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    const Icon(
-                                                      Icons.arrow_forward,
-                                                      color: Colors.white,
-                                                      size: 18,
-                                                    ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  GestureDetector(
-                                    onTap: () => context.go('/login'),
-                                    child: RichText(
-                                      text: const TextSpan(
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: 'Already have an account? ',
-                                          ),
-                                          TextSpan(
-                                            text: 'Log In',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
+                                          Container(
+                                            height: 38,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF7F7F7),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: Colors.grey.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                              ),
+                                            ),
+                                            child: TextField(
+                                              controller: _emailController,
+                                              focusNode: _emailFocus,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Enter Email',
+                                                hintStyle: TextStyle(
+                                                  color: Color(0xFFC4C4C4),
+                                                  fontSize: 13,
+                                                ),
+                                                contentPadding: EdgeInsets.only(
+                                                  left: 12,
+                                                  right: 12,
+                                                  bottom: 12,
+                                                ),
+                                                border: InputBorder.none,
+                                              ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                        const SizedBox(height: 16),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 4,
+                                            ),
+                                            child: const Text(
+                                              'Password *',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF333333),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF7F7F7),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.grey.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            alignment: Alignment.centerRight,
+                                            children: [
+                                              TextField(
+                                                controller: _passwordController,
+                                                focusNode: _passFocus,
+                                                obscureText: _obscurePassword,
+                                                textAlignVertical:
+                                                    TextAlignVertical.center,
+                                                decoration:
+                                                    const InputDecoration(
+                                                      hintText:
+                                                          '................',
+                                                      hintStyle: TextStyle(
+                                                        color: Color(
+                                                          0xFFC4C4C4,
+                                                        ),
+                                                        fontSize: 18,
+                                                      ),
+                                                      contentPadding:
+                                                          EdgeInsets.only(
+                                                            left: 16,
+                                                            right: 50,
+                                                            bottom: 16,
+                                                          ),
+                                                      border: InputBorder.none,
+                                                    ),
+                                              ),
+                                              Positioned(
+                                                right: 15,
+                                                child: GestureDetector(
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  onTap: () => setState(
+                                                    () => _obscurePassword =
+                                                        !_obscurePassword,
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/images/signup/Group 7.png',
+                                                    width: 22,
+                                                    height: 22,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) => const Icon(
+                                                          Icons.visibility_off,
+                                                          size: 18,
+                                                          color: Colors.grey,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 4,
+                                            ),
+                                            child: const Text(
+                                              'Confirm Password *',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF333333),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF7F7F7),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.grey.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            alignment: Alignment.centerRight,
+                                            children: [
+                                              TextField(
+                                                controller:
+                                                    _confirmPasswordController,
+                                                focusNode: _confirmPassFocus,
+                                                obscureText:
+                                                    _obscureConfirmPassword,
+                                                textAlignVertical:
+                                                    TextAlignVertical.center,
+                                                decoration:
+                                                    const InputDecoration(
+                                                      hintText:
+                                                          '................',
+                                                      hintStyle: TextStyle(
+                                                        color: Color(
+                                                          0xFFC4C4C4,
+                                                        ),
+                                                        fontSize: 18,
+                                                      ),
+                                                      contentPadding:
+                                                          EdgeInsets.only(
+                                                            left: 16,
+                                                            right: 50,
+                                                            bottom: 16,
+                                                          ),
+                                                      border: InputBorder.none,
+                                                    ),
+                                              ),
+                                              Positioned(
+                                                right: 15,
+                                                child: GestureDetector(
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  onTap: () => setState(
+                                                    () => _obscureConfirmPassword =
+                                                        !_obscureConfirmPassword,
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/images/signup/Group 7.png',
+                                                    width: 22,
+                                                    height: 22,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) => const Icon(
+                                                          Icons.visibility_off,
+                                                          size: 18,
+                                                          color: Colors.grey,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                            horizontal: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF9F9F9),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: InkWell(
+                                            onTap: () => setState(
+                                              () => _agreedToTerms =
+                                                  !_agreedToTerms,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Checkbox(
+                                                  value: _agreedToTerms,
+                                                  onChanged: (val) => setState(
+                                                    () => _agreedToTerms =
+                                                        val ?? false,
+                                                  ),
+                                                  activeColor: const Color(
+                                                    0xFF6C5CE7,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                  ),
+                                                  side: BorderSide(
+                                                    color: Colors.grey.shade400,
+                                                    width: 1.5,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: RichText(
+                                                    text: TextSpan(
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF555555,
+                                                        ),
+                                                        fontSize: 12,
+                                                        fontFamily: 'Roboto',
+                                                      ),
+                                                      children: [
+                                                        const TextSpan(
+                                                          text: 'I agree with ',
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              'terms and conditions',
+                                                          style: const TextStyle(
+                                                            color: Color(
+                                                              0xFF6C5CE7,
+                                                            ),
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .underline,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                          recognizer:
+                                                              TapGestureRecognizer()
+                                                                ..onTap =
+                                                                    _showTermsDialog,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        GestureDetector(
+                                          onTap: authState.isLoading
+                                              ? null
+                                              : _signUp,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Image.asset(
+                                                'assets/images/signup/Rectangle 11.png',
+                                                width: double.infinity,
+                                                fit: BoxFit.contain,
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) =>
+                                                        const SizedBox.shrink(),
+                                              ),
+                                              if (authState.isLoading)
+                                                const SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2,
+                                                      ),
+                                                )
+                                              else
+                                                Image.asset(
+                                                  'assets/images/signup/Group 9.png',
+                                                  height: 22,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) => const Icon(
+                                                        Icons.arrow_forward,
+                                                        color: Colors.white,
+                                                        size: 18,
+                                                      ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        GestureDetector(
+                                          onTap: () => context.go('/login'),
+                                          child: RichText(
+                                            text: const TextSpan(
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      'Already have an account? ',
+                                                ),
+                                                TextSpan(
+                                                  text: 'Log In',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -713,8 +787,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     Positioned.fill(
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.6),
-                                          borderRadius: BorderRadius.circular(15),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
                                         ),
                                         child: const Center(
                                           child: CircularProgressIndicator(
@@ -728,7 +806,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             ),
                             Positioned(
                               top: 8,
-                              right: - (size.width * 0.07),
+                              right: -(size.width * 0.07),
                               child: Image.asset(
                                 'assets/images/signup/Rocket.png',
                                 width: (size.width * 0.25).clamp(80.0, 110.0),
@@ -749,6 +827,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ),
     );
   }
+
   void _showTermsDialog() {
     showDialog(
       context: context,
@@ -771,11 +850,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFFF7067), Color(0xFFFF908A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
@@ -783,24 +858,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.gavel_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                      const Icon(
+                        Icons.gavel_rounded,
+                        color: Color(0xFF6C5CE7),
+                        size: 24,
                       ),
                       const SizedBox(width: 16),
                       const Expanded(
                         child: Text(
-                          'Terms of Service',
+                          'Terms and Conditions',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF6C5CE7),
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -809,12 +877,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.white70),
+                        icon: const Icon(Icons.close, color: Color(0xFF6C5CE7)),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
+                ),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEEEEEE),
                 ),
                 // Scrollable Content
                 Expanded(
@@ -881,30 +954,30 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 // Footer Action
                 Padding(
                   padding: const EdgeInsets.all(24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() => _agreedToTerms = true);
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF7067),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _agreedToTerms = true);
+                      Navigator.pop(context);
+                    },
+                    child: Image.asset(
+                      'assets/images/signup/TC Button.png',
+                      width: double.infinity,
+                      height: 54,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 54,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6C5CE7),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        elevation: 4,
-                        shadowColor: const Color(0xFFFF7067).withValues(
-                          alpha: 0.4,
-                        ),
-                      ),
-                      child: const Text(
-                        'I Accept the Terms',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        child: const Text(
+                          'I Accept the Terms',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -930,7 +1003,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 width: 4,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF7067),
+                  color: const Color(0xFF6C5CE7),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

@@ -56,6 +56,8 @@ flutter:
     - "assets/mental_math/"
     - "assets/continue button/"
     - "assets/images/quick_menu/"
+    - "assets/images/quiz/"
+    - "assets/audio/"
 
 flutter_launcher_icons:
   android: true

@@ -98,6 +98,35 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
+                  // Add Grade & Add Student Above Pricing
+                  _buildLinkWithIcon(
+                    icon: '', 
+                    fallbackIcon: Icons.stars_rounded,
+                    iconColor: const Color(0xFF6C5CE7), // Purple
+                    title: 'Add Grade',
+                    titleColor: const Color(0xFF2D327C),
+                    onTap: () {
+                      Navigator.pop(context);
+                      showDialog(context: context, builder: (_) => const GradePromotionDialog());
+                    },
+                  ),
+                  _buildLinkWithIcon(
+                    icon: '', 
+                    fallbackIcon: Icons.person_add_alt_1_rounded,
+                    iconColor: const Color(0xFFF1659C), // Pink
+                    title: 'Add Student',
+                    titleColor: const Color(0xFF2D327C),
+                    onTap: () {
+                      Navigator.pop(context);
+                      showDialog(context: context, builder: (_) => const AddStudentDialog());
+                    },
+                  ),
+
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  ),
+
                   // Pricing
                   _buildMenuItem(
                     title: 'Pricing',
@@ -114,14 +143,6 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     isExpanded: _quickLinksExpanded,
                     onToggle: () => setState(() => _quickLinksExpanded = !_quickLinksExpanded),
                     children: [
-                      _buildActionItem('Add Grade', () {
-                        Navigator.pop(context);
-                        showDialog(context: context, builder: (_) => const GradePromotionDialog());
-                      }),
-                      _buildActionItem('Add Student', () {
-                        Navigator.pop(context);
-                        showDialog(context: context, builder: (_) => const AddStudentDialog());
-                      }),
                       _buildSubMenuItem('Login', 'https://upfunda.academy/login'),
                       _buildSubMenuItem('School Login', 'https://bo.upfunda.academy/login'),
                       _buildSubMenuItem('Student Sign Up', 'https://upfunda.academy/signup'),
@@ -129,6 +150,7 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                       _buildSubMenuItem('FAQS', 'https://upfunda.academy/faq'),
                     ],
                   ),
+
 
                   _buildAssetImage('Line 15.png', height: 1),
 
@@ -191,6 +213,7 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     fallbackIcon: Icons.logout,
                     title: 'Logout',
                     titleColor: const Color(0xFFF14336),
+                    iconColor: const Color(0xFFF14336),
                     onTap: () async {
                       await ref.read(authProvider.notifier).logout();
                       if (context.mounted) {
@@ -222,17 +245,18 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
     );
   }
 
-  Widget _buildAssetImage(String fileName, {double? width, double? height, IconData? fallback}) {
+  Widget _buildAssetImage(String fileName, {double? width, double? height, IconData? fallback, Color? iconColor}) {
     if (fileName.isEmpty && fallback != null) {
-      return Icon(fallback, size: width ?? 20, color: const Color(0xFF6B63D4));
+      return Icon(fallback, size: width ?? 20, color: iconColor ?? const Color(0xFF6B63D4));
     }
     return Image.asset(
       '$_assetPath$fileName',
       width: width,
       height: height,
+      color: iconColor,
       errorBuilder: (context, error, stackTrace) {
         if (fallback != null) {
-          return Icon(fallback, size: width ?? 20, color: const Color(0xFF6B63D4));
+          return Icon(fallback, size: width ?? 20, color: iconColor ?? const Color(0xFF6B63D4));
         }
         return const SizedBox.shrink();
       },
@@ -313,22 +337,6 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
     );
   }
 
-  Widget _buildActionItem(String title, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: const Color(0xFF757575),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildContactItem({
     required String icon,
     required IconData fallbackIcon,
@@ -364,15 +372,16 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
     required IconData fallbackIcon,
     required String title,
     Color titleColor = const Color(0xFF757575),
+    Color? iconColor,
     required VoidCallback onTap,
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: _buildAssetImage(icon, width: 22, fallback: fallbackIcon),
+      leading: _buildAssetImage(icon, width: 22, fallback: fallbackIcon, iconColor: iconColor),
       title: Text(
         title,
         style: GoogleFonts.inter(
-          fontSize: 15,
+          fontSize: 16,
           fontWeight: FontWeight.w600,
           color: titleColor,
         ),
@@ -381,3 +390,4 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
     );
   }
 }
+

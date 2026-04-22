@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../providers/quiz_provider.dart' show quizProvider, QuizState, quizMuteProvider;
+import '../../providers/quiz_provider.dart' show quizProvider, QuizState;
 import '../../data/models/quiz_model.dart';
 import '../../shared/widgets/loader_widget.dart';
 import 'widgets/question_card.dart';
@@ -172,79 +172,171 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.quizBg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top bar
-            _buildTopBar(quizState),
-
-            // Progress bar
-            LinearProgressIndicator(
-              value: (() {
-                final total = quizState.pagination?.totalQuestions ?? quizState.questions.length;
-                if (total == 0) return 0.0;
-                return (quizState.answeredCount / total).clamp(0.0, 1.0);
-              })(),
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
-              minHeight: 4,
+      backgroundColor: const Color(0xFF2D327C),
+      body: Stack(
+        children: [
+          // Background - covers full screen including bottom safe area
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/quiz/BG.png',
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 12),
+          ),
+          // Content - respects safe area for interactive elements
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar
+                _buildTopBar(quizState),
+                const SizedBox(height: 8),
 
-            // Topic Heading
-            if (quizState.testName.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  quizState.testName.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.cherryBombOne(
-                    color: Colors.white,
-                    fontSize: 18,
-                    letterSpacing: 1.0,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                // Stats and Mystic Eraser Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      // Questions Count Box
+                      Expanded(
+                        child: Container(
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF43329D).withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset('assets/images/quiz/book.png', height: 18),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Questions ${quizState.currentIndex + 1}/${quizState.questions.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
+                      const SizedBox(width: 8),
+                      // Mystic Eraser Button
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: quizState.canUseFiftyFifty
+                              ? () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => MysticEraserDialog(
+                                      remainingUses: quizState.fiftyFiftyLimit -
+                                          quizState.fiftyFiftyUsageCount,
+                                      onConfirm: () {
+                                        ref
+                                            .read(quizProvider.notifier)
+                                            .useFiftyFifty(quizState.currentQuestionId);
+                                      },
+                                    ),
+                                  );
+                                }
+                              : null,
+                          child: Container(
+                            height: 54,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE848A1), Color(0xFF8B5CF6)],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.auto_fix_high,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Mystic Eraser (${quizState.fiftyFiftyLimit - quizState.fiftyFiftyUsageCount} Left)',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                     ],
                   ),
                 ),
-              ),
-            const SizedBox(height: 12),
 
-            // Status legend
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: StatusLegend(
-                correct: quizState.correctCount,
-                incorrect: quizState.incorrectCount,
-              ),
-            ),
-            const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-            // Main content
-            Expanded(
-              child: isTablet
-                  ? _buildTabletLayout(quizState, currentQ)
-                  : _buildPhoneLayout(quizState, currentQ),
+                // Status legend
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: StatusLegend(
+                    correct: quizState.correctCount,
+                    incorrect: quizState.incorrectCount,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Main content
+                Expanded(
+                  child: isTablet
+                      ? _buildTabletLayout(quizState, currentQ)
+                      : _buildPhoneLayout(quizState, currentQ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTopBar(QuizState quizState) {
-    final isMuted = ref.watch(quizMuteProvider);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Image.asset('assets/images/quiz/Vector (Stroke).png', height: 20),
             onPressed: () {
               showDialog(
                 context: context,
@@ -252,80 +344,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               );
             },
           ),
-          // Question counter
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
+          Expanded(
             child: Text(
-              '${quizState.currentIndex + 1}/${quizState.questions.length}',
-              style: const TextStyle(
+              quizState.testName.isEmpty ? 'Quiz' : quizState.testName,
+              textAlign: TextAlign.start,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: GoogleFonts.montserrat(
                 color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const Spacer(),
-          // Mute button
           IconButton(
-            icon: Icon(
-              isMuted ? Icons.volume_off : Icons.volume_up,
-              color: Colors.white70,
-            ),
-            onPressed: () {
-              final newMute = !isMuted;
-              ref.read(quizMuteProvider.notifier).state = newMute;
-            },
-          ),
-          const SizedBox(width: 8),
-
-          // 50-50 button
-          if (quizState.currentQuestion != null &&
-              !quizState.currentQuestion!.isFillType)
-            IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: quizState.canUseFiftyFifty
-                      ? AppColors.review.withValues(alpha: 0.2)
-                      : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Mystic Eraser',
-                  style: TextStyle(
-                    color: quizState.canUseFiftyFifty
-                        ? AppColors.review
-                        : AppColors.grey400,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-              onPressed: quizState.canUseFiftyFifty
-                  ? () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => MysticEraserDialog(
-                          remainingUses: quizState.fiftyFiftyLimit -
-                              quizState.fiftyFiftyUsageCount,
-                          onConfirm: () {
-                            ref
-                                .read(quizProvider.notifier)
-                                .useFiftyFifty(quizState.currentQuestionId);
-                          },
-                        ),
-                      );
-                    }
-                  : null,
-
-            ),
-          // Exit button
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.white70),
+            icon: const Icon(Icons.close, color: Colors.white, size: 28),
             onPressed: () {
               showDialog(
                 context: context,
@@ -333,6 +366,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               );
             },
           ),
+
         ],
       ),
     );
@@ -465,6 +499,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       children: List.generate(question.options.length, (i) {
         final opt = question.options[i];
         final isHidden = hiddenOpts.contains(opt.optionId);
+        
+        if (isHidden) return const SizedBox.shrink();
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: OptionTile(
