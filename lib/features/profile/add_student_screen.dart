@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../core/utils/countries.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
@@ -23,9 +24,95 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   List<dynamic> _classes = [];
   bool _isLoadingClasses = true;
   bool _isSubmitting = false;
+  List<String> _filteredCountries = [];
+  final _countrySearchController = TextEditingController();
 
   final List<String> _genders = ['Male', 'Female', 'Other'];
-  final List<String> _countries = ['India', 'USA', 'UK', 'Australia', 'Canada', 'UAE'];
+  final List<String> _countries = CountryData.countries;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _countrySearchController.dispose();
+    super.dispose();
+  }
+
+  void _showCountrySearch() {
+    _filteredCountries = List.from(_countries);
+    _countrySearchController.clear();
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Select Country',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _countrySearchController,
+                  onChanged: (val) {
+                    setDialogState(() {
+                      _filteredCountries = _countries
+                          .where((c) => c.toLowerCase().contains(val.toLowerCase()))
+                          .toList();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search country...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _filteredCountries.length,
+                    itemBuilder: (context, index) {
+                      final country = _filteredCountries[index];
+                      return ListTile(
+                        title: Text(
+                          country,
+                          style: GoogleFonts.montserrat(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        onTap: () {
+                          setState(() => _selectedCountry = country);
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -52,7 +139,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       builder: (context, child) {
@@ -205,13 +292,29 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                       ),
                       const SizedBox(height: 16),
                       _buildLabel('Country *'),
-                      _buildDropdown(
-                        value: _selectedCountry,
-                        items: _countries.map((c) {
-                          return DropdownMenuItem(value: c, child: Text(c));
-                        }).toList(),
-                        onChanged: (val) => setState(() => _selectedCountry = val),
-                        hint: 'Select Country',
+                      InkWell(
+                        onTap: _showCountrySearch,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _selectedCountry ?? 'Select Country',
+                                style: TextStyle(
+                                  color: _selectedCountry == null ? Colors.grey : Colors.black87,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Icon(Icons.search, color: Colors.grey, size: 20),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       SizedBox(

@@ -130,8 +130,8 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                   // Pricing
                   _buildMenuItem(
                     title: 'Pricing',
-                    useBold: false,
-                    color: const Color(0xFF757575),
+                    useBold: true,
+                    color: const Color(0xFF2D2D2D),
                     onTap: () => _launchUrl('https://upfunda.academy/pricingAmount'),
                   ),
                   
@@ -143,9 +143,6 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     isExpanded: _quickLinksExpanded,
                     onToggle: () => setState(() => _quickLinksExpanded = !_quickLinksExpanded),
                     children: [
-                      _buildSubMenuItem('Login', 'https://upfunda.academy/login'),
-                      _buildSubMenuItem('School Login', 'https://bo.upfunda.academy/login'),
-                      _buildSubMenuItem('Student Sign Up', 'https://upfunda.academy/signup'),
                       _buildSubMenuItem('School Sign Up', 'https://upfunda.academy/signup-school'),
                       _buildSubMenuItem('FAQS', 'https://upfunda.academy/faq'),
                     ],
@@ -161,7 +158,6 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     onToggle: () => setState(() => _ourCompanyExpanded = !_ourCompanyExpanded),
                     children: [
                       _buildSubMenuItem('About Us', 'https://upfunda.academy/about'),
-                      _buildSubMenuItem('Contact Us', 'https://upfunda.academy/contact'),
                       _buildSubMenuItem('Privacy Policy', 'https://upfunda.academy/privacy-policy'),
                       _buildSubMenuItem('Data Deletion', 'https://upfunda.academy/Data-Deletion'),
                       _buildSubMenuItem('Terms & Conditions', 'https://upfunda.academy/terms-conditions'),
@@ -177,6 +173,12 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     isExpanded: _contactExpanded,
                     onToggle: () => setState(() => _contactExpanded = !_contactExpanded),
                     children: [
+                      _buildContactItem(
+                        icon: '',
+                        fallbackIcon: Icons.language_rounded,
+                        text: 'Contact Us',
+                        onTap: () => _launchUrl('https://upfunda.academy/contact'),
+                      ),
                       _buildContactItem(
                         icon: 'lets-icons_phone-fill.png',
                         fallbackIcon: Icons.phone,
