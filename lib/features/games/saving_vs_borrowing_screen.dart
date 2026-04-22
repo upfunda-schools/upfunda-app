@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +18,19 @@ class _Toy {
   const _Toy(this.emoji, this.name, this.price);
 }
 
+class _LevelConfig {
+  final int allowance;
+  final List<_Toy> toys;
+  final double interestRate;
+  final bool allowBorrowing;
+  const _LevelConfig({
+    required this.allowance,
+    required this.toys,
+    required this.interestRate,
+    required this.allowBorrowing,
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Screen
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,35 +44,90 @@ class SavingVsBorrowingScreen extends StatefulWidget {
 }
 
 class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
-  static const _allToys = [
-    _Toy('🎮', 'Video Game',    500),
-    _Toy('🚲', 'Bicycle',       800),
-    _Toy('🧸', 'Teddy Bear',    200),
-    _Toy('🎨', 'Art Set',       300),
-    _Toy('🏏', 'Cricket Bat',   400),
-    _Toy('🎸', 'Guitar',        600),
-    _Toy('🔭', 'Telescope',     700),
-    _Toy('🎯', 'Dart Board',    250),
-    _Toy('🎲', 'Board Game',    150),
-    _Toy('🛹', 'Skateboard',    450),
-    _Toy('🎧', 'Headphones',    550),
-    _Toy('🤿', 'Science Kit',   350),
+  // ── Level configurations (mirrors frontend ToyStoreChallenge) ─────────────
+  static const _levels = [
+    _LevelConfig(
+      allowance: 50,
+      toys: [_Toy('🚗', 'Small Car', 100), _Toy('📚', 'Coloring Book', 150)],
+      interestRate: 0,
+      allowBorrowing: false,
+    ),
+    _LevelConfig(
+      allowance: 40,
+      toys: [_Toy('🧩', 'Puzzle Set', 120), _Toy('⚽', 'Ball', 160)],
+      interestRate: 0,
+      allowBorrowing: false,
+    ),
+    _LevelConfig(
+      allowance: 60,
+      toys: [
+        _Toy('🧱', 'Building Blocks', 180),
+        _Toy('🎨', 'Art Set', 240),
+      ],
+      interestRate: 0,
+      allowBorrowing: false,
+    ),
+    _LevelConfig(
+      allowance: 50,
+      toys: [_Toy('🤖', 'Robot Toy', 200), _Toy('🎲', 'Board Game', 300)],
+      interestRate: 10,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 60,
+      toys: [_Toy('🚲', 'Bicycle', 300), _Toy('🎮', 'Video Game', 360)],
+      interestRate: 15,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 50,
+      toys: [_Toy('🚁', 'Drone', 400), _Toy('🔬', 'Science Kit', 250)],
+      interestRate: 20,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 75,
+      toys: [_Toy('🔭', 'Telescope', 450), _Toy('🎸', 'Guitar', 600)],
+      interestRate: 15,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 80,
+      toys: [_Toy('📷', 'Camera', 640), _Toy('🛹', 'Skateboard', 480)],
+      interestRate: 25,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 70,
+      toys: [
+        _Toy('🎮', 'Gaming Console', 700),
+        _Toy('⌚', 'Smart Watch', 560),
+      ],
+      interestRate: 20,
+      allowBorrowing: true,
+    ),
+    _LevelConfig(
+      allowance: 100,
+      toys: [
+        _Toy('💻', 'Laptop', 1000),
+        _Toy('🛴', 'Electric Scooter', 800),
+      ],
+      interestRate: 30,
+      allowBorrowing: true,
+    ),
   ];
 
   // ── Game state ────────────────────────────────────────────────────────────
-  int _level = 1;
+  int _currentLevel = 1;
   int _score = 0;
-  int _roundsCompleted = 0;
   _Phase _phase = _Phase.intro;
 
-  // Intro
-  late List<_Toy> _toyOptions;
   _Toy? _selectedToy;
 
   // Calculating
   int _attempts = 0;
   bool _showHint = false;
-  String? _calcFeedback; // null | 'correct' | 'wrong'
+  String? _calcFeedback;
   final _calcCtrl = TextEditingController();
 
   // Choosing
@@ -73,23 +140,18 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   // Results
   int _roundPoints = 0;
 
-  final _random = Random();
-
   // ── Computed ──────────────────────────────────────────────────────────────
-  int get _allowance => _level <= 2 ? 50 : _level <= 4 ? 100 : 150;
-  bool get _borrowingUnlocked => _level >= 4;
+  _LevelConfig get _config => _levels[_currentLevel - 1];
+  int get _allowance => _config.allowance;
+  bool get _borrowingUnlocked => _config.allowBorrowing;
   int get _weeksNeeded => (_selectedToy!.price / _allowance).ceil();
-  double get _interestRate => _level <= 3 ? 10.0 : 15.0;
-  int get _interestAmount => (_selectedToy!.price * _interestRate / 100).round();
+  double get _interestRate => _config.interestRate;
+  int get _interestAmount =>
+      (_selectedToy!.price * _interestRate / 100).round();
   int get _totalRepay => _selectedToy!.price + _interestAmount;
+  bool get _isLastLevel => _currentLevel >= 10;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
-  @override
-  void initState() {
-    super.initState();
-    _pickToys();
-  }
-
   @override
   void dispose() {
     _calcCtrl.dispose();
@@ -97,20 +159,14 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  void _pickToys() {
-    final shuffled = List<_Toy>.from(_allToys)..shuffle(_random);
-    _toyOptions = shuffled.take(2).toList();
-  }
-
-  void _startNewRound() {
-    _pickToys();
+  void _startNextLevel() {
     setState(() {
+      _currentLevel++;
       _phase = _Phase.intro;
       _selectedToy = null;
       _attempts = 0;
       _showHint = false;
       _calcFeedback = null;
-
       _calcCtrl.clear();
       _choice = null;
       _savings = 0;
@@ -121,11 +177,19 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
   void _resetGame() {
     setState(() {
-      _level = 1;
+      _currentLevel = 1;
       _score = 0;
-      _roundsCompleted = 0;
+      _phase = _Phase.intro;
+      _selectedToy = null;
+      _attempts = 0;
+      _showHint = false;
+      _calcFeedback = null;
+      _calcCtrl.clear();
+      _choice = null;
+      _savings = 0;
+      _weeksPassed = 0;
+      _roundPoints = 0;
     });
-    _startNewRound();
   }
 
   void _selectToy(_Toy toy) {
@@ -148,7 +212,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
       setState(() {
         _score += pts;
         _calcFeedback = 'correct';
-
       });
     } else {
       setState(() {
@@ -160,10 +223,7 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   }
 
   void _skipCalc() {
-    setState(() {
-
-      _phase = _Phase.choosing;
-    });
+    setState(() => _phase = _Phase.choosing);
   }
 
   void _proceedToChoosing() {
@@ -171,47 +231,36 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   }
 
   void _choose(_Choice choice) {
-    setState(() {
-      _choice = choice;
-      if (choice == _Choice.save) {
+    if (choice == _Choice.save) {
+      setState(() {
+        _choice = choice;
         _phase = _Phase.saving;
         _savings = 0;
         _weeksPassed = 0;
-      } else {
-        _finishBorrowing();
-      }
-    });
+      });
+    } else {
+      final pts = 50 + (_currentLevel * 5);
+      setState(() {
+        _choice = choice;
+        _roundPoints = pts;
+        _score += pts;
+        _phase = _Phase.results;
+      });
+    }
   }
 
   void _saveWeek() {
     setState(() {
       _weeksPassed++;
-      _savings += _allowance;
-      if (_savings >= _selectedToy!.price) {
-        _savings = _selectedToy!.price;
-        _finishSaving();
-      }
+      _savings = (_savings + _allowance).clamp(0, _selectedToy!.price);
     });
   }
 
   void _finishSaving() {
-    final pts = 100 + (_level * 10);
+    final pts = 100 + (_currentLevel * 10);
     setState(() {
       _roundPoints = pts;
       _score += pts;
-      _roundsCompleted++;
-      _level = 1 + (_roundsCompleted ~/ 2);
-      _phase = _Phase.results;
-    });
-  }
-
-  void _finishBorrowing() {
-    final pts = 50 + (_level * 5);
-    setState(() {
-      _roundPoints = pts;
-      _score += pts;
-      _roundsCompleted++;
-      _level = 1 + (_roundsCompleted ~/ 2);
       _phase = _Phase.results;
     });
   }
@@ -254,7 +303,9 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Row(
         children: [
-          _CircleBtn(icon: Icons.arrow_back_ios_new_rounded, onTap: () => context.pop()),
+          _CircleBtn(
+              icon: Icons.arrow_back_ios_new_rounded,
+              onTap: () => context.pop()),
           Expanded(
             child: Text(
               '🏦 Toy Store Challenge',
@@ -274,11 +325,18 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                 title: const Text('Reset Game?'),
                 content: const Text('All progress will be lost.'),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel')),
                   ElevatedButton(
-                    onPressed: () { Navigator.pop(context); _resetGame(); },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
-                    child: const Text('Reset', style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _resetGame();
+                    },
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A1B9A)),
+                    child: const Text('Reset',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -295,13 +353,18 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _StatPill('Level',     '$_level',                  const Color(0xFF6A1B9A)),
+          _StatPill('Level', '$_currentLevel/10', const Color(0xFF6A1B9A)),
           const SizedBox(width: 8),
-          _StatPill('Score',     '$_score',                  const Color(0xFF1B5E20)),
+          _StatPill('Score', '$_score', const Color(0xFF1B5E20)),
           const SizedBox(width: 8),
-          _StatPill('Allowance', '₹$_allowance/wk',          const Color(0xFF0D47A1)),
+          _StatPill(
+              'Allowance', '₹$_allowance/wk', const Color(0xFF0D47A1)),
           const SizedBox(width: 8),
-          _StatPill('Borrow',    _borrowingUnlocked ? '🔓' : '🔒 Lvl 4', const Color(0xFFB71C1C)),
+          _StatPill(
+            'Borrow',
+            _borrowingUnlocked ? '🔓' : '🔒 Lvl 4',
+            const Color(0xFFB71C1C),
+          ),
         ],
       ),
     );
@@ -310,11 +373,11 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   // ── Phase router ──────────────────────────────────────────────────────────
   Widget _buildPhase() {
     return switch (_phase) {
-      _Phase.intro       => _buildIntro(),
+      _Phase.intro => _buildIntro(),
       _Phase.calculating => _buildCalculating(),
-      _Phase.choosing    => _buildChoosing(),
-      _Phase.saving      => _buildSaving(),
-      _Phase.results     => _buildResults(),
+      _Phase.choosing => _buildChoosing(),
+      _Phase.saving => _buildSaving(),
+      _Phase.results => _buildResults(),
     };
   }
 
@@ -330,20 +393,22 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
         _Banner(
           color: const Color(0xFF6A1B9A),
           icon: '🛍️',
-          text: 'Pick a toy you want to buy! Then we\'ll figure out how to get it.',
+          text:
+              'Pick a toy you want to buy! Then we\'ll figure out how to get it.',
         ),
 
         const SizedBox(height: 20),
 
         Text(
           'Choose a toy:',
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 16),
+          style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w700, fontSize: 16),
         ),
 
         const SizedBox(height: 12),
 
         Row(
-          children: _toyOptions
+          children: _config.toys
               .map((toy) => Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -358,7 +423,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 24),
 
-        // Info cards
         Row(
           children: [
             Expanded(
@@ -374,8 +438,12 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
               child: _InfoCard(
                 icon: _borrowingUnlocked ? '🔓' : '🔒',
                 label: 'Borrowing',
-                value: _borrowingUnlocked ? 'Unlocked!' : 'Unlock at Level 4',
-                color: _borrowingUnlocked ? const Color(0xFF1565C0) : Colors.grey,
+                value: _borrowingUnlocked
+                    ? 'Unlocked!'
+                    : 'Unlock at Level 4',
+                color: _borrowingUnlocked
+                    ? const Color(0xFF1565C0)
+                    : Colors.grey,
               ),
             ),
           ],
@@ -395,7 +463,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
       children: [
         const SizedBox(height: 8),
 
-        // Toy + allowance display
         Row(
           children: [
             Expanded(
@@ -420,7 +487,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 20),
 
-        // Question
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -453,14 +519,17 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                   controller: _calcCtrl,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w700),
+                  style: GoogleFonts.montserrat(
+                      fontSize: 20, fontWeight: FontWeight.w700),
                   decoration: InputDecoration(
                     suffixText: 'weeks',
                     hintText: 'Enter number of weeks',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 2),
+                      borderSide: const BorderSide(
+                          color: Color(0xFF6A1B9A), width: 2),
                     ),
                   ),
                   onSubmitted: (_) => _submitCalc(),
@@ -477,7 +546,9 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                     ),
                     child: Text(
                       '❌ Not quite! Try again. (Attempt $_attempts/2)',
-                      style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          color: Color(0xFFB71C1C),
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -490,13 +561,14 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                     backgroundColor: const Color(0xFF6A1B9A),
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: GoogleFonts.montserrat(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   child: const Text('Submit Answer'),
                 ),
               ] else ...[
-                // Correct feedback
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -509,20 +581,28 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                     children: [
                       Row(
                         children: [
-                          const Text('✅  Correct!', style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1B5E20),
-                          )),
+                          const Text('✅  Correct!',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1B5E20),
+                              )),
                           const Spacer(),
                           Text(
                             '+${_attempts == 0 ? 50 : 25} pts',
-                            style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF2E7D32)),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2E7D32)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Text(
                         '₹${toy.price} ÷ ₹$_allowance = $_weeksNeeded weeks',
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF2E7D32),
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -534,8 +614,10 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                     backgroundColor: const Color(0xFFFF8F00),
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: GoogleFonts.montserrat(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   child: const Text('Continue →'),
                 ),
@@ -544,7 +626,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
           ),
         ),
 
-        // Hint
         if (_showHint && _calcFeedback != 'correct') ...[
           const SizedBox(height: 12),
           Container(
@@ -561,7 +642,8 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                 Expanded(
                   child: Text(
                     'Divide toy price by weekly allowance:\n₹${toy.price} ÷ ₹$_allowance = ${toy.price / _allowance}\nRemember to round UP if you get a decimal!',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -571,7 +653,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 16),
 
-        // Skip
         TextButton(
           onPressed: _skipCalc,
           child: const Text(
@@ -597,7 +678,10 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
         Center(
           child: Text(
             '${toy.emoji} ${toy.name}  •  ₹${toy.price}',
-            style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w800, color: const Color(0xFF4A148C)),
+            style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF4A148C)),
           ),
         ),
 
@@ -615,7 +699,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Save card
             Expanded(
               child: _ChoiceCard(
                 label: 'Save 💚',
@@ -635,7 +718,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
             const SizedBox(width: 12),
 
-            // Borrow card
             Expanded(
               child: _ChoiceCard(
                 label: 'Borrow ❤️',
@@ -646,9 +728,13 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                   _ChoiceRow('Interest amount', '₹$_interestAmount'),
                   _ChoiceRow('Total to repay', '₹$_totalRepay'),
                 ],
-                buttonLabel: _borrowingUnlocked ? '⚡ Choose Borrowing' : '🔒 Unlock at Level 4',
+                buttonLabel: _borrowingUnlocked
+                    ? '⚡ Choose Borrowing'
+                    : '🔒 Unlock at Level 4',
                 buttonColor: const Color(0xFFC62828),
-                onTap: _borrowingUnlocked ? () => _choose(_Choice.borrow) : null,
+                onTap: _borrowingUnlocked
+                    ? () => _choose(_Choice.borrow)
+                    : null,
                 locked: !_borrowingUnlocked,
               ),
             ),
@@ -659,7 +745,7 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Phase 4A — Saving
+  // Phase 4 — Saving
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildSaving() {
     final toy = _selectedToy!;
@@ -676,7 +762,10 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
         Center(
           child: Text(
             toy.name,
-            style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: const Color(0xFF4A148C)),
+            style: GoogleFonts.montserrat(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF4A148C)),
           ),
         ),
 
@@ -688,36 +777,44 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
-              BoxShadow(color: Colors.purple.withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 6)),
+              BoxShadow(
+                  color: Colors.purple.withValues(alpha: 0.1),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6)),
             ],
           ),
           child: Column(
             children: [
-              // Savings vs target
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Savings: ₹$_savings',
-                    style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF1B5E20)),
+                    style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1B5E20)),
                   ),
                   Text(
                     'Target: ₹${toy.price}',
-                    style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF6A1B9A)),
+                    style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6A1B9A)),
                   ),
                 ],
               ),
 
               const SizedBox(height: 12),
 
-              // Progress bar
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 18,
                   backgroundColor: const Color(0xFFEDE7F6),
-                  valueColor: const AlwaysStoppedAnimation(Color(0xFF7B1FA2)),
+                  valueColor:
+                      const AlwaysStoppedAnimation(Color(0xFF7B1FA2)),
                 ),
               ),
 
@@ -727,7 +824,9 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                 alignment: Alignment.centerRight,
                 child: Text(
                   '${(progress * 100).toInt()}%',
-                  style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF7B1FA2)),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF7B1FA2)),
                 ),
               ),
 
@@ -736,11 +835,13 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 16, color: Colors.grey),
+                  const Icon(Icons.calendar_today_rounded,
+                      size: 16, color: Colors.grey),
                   const SizedBox(width: 6),
                   Text(
                     'Week $_weeksPassed of $_weeksNeeded',
-                    style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -751,26 +852,33 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                 ElevatedButton.icon(
                   onPressed: _saveWeek,
                   icon: const Icon(Icons.savings_rounded),
-                  label: Text('Save Week ${_weeksPassed + 1}\'s Allowance (+₹$_allowance)'),
+                  label: Text(
+                      'Save Week ${_weeksPassed + 1}\'s Allowance (+₹$_allowance)'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2E7D32),
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    textStyle: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: GoogleFonts.montserrat(
+                        fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
               ] else ...[
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)]),
+                    gradient: const LinearGradient(
+                        colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)]),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Text(
                     '🎉 You\'ve saved enough!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -780,8 +888,10 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                     backgroundColor: const Color(0xFFFF8F00),
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: GoogleFonts.montserrat(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   child: Text('Buy ${toy.name}! 🎉'),
                 ),
@@ -805,7 +915,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
       children: [
         const SizedBox(height: 8),
 
-        // Trophy header
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -822,7 +931,10 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
               const SizedBox(height: 8),
               Text(
                 'Congratulations!',
-                style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
+                style: GoogleFonts.montserrat(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
               ),
               const SizedBox(height: 4),
               Text(
@@ -835,7 +947,6 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 16),
 
-        // Choice badge
         Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
@@ -844,51 +955,59 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
                 : const Color(0xFFE3F2FD),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: saved ? const Color(0xFF43A047) : const Color(0xFF1565C0),
+              color: saved
+                  ? const Color(0xFF43A047)
+                  : const Color(0xFF1565C0),
             ),
           ),
           child: Text(
-            saved ? '✅  You chose to SAVE money!' : '⚡  You chose to BORROW money!',
+            saved
+                ? '✅  You chose to SAVE money!'
+                : '⚡  You chose to BORROW money!',
             textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: saved ? const Color(0xFF1B5E20) : const Color(0xFF1565C0),
+              color: saved
+                  ? const Color(0xFF1B5E20)
+                  : const Color(0xFF1565C0),
             ),
           ),
         ),
 
         const SizedBox(height: 16),
 
-        // Stats breakdown
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: Colors.purple.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+              BoxShadow(
+                  color: Colors.purple.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4)),
             ],
           ),
           child: Column(
             children: saved
                 ? [
-                    _ResultRow('⏳ Weeks waited',  '$_weeksPassed weeks'),
+                    _ResultRow('⏳ Weeks waited', '$_weeksPassed weeks'),
                     _ResultRow('💸 Interest paid', '₹0'),
-                    _ResultRow('💰 Total cost',    '₹${toy.price}'),
+                    _ResultRow('💰 Total cost', '₹${toy.price}'),
                   ]
                 : [
-                    _ResultRow('📦 Principal',     '₹${toy.price}'),
-                    _ResultRow('📈 Interest rate', '${_interestRate.toInt()}%'),
+                    _ResultRow('📦 Principal', '₹${toy.price}'),
+                    _ResultRow(
+                        '📈 Interest rate', '${_interestRate.toInt()}%'),
                     _ResultRow('💸 Interest paid', '₹$_interestAmount'),
-                    _ResultRow('💳 Total paid',    '₹$_totalRepay'),
+                    _ResultRow('💳 Total paid', '₹$_totalRepay'),
                   ],
           ),
         ),
 
         const SizedBox(height: 16),
 
-        // Wisdom / learning tip
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -899,14 +1018,18 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(saved ? '🌟 ' : '📚 ', style: const TextStyle(fontSize: 20)),
+              Text(saved ? '🌟 ' : '📚 ',
+                  style: const TextStyle(fontSize: 20)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       saved ? 'Wisdom Tip' : 'Learning Point',
-                      style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 13, color: const Color(0xFF6D4C00)),
+                      style: GoogleFonts.montserrat(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: const Color(0xFF6D4C00)),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -924,18 +1047,21 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 16),
 
-        // Points earned
         Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
+            gradient: const LinearGradient(
+                colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             children: [
               Text(
                 '+$_roundPoints points earned!',
-                style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
+                style: GoogleFonts.montserrat(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
               ),
               Text(
                 'Total score: $_score',
@@ -947,17 +1073,63 @@ class _SavingVsBorrowingScreenState extends State<SavingVsBorrowingScreen> {
 
         const SizedBox(height: 20),
 
-        ElevatedButton(
-          onPressed: _startNewRound,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6A1B9A),
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700),
+        if (_isLastLevel) ...[
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                  colors: [Color(0xFFF9A825), Color(0xFFF57F17)]),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 8),
+                Text(
+                  'Game Complete!',
+                  style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Final Score: $_score',
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
           ),
-          child: Text('Next Toy  →  Level $_level'),
-        ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _resetGame,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6A1B9A),
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              textStyle: GoogleFonts.montserrat(
+                  fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            child: const Text('Play Again 🎮'),
+          ),
+        ] else ...[
+          ElevatedButton(
+            onPressed: _startNextLevel,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6A1B9A),
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              textStyle: GoogleFonts.montserrat(
+                  fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            child: Text('Next Level  →  Level ${_currentLevel + 1}'),
+          ),
+        ],
       ],
     );
   }
@@ -977,11 +1149,15 @@ class _CircleBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40, height: 40,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.9),
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.purple.withValues(alpha: 0.15), blurRadius: 6)],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.purple.withValues(alpha: 0.15), blurRadius: 6)
+          ],
         ),
         child: Icon(icon, color: const Color(0xFF4A148C), size: 20),
       ),
@@ -1009,11 +1185,14 @@ class _StatPill extends StatelessWidget {
           children: [
             Text(
               value,
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: color),
+              style: TextStyle(
+                  fontWeight: FontWeight.w800, fontSize: 12, color: color),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            Text(label, style: TextStyle(fontSize: 9, color: color.withValues(alpha: 0.8))),
+            Text(label,
+                style:
+                    TextStyle(fontSize: 9, color: color.withValues(alpha: 0.8))),
           ],
         ),
       ),
@@ -1025,7 +1204,8 @@ class _Banner extends StatelessWidget {
   final Color color;
   final String icon;
   final String text;
-  const _Banner({required this.color, required this.icon, required this.text});
+  const _Banner(
+      {required this.color, required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -1043,7 +1223,8 @@ class _Banner extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontSize: 13, color: color, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -1062,12 +1243,16 @@ class _ToyCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        padding:
+            const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
-            BoxShadow(color: Colors.purple.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: Colors.purple.withValues(alpha: 0.1),
+                blurRadius: 12,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -1077,11 +1262,13 @@ class _ToyCard extends StatelessWidget {
             Text(
               toy.name,
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 14),
+              style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w700, fontSize: 14),
             ),
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFF6A1B9A).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
@@ -1097,12 +1284,18 @@ class _ToyCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text('Pick This', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+              child: const Text('Pick This',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12)),
             ),
           ],
         ),
@@ -1116,7 +1309,11 @@ class _InfoCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _InfoCard({required this.icon, required this.label, required this.value, required this.color});
+  const _InfoCard(
+      {required this.icon,
+      required this.label,
+      required this.value,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -1131,8 +1328,12 @@ class _InfoCard extends StatelessWidget {
         children: [
           Text(icon, style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 4),
-          Text(value, style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16, color: color)),
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
+          Text(value,
+              style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w800, fontSize: 16, color: color)),
+          Text(label,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              textAlign: TextAlign.center),
         ],
       ),
     );
@@ -1171,9 +1372,13 @@ class _ChoiceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: locked ? 0.15 : 0.3), width: 2),
+        border: Border.all(
+            color: color.withValues(alpha: locked ? 0.15 : 0.3), width: 2),
         boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -1191,31 +1396,37 @@ class _ChoiceCard extends StatelessWidget {
           ),
           const Divider(height: 16),
           ...rows.map((r) => Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(r.label, style: TextStyle(fontSize: 11, color: locked ? Colors.grey : Colors.black87)),
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(r.label,
+                          style: TextStyle(
+                              fontSize: 11,
+                              color:
+                                  locked ? Colors.grey : Colors.black87)),
+                    ),
+                    Text(
+                      r.value,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: locked ? Colors.grey : color,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  r.value,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                    color: locked ? Colors.grey : color,
-                  ),
-                ),
-              ],
-            ),
-          )),
+              )),
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: locked ? null : onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: locked ? Colors.grey[300] : buttonColor,
               foregroundColor: locked ? Colors.grey : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              textStyle: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 12),
               padding: const EdgeInsets.symmetric(vertical: 10),
             ),
             child: Text(buttonLabel, textAlign: TextAlign.center),
@@ -1238,8 +1449,11 @@ class _ResultRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          Text(value, style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 14)),
+          Text(label,
+              style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(value,
+              style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w700, fontSize: 14)),
         ],
       ),
     );

@@ -291,6 +291,10 @@ class _DivisionScreenState extends State<DivisionScreen>
                                     fontWeight: FontWeight.bold)),
                           ),
                         ),
+                        if (_isAnswered) ...[
+                          const SizedBox(height: 12),
+                          _buildInlineFeedback(),
+                        ],
                         const SizedBox(height: 24),
                         _buildProgressBar(progress),
                         const SizedBox(height: 20),
@@ -516,6 +520,56 @@ class _DivisionScreenState extends State<DivisionScreen>
         contentPadding: const EdgeInsets.symmetric(vertical: 20),
       ),
       onSubmitted: (_) => _checkAnswer(),
+    );
+  }
+
+  // ── Inline feedback card (visible in scroll area) ────────────────────────────
+
+  Widget _buildInlineFeedback() {
+    final bg = _isCorrect ? const Color(0xFF43A047) : const Color(0xFFFF5722);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            _feedbackMessage,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$_dividend ÷ $_divisor = $_quotient  (because $_divisor × $_quotient = $_dividend)',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.white.withValues(alpha: 0.9)),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _generateQuestion,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: bg,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Text('Next Question →',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
