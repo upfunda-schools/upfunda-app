@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/quiz_model.dart';
+import '../../../providers/quiz_provider.dart';
 
-class QuestionCard extends StatelessWidget {
+class QuestionCard extends ConsumerWidget {
   final Question question;
   final int questionNumber;
   final int totalQuestions;
@@ -17,7 +18,9 @@ class QuestionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMuted = ref.watch(quizMuteProvider);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -36,20 +39,43 @@ class QuestionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Question badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.quizPrimary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Question $questionNumber of $totalQuestions',
-              style: const TextStyle(
-                color: AppColors.quizPrimary,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.star, color: Color(0xFF6C97F9), size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'Questions $questionNumber/$totalQuestions',
+                style: const TextStyle(
+                  color: Color(0xFF2D327C),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 22,
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              const Icon(Icons.star, color: Color(0xFF6C97F9), size: 28),
+              const Spacer(),
+              GestureDetector(
+                onTap: () {
+                  ref.read(quizMuteProvider.notifier).state = !isMuted;
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isMuted ? const Color(0xFFFEE2E2) : const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isMuted ? const Color(0xFFFECACA) : const Color(0xFFE5E7EB),
+                    ),
+                  ),
+                  child: Icon(
+                    isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
+                    color: isMuted ? const Color(0xFFEF4444) : const Color(0xFF4B5563),
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -86,21 +112,10 @@ class QuestionCard extends StatelessWidget {
                 style: {
                   'body': Style(
                     fontSize: FontSize(16),
-                    lineHeight: LineHeight(1.6),
-                    color: AppColors.grey800,
-                    fontWeight: FontWeight.w700,
-                    margin: Margins.all(0),
-                    padding: HtmlPaddings.all(0),
-                  ),
-                  'p': Style(
-                    fontSize: FontSize(16),
-                    lineHeight: LineHeight(1.6),
-                    color: AppColors.grey800,
-                    fontWeight: FontWeight.w700,
-                    margin: Margins.only(bottom: 8),
-                  ),
-                  'strong': Style(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF374151),
+                    margin: Margins.zero,
+                    padding: HtmlPaddings.zero,
                   ),
                 },
               );
@@ -111,81 +126,50 @@ class QuestionCard extends StatelessWidget {
     );
   }
 
-  bool _isImageOnly(String html) {
-    if (html.isEmpty) return false;
-    // Check if there's any visible text after stripping ALL HTML tags
-    final cleanText = html.replaceAll(RegExp(r'<[^>]*>'), '').replaceAll('&nbsp;', '').trim();
-    return cleanText.isEmpty && html.contains('<img');
+  String _sanitizeHtml(String html) {
+    // Preserve <img> tags but strip most others that might break the card layout
+    String sanitized = html
+        .replaceAll(RegExp(r'<p[^>]*>'), '')
+        .replaceAll('</p>', '<br/>')
+        .replaceAll(RegExp(r'<div[^>]*>'), '')
+        .replaceAll('</div>', '<br/>')
+        .replaceAll(RegExp(r'\n+'), ' ')
+        .trim();
+    
+    if (sanitized.endsWith('<br/>')) {
+      sanitized = sanitized.substring(0, sanitized.length - 5);
+    }
+    return sanitized;
   }
 
-  String _sanitizeHtml(String html) {
-    if (html.isEmpty) return html;
-    
-    // 1. List of STRUCTURAL tags to remove completely (keeping their content)
-    const stripTags = [
-      'table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot', 'colgroup', 'col',
-      'div', 'span', 'section', 'article', 'header', 'footer'
-    ];
-    
-    String output = html;
-    for (final tag in stripTags) {
-      output = output.replaceAll(RegExp('<$tag[^>]*>', caseSensitive: false), ' ');
-      output = output.replaceAll(RegExp('</$tag>', caseSensitive: false), ' ');
-    }
-
-    // 2. List of formatting tags to PRESERVE
-    const keepTags = ['p', 'b', 'i', 'img', 'br', 'strong', 'em', 'sub', 'sup', 'u'];
-    
-    // 3. Escape '<' if it's NOT part of a 'keep' tag (handles math symbols like <ABC)
-    final tagPattern = [...keepTags, ...keepTags.map((t) => '/$t')].join('|');
-    final regex = RegExp('<(?!(?:$tagPattern)(?:\\s|>))', caseSensitive: false);
-    
-    output = output.replaceAll(regex, '&lt;');
-    
-    return output.trim();
+  bool _isImageOnly(String html) {
+    // Remove all whitespace and the img tag itself to see if anything is left
+    final stripped = html.replaceAll(RegExp(r'<img[^>]*>'), '').replaceAll(RegExp(r'\s+'), '').trim();
+    return stripped.isEmpty && html.contains('<img');
   }
 
   Widget _buildDirectImage(String src) {
-    if (src.startsWith('data:')) {
+    if (src.startsWith('data:image')) {
       try {
-        final base64Str = src.split(',').last;
-        final bytes = base64Decode(base64Str);
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+        final base64String = src.split(',').last;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
           child: Image.memory(
-            bytes,
+            base64Decode(base64String),
             fit: BoxFit.contain,
-            width: double.infinity,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           ),
         );
       } catch (_) {
-        return const SizedBox.shrink();
+        return const Icon(Icons.broken_image, color: Colors.grey);
       }
     }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
       child: Image.network(
         src,
         fit: BoxFit.contain,
-        width: double.infinity,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Padding(
-            padding: const EdgeInsets.all(32),
-            child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
+        errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.broken_image, color: Colors.grey),
       ),
     );
   }

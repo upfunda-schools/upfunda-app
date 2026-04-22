@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import '../../../core/theme/app_colors.dart';
 
 class OptionTile extends StatelessWidget {
   final String optionId;
@@ -27,79 +26,50 @@ class OptionTile extends StatelessWidget {
     this.onTap,
   });
 
-  static const _letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-
-  Color get _bgColor {
-    if (isHidden) return AppColors.grey100.withValues(alpha: 0.5);
-    if (!showResult) {
-      return isSelected
-          ? AppColors.quizPrimary.withValues(alpha: 0.12)
-          : Colors.white;
-    }
-    // Show result mode
-    if (optionId == correctOptionId) {
-      return AppColors.correct.withValues(alpha: 0.12);
-    }
-    if (isSelected && !isCorrect) {
-      return AppColors.incorrect.withValues(alpha: 0.12);
-    }
-    return Colors.white;
-  }
-
-  Color get _borderColor {
-    if (isHidden) return AppColors.grey200;
-    if (!showResult) {
-      return isSelected ? AppColors.quizPrimary : AppColors.grey200;
-    }
-    if (optionId == correctOptionId) return AppColors.correct;
-    if (isSelected && !isCorrect) return AppColors.incorrect;
-    return AppColors.grey200;
-  }
-
-  Color get _badgeColor {
-    if (isHidden) return AppColors.grey400;
-    if (!showResult) {
-      return isSelected ? AppColors.quizPrimary : AppColors.grey400;
-    }
-    if (optionId == correctOptionId) return AppColors.correct;
-    if (isSelected && !isCorrect) return AppColors.incorrect;
-    return AppColors.grey400;
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (isHidden) return const SizedBox.shrink();
+
+    const assetBadges = [
+      'assets/images/quiz/noto_green-circle.png',
+      'assets/images/quiz/noto_green-circle-2.png',
+      'assets/images/quiz/noto_green-circle-1.png',
+      'assets/images/quiz/noto_green-circle-3.png',
+    ];
+
     return GestureDetector(
       onTap: isHidden || showResult ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: _bgColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _borderColor, width: 1.5),
+          color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF22C55E) : const Color(0xFFE5E7EB),
+            width: 2.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            // Letter badge
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _badgeColor.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+            // Letter badge from asset
+            if (index < assetBadges.length)
+              Image.asset(assetBadges[index], height: 32)
+            else
+              Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(color: Color(0xFFE5E7EB), shape: BoxShape.circle),
+                child: Center(child: Text('${index + 1}')),
               ),
-              child: Center(
-                child: Text(
-                  index < _letters.length ? _letters[index] : '${index + 1}',
-                  style: TextStyle(
-                    color: _badgeColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Html(
                 data: text,
@@ -138,10 +108,9 @@ class OptionTile extends StatelessWidget {
                 ],
                 style: {
                   'body': Style(
-                    fontSize: FontSize(15),
-                    color: isHidden ? AppColors.grey400 : AppColors.grey800,
-                    textDecoration: isHidden ? TextDecoration.lineThrough : null,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: FontSize(18),
+                    color: const Color(0xFF2D327C),
+                    fontWeight: FontWeight.bold,
                     margin: Margins.zero,
                     padding: HtmlPaddings.zero,
                   ),
@@ -149,9 +118,9 @@ class OptionTile extends StatelessWidget {
               ),
             ),
             if (showResult && optionId == correctOptionId)
-              const Icon(Icons.check_circle, color: AppColors.correct, size: 22),
+              const Icon(Icons.check_circle, color: Color(0xFF22C55E), size: 24),
             if (showResult && isSelected && !isCorrect)
-              const Icon(Icons.cancel, color: AppColors.incorrect, size: 22),
+              const Icon(Icons.cancel, color: Color(0xFFEF4444), size: 24),
           ],
         ),
       ),

@@ -15,13 +15,12 @@ class ExitDialog extends ConsumerWidget {
 
     return Dialog(
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(32),
-        side: const BorderSide(color: Color(0xFFC0A9FF), width: 3),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         width: dialogWidth,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -32,81 +31,84 @@ class ExitDialog extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1F2937),
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF2D327C),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFFE5E7EB), thickness: 1),
+            const SizedBox(height: 12),
             Text(
-              "You're already halfway through.\nDo you want to resume later?",
+              "you're already halfway\nthrough. Do\nyou want to resume\nlater?",
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF3B82F6),
-                height: 1.4,
+                color: const Color(0xFF4B5563),
+                height: 1.3,
               ),
             ),
             const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final router = GoRouter.of(context);
-                      Navigator.of(context).pop();
-                      await ref.read(quizProvider.notifier).pauseQuiz();
-                      router.go(subjectId.isNotEmpty
-                          ? '/worksheets-list/$subjectId'
-                          : '/worksheets');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD81B60),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Resume Later',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+            
+            // Resume Later Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final router = GoRouter.of(context);
+                  Navigator.of(context).pop();
+                  await ref.read(quizProvider.notifier).pauseQuiz();
+                  router.go(subjectId.isNotEmpty
+                      ? '/worksheets-list/$subjectId'
+                      : '/worksheets');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF5C8A), // Pinkish Red
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Resume Later',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C5CE7),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Continue Quiz',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Continue Quiz Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF917CFF), // Purple
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Continue Quiz',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
+              ),
             ),
           ],
         ),
       ),
     );
+
   }
 }

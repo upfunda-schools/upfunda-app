@@ -7,7 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 import '../../shared/widgets/skeleton_loader.dart';
-import '../../shared/widgets/student_management_dialogs.dart';
+import '../../shared/widgets/quick_menu_drawer.dart';
 
 class StudentHomeScreen extends ConsumerStatefulWidget {
   const StudentHomeScreen({super.key});
@@ -59,6 +59,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFBF9FF),
+      endDrawer: const QuickMenuDrawer(),
       body: SafeArea(
         child: state.isLoading && state.homeData == null
             ? const LoaderWidget(message: 'Loading...')
@@ -142,81 +143,14 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  PopupMenuButton<String>(
-                                    offset: const Offset(0, 40),
-                                    padding: EdgeInsets.zero,
-                                    icon: Image.asset(
-                                      'assets/images/home/menu.png',
-                                      width: 28,
+                                  Builder(
+                                    builder: (context) => GestureDetector(
+                                      onTap: () => Scaffold.of(context).openEndDrawer(),
+                                      child: Image.asset(
+                                        'assets/images/home/menu.png',
+                                        width: 28,
+                                      ),
                                     ),
-                                    onSelected: (value) async {
-                                      if (value == 'logout') {
-                                        ref.read(userProvider.notifier).clear();
-                                        await ref.read(authProvider.notifier).logout();
-                                        if (context.mounted) context.go('/login');
-                                      } else if (value == 'add_grade') {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => const GradePromotionDialog(),
-                                        );
-                                      } else if (value == 'add_student') {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => const AddStudentDialog(),
-                                        );
-                                      }
-                                    },
-                                    itemBuilder: (context) => [
-                                      const PopupMenuItem(
-                                        value: 'add_grade',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.grade_rounded, color: Color(0xFF6C5CE7), size: 20),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'Add Grade',
-                                              style: TextStyle(
-                                                color: Color(0xFF1A1D4D),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'add_student',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.person_add_rounded, color: Color(0xFFF1659C), size: 20),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'Add Student',
-                                              style: TextStyle(
-                                                color: Color(0xFF1A1D4D),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuDivider(),
-                                      const PopupMenuItem(
-                                        value: 'logout',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.logout, color: Colors.red, size: 20),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'Logout',
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ],
                               ),
@@ -401,7 +335,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           GestureDetector(
                             onTap: () => context.push('/leaderboard'),
                             child: Image.asset(
-                              'assets/images/home/Leader_Board_Button.png',
+                              'assets/5. Home Page/Leader_Board_Button.png',
                               width: 220,
                               fit: BoxFit.contain,
                             ),

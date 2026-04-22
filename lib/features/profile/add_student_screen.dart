@@ -148,7 +148,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                       _buildLabel('Name *'),
                       _buildTextField(
                         controller: _nameController,
-                        hint: 'John Doe',
+                        hint: 'Enter Name',
                       ),
                       const SizedBox(height: 16),
                       _buildLabel('Class *'),
