@@ -26,6 +26,7 @@ class UserProfile {
   final String? studentId;
   final String? phone;
   final String? country;
+  final String? dob;
   final bool isPremiumUser;
 
   UserProfile({
@@ -44,6 +45,7 @@ class UserProfile {
     this.studentId,
     this.phone,
     this.country,
+    this.dob,
     this.isPremiumUser = false,
   });
 
@@ -63,6 +65,7 @@ class UserProfile {
         studentId: json['student_id'] as String?,
         phone: json['phone'] as String?,
         country: json['country'] as String?,
+        dob: json['date_of_birth'] as String? ?? json['dob'] as String?,
         isPremiumUser: json['is_premium_user'] as bool? ?? false,
       );
 

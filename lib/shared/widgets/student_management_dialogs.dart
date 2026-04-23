@@ -370,7 +370,15 @@ class _AddStudentDialogState extends ConsumerState<AddStudentDialog> {
                         ),
                         _buildSummaryRow('Selected Grade', 'Grade ${selectedClass?['grade'] ?? selectedClass?['name']}', const Color(0xFFEC4899)),
                         const Divider(height: 24),
-                        _buildSummaryRow('Gender', _selectedGender ?? '-', const Color(0xFF1A1D4D)),
+                        _buildSummaryRow(
+                          'Gender', 
+                          _selectedGender ?? '-', 
+                          _selectedGender?.toLowerCase() == 'male' 
+                            ? const Color(0xFF2563EB) 
+                            : (_selectedGender?.toLowerCase() == 'female' 
+                                ? const Color(0xFFEC4899) 
+                                : const Color(0xFF1A1D4D))
+                        ),
                         const Divider(height: 24),
                         _buildSummaryRow('Date of Birth', _selectedDob != null ? '${_selectedDob!.day}/${_selectedDob!.month}/${_selectedDob!.year}' : '-', const Color(0xFF1A1D4D)),
                         const Divider(height: 24),
@@ -513,12 +521,26 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
   Future<void> _fetchClasses() async {
     setState(() => _isLoadingClasses = true);
     try {
-      final user = ref.read(userProvider).profile;
-      final classes = await ref.read(apiServiceProvider).getClasses();
+      final api = ref.read(apiServiceProvider);
+      // Fetch both classes and existing student profiles to filter duplicates
+      final results = await Future.wait([
+        api.getClasses(),
+        api.getStudentProfiles(),
+      ]);
+      
+      final List<dynamic> classes = results[0];
+      final List<dynamic> profiles = results[1];
+      
       setState(() {
         _classes = classes.where((c) {
           final gradeStr = (c['grade'] ?? c['name'] ?? '').toString();
-          return gradeStr != user?.className?.toString();
+          // Filter out grades the student already has in their profiles
+          final alreadyHasGrade = profiles.any((p) {
+            // Profile model in Flutter uses classGrade field
+            final pGrade = (p.classGrade ?? '').toString();
+            return pGrade == gradeStr;
+          });
+          return !alreadyHasGrade;
         }).toList()
         ..sort((a, b) {
           final ga = int.tryParse(a['grade']?.toString() ?? '0') ?? 0;
@@ -560,16 +582,16 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
         'classId': _selectedClassId,
         'schoolId': user?.schoolId,
         'gender': user?.gender ?? 'm',
-        'dob': '2015-01-01',
+        'dob': user?.dob ?? '2015-01-01',
         'country': user?.country ?? 'India'
       };
 
       await ref.read(apiServiceProvider).studentSignUp(payload);
       if (mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Grade changed successfully!')),
+          const SnackBar(content: Text('Grade profile added successfully!')),
         );
+        Navigator.pop(context);
         // Refresh EVERYTHING 
         ref.read(userProvider.notifier).loadHome();
         ref.read(userProvider.notifier).loadProfile();
@@ -600,7 +622,7 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              _showConfirm ? 'Confirm Grade Change' : 'Change Grade',
+              _showConfirm ? 'Confirm Grade Change' : 'Add Grade',
               style: GoogleFonts.montserrat(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
@@ -609,7 +631,7 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              _showConfirm ? 'Please confirm your selection before proceeding.' : 'Move to a different grade level.',
+              _showConfirm ? 'Please confirm your selection before proceeding.' : 'Select a grade from the dropdown below.',
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -650,7 +672,7 @@ class _GradePromotionDialogState extends ConsumerState<GradePromotionDialog> {
                 ),
                 child: _isSubmitting 
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Confirm Change', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16)),
+                  : Text('Add Grade', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16)),
               ),
             ] else ...[
               // Confirmation Summary

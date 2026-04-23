@@ -144,6 +144,7 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     onToggle: () => setState(() => _quickLinksExpanded = !_quickLinksExpanded),
                     children: [
                       _buildSubMenuItem('School Sign Up', 'https://upfunda.academy/signup-school'),
+                      _buildSubMenuItem('Blogs', 'https://upfunda.academy/blogs'),
                       _buildSubMenuItem('FAQS', 'https://upfunda.academy/faq'),
                     ],
                   ),
