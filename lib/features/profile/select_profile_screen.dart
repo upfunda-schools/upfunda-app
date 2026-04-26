@@ -26,20 +26,29 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfiles();
+    });
   }
 
   Future<void> _loadProfiles() async {
+    final filterName =
+        GoRouterState.of(context).uri.queryParameters['filterName'];
     try {
       final api = ref.read(apiServiceProvider);
       final profiles = await api.getStudentProfiles();
+
       if (mounted) {
         if (profiles.isEmpty) {
           context.go('/add-student');
           return;
         }
         setState(() {
-          _profiles = profiles;
+          if (filterName != null) {
+            _profiles = profiles.where((p) => p.name == filterName).toList();
+          } else {
+            _profiles = profiles;
+          }
           _isLoading = false;
         });
       }

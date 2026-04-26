@@ -18,7 +18,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(userProvider.notifier).loadProfile());
+    Future.microtask(() {
+      ref.read(userProvider.notifier).loadProfile();
+      ref.read(authProvider.notifier).fetchProfiles();
+    });
   }
 
   @override
@@ -47,6 +50,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildProfile(UserState state) {
     final profile = state.profile!;
+    final authState = ref.watch(authProvider);
+    final profiles = authState.profiles ?? [];
+
+    final profilesForThisStudent = profiles
+        .where((p) =>
+            p.name.trim().toLowerCase() == profile.name.trim().toLowerCase())
+        .toList();
+    final canSwitchGrade = profilesForThisStudent.length > 1;
+
+    final uniqueStudentNames =
+        profiles.map((p) => p.name.trim().toLowerCase()).toSet();
+    final canSwitchStudent = uniqueStudentNames.length > 1;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -218,6 +234,111 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 28),
 
+                // Profile switching buttons
+                if (state.profile?.role == 'student') ...[
+                  if (canSwitchGrade || canSwitchStudent) ...[
+                    Row(
+                      children: [
+                        if (canSwitchGrade)
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => context.push(
+                                '/select-profile?filterName=${profile.name}',
+                              ),
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF6C5CE7),
+                                      Color(0xFF8B5CF6)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF6C5CE7)
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.school_rounded,
+                                        color: Colors.white, size: 18),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Switch Grade',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (canSwitchGrade && canSwitchStudent)
+                          const SizedBox(width: 12),
+                        if (canSwitchStudent)
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => context.push('/select-profile'),
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFF1659C),
+                                      Color(0xFFEC4899)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFF1659C)
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.people_alt_rounded,
+                                        color: Colors.white, size: 18),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Switch Student',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ],
+
                 // Change password button
                 SizedBox(
                   width: double.infinity,
@@ -245,14 +366,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE4B500),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      elevation: 4,
                     ),
                     child: const Text(
                       'Change Password',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                 ),
