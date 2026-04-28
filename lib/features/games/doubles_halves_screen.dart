@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -126,74 +125,33 @@ class _DoublesHalvesScreenState extends State<DoublesHalvesScreen>
 
   // ── Sound synthesis ──────────────────────────────────────────────────────────
 
-  static Uint8List _makeToneWav(double hz, int durationMs, double vol) {
-    const sampleRate = 44100;
-    final numSamples = (sampleRate * durationMs / 1000).round();
-    final buffer = ByteData(44 + numSamples * 2);
-    final bytes = buffer.buffer.asUint8List();
 
-    // RIFF / WAVE header
-    bytes.setRange(0, 4, [0x52, 0x49, 0x46, 0x46]); // 'RIFF'
-    buffer.setInt32(4, 36 + numSamples * 2, Endian.little);
-    bytes.setRange(8, 12, [0x57, 0x41, 0x56, 0x45]); // 'WAVE'
-    bytes.setRange(12, 16, [0x66, 0x6D, 0x74, 0x20]); // 'fmt '
-    buffer.setInt32(16, 16, Endian.little); // fmt chunk size
-    buffer.setInt16(20, 1, Endian.little); // PCM
-    buffer.setInt16(22, 1, Endian.little); // mono
-    buffer.setInt32(24, sampleRate, Endian.little);
-    buffer.setInt32(28, sampleRate * 2, Endian.little); // byte rate
-    buffer.setInt16(32, 2, Endian.little); // block align
-    buffer.setInt16(34, 16, Endian.little); // bits per sample
-    bytes.setRange(36, 40, [0x64, 0x61, 0x74, 0x61]); // 'data'
-    buffer.setInt32(40, numSamples * 2, Endian.little);
-
-    // PCM samples with 20 ms linear fade-in / fade-out envelope
-    final maxAmp = (32767 * vol).round();
-    final fadeSamples = (sampleRate * 0.02).round();
-    for (int i = 0; i < numSamples; i++) {
-      double env = 1.0;
-      if (i < fadeSamples) {
-        env = i / fadeSamples;
-      } else if (i > numSamples - fadeSamples) {
-        env = (numSamples - i) / fadeSamples;
-      }
-      final t = i / sampleRate;
-      final sample =
-          (sin(2 * pi * hz * t) * maxAmp * env).round().clamp(-32768, 32767);
-      buffer.setInt16(44 + i * 2, sample, Endian.little);
-    }
-    return bytes;
-  }
 
   // Correct: ascending chime C5 → E5 → G5
   Future<void> _playCorrectSound() async {
     if (!_isSoundEnabled) return;
-    const tones = [523.25, 659.25, 783.99];
-    for (final hz in tones) {
+    try {
       final player = AudioPlayer();
-      await player.play(BytesSource(_makeToneWav(hz, 180, 0.08)));
-      await Future.delayed(const Duration(milliseconds: 210));
-      player.dispose();
-    }
+      player.onPlayerComplete.listen((_) => player.dispose());
+      await player.play(AssetSource('audio/correct_sound_effect.mp3'));
+    } catch (_) {}
   }
 
   // Wrong: gentle descending tones
   Future<void> _playWrongSound() async {
     if (!_isSoundEnabled) return;
-    const tones = [350.0, 220.0];
-    for (final hz in tones) {
+    try {
       final player = AudioPlayer();
-      await player.play(BytesSource(_makeToneWav(hz, 260, 0.06)));
-      await Future.delayed(const Duration(milliseconds: 290));
-      player.dispose();
-    }
+      player.onPlayerComplete.listen((_) => player.dispose());
+      await player.play(AssetSource('audio/wrong_sound_effect.mp3'));
+    } catch (_) {}
   }
 
   // Button tap: short click
   void _playTapSound() {
     if (!_isSoundEnabled) return;
     final player = AudioPlayer();
-    player.play(BytesSource(_makeToneWav(800.0, 55, 0.05)));
+    // Tick sound removed
     Future.delayed(const Duration(milliseconds: 300), player.dispose);
   }
 

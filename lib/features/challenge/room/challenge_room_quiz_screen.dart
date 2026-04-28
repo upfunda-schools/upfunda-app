@@ -26,18 +26,14 @@ class _ChallengeRoomQuizScreenState
   bool _checked = false;
   int _elapsed = 0;
   late Stopwatch _stopwatch;
-  late final AudioPlayer _audioPlayer;
-
   @override
   void initState() {
     super.initState();
     _stopwatch = Stopwatch()..start();
-    _audioPlayer = AudioPlayer();
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -83,8 +79,11 @@ class _ChallengeRoomQuizScreenState
       final source = isCorrect
           ? AssetSource('audio/correct_sound_effect.mp3')
           : AssetSource('audio/wrong_sound_effect.mp3');
-      await _audioPlayer.stop();
-      await _audioPlayer.play(source);
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+      await player.play(source);
     } catch (e) {
       debugPrint('Error playing sound: $e');
     }

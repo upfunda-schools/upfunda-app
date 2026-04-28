@@ -23,7 +23,6 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
   bool _isCorrect = false;
   String _feedbackMessage = '';
   bool _isSoundEnabled = true;
-  late final AudioPlayer _audioPlayer;
 
   // Animation keys for AnimatedSwitcher pulse
   int _scoreKey = 0;
@@ -78,8 +77,6 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
       begin: const Offset(0.08, 0),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _questionAnim, curve: Curves.easeOut));
-
-    _audioPlayer = AudioPlayer();
     _generateQuestion(initial: true);
   }
 
@@ -87,7 +84,6 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
   void dispose() {
     _questionAnim.dispose();
     _answerController.dispose();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -152,8 +148,11 @@ class _DoublesAdditionScreenState extends State<DoublesAdditionScreen>
       final source = isCorrect
           ? AssetSource('audio/correct_sound_effect.mp3')
           : AssetSource('audio/wrong_sound_effect.mp3');
-      await _audioPlayer.stop();
-      await _audioPlayer.play(source);
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+      await player.play(source);
     } catch (_) {}
   }
 

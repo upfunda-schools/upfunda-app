@@ -281,16 +281,18 @@ class _TimeConversionScreenState extends State<TimeConversionScreen>
   Future<void> _playCorrectSound() async {
     if (!_isSoundEnabled) return;
     try {
-      await _audioPlayer.stop();
-      await _audioPlayer.play(AssetSource('audio/correct_sound_effect.mp3'));
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) => player.dispose());
+      await player.play(AssetSource('audio/correct_sound_effect.mp3'));
     } catch (_) {}
   }
 
   Future<void> _playWrongSound() async {
     if (!_isSoundEnabled) return;
     try {
-      await _audioPlayer.stop();
-      await _audioPlayer.play(AssetSource('audio/wrong_sound_effect.mp3'));
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) => player.dispose());
+      await player.play(AssetSource('audio/wrong_sound_effect.mp3'));
     } catch (_) {}
   }
 
