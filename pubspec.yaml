@@ -43,7 +43,7 @@ flutter:
     - "assets/images/3. SignUp-Email/"
     - "assets/log in page/"
     - assets/images/home/
-    - assets/audio/
+
     - "assets/7. Academy Path/"
     - "assets/5. Home Page/"
     - "assets/8. Logical Reasoning/"
@@ -58,6 +58,7 @@ flutter:
     - "assets/images/quick_menu/"
     - "assets/images/quiz/"
     - "assets/audio/"
+    - "assets/quiz_similar/"
 
 flutter_launcher_icons:
   android: true

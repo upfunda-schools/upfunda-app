@@ -288,4 +288,40 @@ class DioApiService implements ApiService {
   Future<void> studentSignUp(Map<String, dynamic> data) async {
     await _dio.post('/student/signup', data: data);
   }
+
+  @override
+  Future<Question> getSimilarQuestion(String questionId) async {
+    final response = await _dio.get('/questions/$questionId/similar_question');
+    final data = response.data as Map<String, dynamic>;
+
+    // Handle the wrapped response format { "Question": ..., "Options": [...] }
+    final qData = data['Question'] as Map<String, dynamic>;
+    final optsData = data['Options'] as List<dynamic>;
+
+    // Find the correct option ID
+    String? correctOptionId;
+    for (var opt in optsData) {
+      if (opt['is_correct'] == true) {
+        correctOptionId = opt['id']?.toString();
+        break;
+      }
+    }
+
+    // Map to mobile Question model
+    return Question(
+      questionId: qData['id']?.toString() ?? '',
+      text: qData['question_text']?.toString() ?? '',
+      type: qData['type']?.toString() ?? 'MCQ',
+      options: optsData.map((e) => QuestionOption(
+        optionId: e['id']?.toString() ?? '',
+        text: e['option_text']?.toString() ?? '',
+      )).toList(),
+      solution: Solution(
+        answer: '', // Not provided by this endpoint
+        explanation: '', // Not provided by this endpoint
+        correctOptionId: correctOptionId,
+      ),
+    );
+  }
+
 }

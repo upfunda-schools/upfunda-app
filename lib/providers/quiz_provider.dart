@@ -53,6 +53,7 @@ class QuizState {
   final bool isLoading;
   final String? error;
   final SubmitTestResponse? submitResult;
+  final bool showSimilarQuestion;
 
   // 50-50
   final Map<String, bool> fiftyFiftyUsed;
@@ -83,6 +84,7 @@ class QuizState {
     this.isLoading = false,
     this.error,
     this.submitResult,
+    this.showSimilarQuestion = false,
     this.fiftyFiftyUsed = const {},
     this.hiddenOptions = const {},
     this.fiftyFiftyUsageCount = 0,
@@ -107,6 +109,7 @@ class QuizState {
     bool? isLoading,
     String? error,
     SubmitTestResponse? submitResult,
+    bool? showSimilarQuestion,
     Map<String, bool>? fiftyFiftyUsed,
     Map<String, List<String>>? hiddenOptions,
     int? fiftyFiftyUsageCount,
@@ -128,8 +131,9 @@ class QuizState {
         checkDetails: checkDetails ?? this.checkDetails,
         pagination: pagination ?? this.pagination,
         isLoading: isLoading ?? this.isLoading,
-        error: error,
+        error: error ?? this.error,
         submitResult: submitResult ?? this.submitResult,
+        showSimilarQuestion: showSimilarQuestion ?? this.showSimilarQuestion,
         fiftyFiftyUsed: fiftyFiftyUsed ?? this.fiftyFiftyUsed,
         hiddenOptions: hiddenOptions ?? this.hiddenOptions,
         fiftyFiftyUsageCount: fiftyFiftyUsageCount ?? this.fiftyFiftyUsageCount,
@@ -259,6 +263,7 @@ class QuizNotifier extends StateNotifier<QuizState> {
         isTimed: remainingSeconds > 0,
         totalDurationSeconds: firstPage.durationSeconds,
         pagination: data.pagination,
+        showSimilarQuestion: firstPage.showSimilarQuestion,
         isLoading: false,
         fiftyFiftyLimit: limit,
         fiftyFiftyUsageCount: 0,
@@ -514,4 +519,12 @@ class QuizNotifier extends StateNotifier<QuizState> {
     } catch (_) {}
   }
 
+  Future<Question?> fetchSimilarQuestion(String questionId) async {
+    try {
+      return await _api.getSimilarQuestion(questionId);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return null;
+    }
+  }
 }

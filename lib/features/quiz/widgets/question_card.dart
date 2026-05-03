@@ -4,17 +4,25 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/quiz_model.dart';
 import '../../../providers/quiz_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class QuestionCard extends ConsumerWidget {
   final Question question;
   final int questionNumber;
   final int totalQuestions;
+  final bool showNextButton;
+  final VoidCallback? onNext;
+  final bool isLastQuestion;
 
   const QuestionCard({
     super.key,
     required this.question,
     required this.questionNumber,
     required this.totalQuestions,
+    this.showNextButton = false,
+    this.onNext,
+    this.isLastQuestion = false,
   });
 
   @override
@@ -39,44 +47,75 @@ class QuestionCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Question badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Stack(
+            alignment: Alignment.center,
             children: [
-              const Icon(Icons.star, color: Color(0xFF6C97F9), size: 28),
-              const SizedBox(width: 12),
-              Text(
-                'Questions $questionNumber/$totalQuestions',
-                style: const TextStyle(
-                  color: Color(0xFF2D327C),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.star, color: Color(0xFF6C97F9), size: 28),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  ref.read(quizMuteProvider.notifier).state = !isMuted;
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isMuted ? const Color(0xFFFEE2E2) : const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isMuted ? const Color(0xFFFECACA) : const Color(0xFFE5E7EB),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.star, color: Color(0xFF6C97F9), size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Questions $questionNumber/$totalQuestions',
+                    style: GoogleFonts.cherryBombOne(
+                      color: const Color(0xFF2D327C),
+                      fontSize: 22,
                     ),
                   ),
-                  child: Icon(
-                    isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
-                    color: isMuted ? const Color(0xFFEF4444) : const Color(0xFF4B5563),
-                    size: 20,
+                  const SizedBox(width: 8),
+                  const Icon(Icons.star, color: Color(0xFF6C97F9), size: 24),
+                ],
+              ),
+              Positioned(
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    ref.read(quizMuteProvider.notifier).state = !isMuted;
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isMuted ? const Color(0xFFFEE2E2) : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isMuted ? const Color(0xFFFECACA) : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: Icon(
+                      isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
+                      color: isMuted ? const Color(0xFFEF4444) : const Color(0xFF4B5563),
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
+          if (showNextButton) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  isLastQuestion ? 'Submit Quiz' : 'Next',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
 
           // Question content
@@ -114,9 +153,10 @@ class QuestionCard extends ConsumerWidget {
                     fontSize: FontSize(16),
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF374151),
-                    margin: Margins.zero,
+                    margin: Margins.only(top: 12, bottom: 12),
                     padding: HtmlPaddings.zero,
                   ),
+
                 },
               );
             },
