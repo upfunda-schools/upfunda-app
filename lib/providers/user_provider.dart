@@ -1,11 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user_model.dart';
+import '../data/models/user_avatar_config.dart';
 import '../data/models/home_model.dart';
 import 'auth_provider.dart';
 
-final userProvider =
-    StateNotifierProvider<UserNotifier, UserState>((ref) {
-  return UserNotifier(ref.watch(apiServiceProvider));
+final userProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
+  final api = ref.watch(apiServiceProvider);
+  final notifier = UserNotifier(api);
+  
+  // Listen to auth changes to clear state on logout
+  ref.listen(authProvider, (previous, next) {
+    if (previous?.isLoggedIn == true && next.isLoggedIn == false) {
+      notifier.clear();
+    }
+  });
+  
+  return notifier;
 });
 
 class UserState {
@@ -68,6 +78,59 @@ class UserNotifier extends StateNotifier<UserState> {
     } catch (e) {
       if (requestId != _homeRequestId) return;
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<bool> updateAvatar(UserAvatarConfig config, {int? upPoints, Map<String, dynamic>? purchasedItems}) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final originalName = state.profile?.name ?? 'default';
+      final trimmedName = originalName.trim();
+      final lowerName = trimmedName.toLowerCase();
+      
+      final configJson = config.toJson();
+      final newAvatarMap = {
+        ...(state.profile?.rawAvatarMap ?? {}),
+        originalName: configJson,
+        trimmedName: configJson,
+        lowerName: configJson,
+      };
+
+      // Global Sync: Save purchases under all name variations to guarantee web compatibility
+      final currentPurchases = purchasedItems?[originalName] ?? 
+                               purchasedItems?['default'] ?? 
+                               state.profile?.rawPurchasedMap?[originalName] ?? 
+                               state.profile?.rawPurchasedMap?['default'] ?? [];
+                               
+      final newPurchasedMap = {
+        ...(state.profile?.rawPurchasedMap ?? {}),
+        originalName: currentPurchases,
+        trimmedName: currentPurchases,
+        lowerName: currentPurchases,
+      };
+      
+      final finalPoints = upPoints ?? state.profile?.upPoints ?? 0;
+      
+      await _api.updateUser({
+        'avatarConfig': newAvatarMap,
+        'upPoints': finalPoints,
+        'avatar': newAvatarMap,
+        'up_points': finalPoints,
+        'purchasedAvatarItems': newPurchasedMap,
+      });
+      
+      final updatedProfile = state.profile?.copyWith(
+        avatarConfig: config,
+        rawAvatarMap: newAvatarMap,
+        rawPurchasedMap: newPurchasedMap,
+        upPoints: finalPoints,
+      );
+      
+      state = state.copyWith(profile: updatedProfile, isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
     }
   }
 
