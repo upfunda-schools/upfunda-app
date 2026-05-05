@@ -238,6 +238,7 @@ class MockData {
       hasNext: false,
       hasPrevious: false,
     ),
+    showSimilarQuestion: true,
   );
 
   static final submitTestResponse = SubmitTestResponse(
