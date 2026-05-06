@@ -126,6 +126,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       height: 36,
                                       child: (state.profile?.avatarConfig != null)
                                           ? AvatarDisplay(
+                                              key: ValueKey(state.profile!.avatarConfig),
                                               config: state.profile!.avatarConfig,
                                               size: 36,
                                               shape: 'circle',

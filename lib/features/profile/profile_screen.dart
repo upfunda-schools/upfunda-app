@@ -178,6 +178,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     children: [
                       if (profile.avatarConfig != null)
                         AvatarDisplay(
+                          key: ValueKey(profile.avatarConfig),
                           config: profile.avatarConfig,
                           size: 120,
                           shape: 'circle',
@@ -199,7 +200,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         bottom: 0,
                         right: 0,
                         child: GestureDetector(
-                          onTap: () => context.push('/avatar'),
+                          onTap: () async {
+                            final result = await context.push('/avatar');
+                            if (result == true) {
+                              // Force a refresh from server to be sure, though optimistic update handles it
+                              ref.read(userProvider.notifier).loadProfile();
+                            }
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(

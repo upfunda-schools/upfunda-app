@@ -76,7 +76,7 @@ class UserAvatarConfig {
       if (shirtStyle != null) 'shirtStyle': shirtStyle,
       if (shirtColor != null) 'shirtColor': shirtColor,
       if (bgColor != null) 'bgColor': bgColor,
-      if (isGradient != null) 'isGradient': isGradient,
+      'isGradient': isGradient ?? false,
       if (eyeBrowStyle != null) 'eyeBrowStyle': eyeBrowStyle,
     };
   }
@@ -120,4 +120,46 @@ class UserAvatarConfig {
       eyeBrowStyle: eyeBrowStyle ?? this.eyeBrowStyle,
     );
   }
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserAvatarConfig &&
+          runtimeType == other.runtimeType &&
+          sex == other.sex &&
+          faceColor == other.faceColor &&
+          earSize == other.earSize &&
+          hairColor == other.hairColor &&
+          hairStyle == other.hairStyle &&
+          hairColorRandom == other.hairColorRandom &&
+          hatColor == other.hatColor &&
+          hatStyle == other.hatStyle &&
+          eyeStyle == other.eyeStyle &&
+          glassesStyle == other.glassesStyle &&
+          noseStyle == other.noseStyle &&
+          mouthStyle == other.mouthStyle &&
+          shirtStyle == other.shirtStyle &&
+          shirtColor == other.shirtColor &&
+          bgColor == other.bgColor &&
+          isGradient == other.isGradient &&
+          eyeBrowStyle == other.eyeBrowStyle;
+
+  @override
+  int get hashCode =>
+      sex.hashCode ^
+      faceColor.hashCode ^
+      earSize.hashCode ^
+      hairColor.hashCode ^
+      hairStyle.hashCode ^
+      hairColorRandom.hashCode ^
+      hatColor.hashCode ^
+      hatStyle.hashCode ^
+      eyeStyle.hashCode ^
+      glassesStyle.hashCode ^
+      noseStyle.hashCode ^
+      mouthStyle.hashCode ^
+      shirtStyle.hashCode ^
+      shirtColor.hashCode ^
+      bgColor.hashCode ^
+      isGradient.hashCode ^
+      eyeBrowStyle.hashCode;
 }

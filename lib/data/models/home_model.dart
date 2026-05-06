@@ -21,6 +21,29 @@ class HomeResponse {
     required this.subjects,
   });
 
+  HomeResponse copyWith({
+    String? studentName,
+    String? studentId,
+    String? schoolId,
+    String? classId,
+    String? sectionId,
+    int? upPoints,
+    bool? isPremiumUser,
+    HomeStats? stats,
+    List<SubjectSummary>? subjects,
+  }) =>
+      HomeResponse(
+        studentName: studentName ?? this.studentName,
+        studentId: studentId ?? this.studentId,
+        schoolId: schoolId ?? this.schoolId,
+        classId: classId ?? this.classId,
+        sectionId: sectionId ?? this.sectionId,
+        upPoints: upPoints ?? this.upPoints,
+        isPremiumUser: isPremiumUser ?? this.isPremiumUser,
+        stats: stats ?? this.stats,
+        subjects: subjects ?? this.subjects,
+      );
+
   factory HomeResponse.fromJson(Map<String, dynamic> json) => HomeResponse(
         studentName: json['student_name'] as String? ?? '',
         studentId: json['student_id'] as String? ?? '',

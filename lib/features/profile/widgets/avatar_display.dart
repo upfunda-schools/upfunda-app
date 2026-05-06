@@ -41,7 +41,7 @@ class AvatarDisplay extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double w = constraints.maxWidth * 0.9;
+          final double w = constraints.maxWidth;
           final double h = constraints.maxHeight;
           final double containerH = h * 0.9;
           final double containerTop = h * 0.1;
@@ -50,7 +50,7 @@ class AvatarDisplay extends StatelessWidget {
             children: [
               Positioned(
                 top: containerTop,
-                left: (constraints.maxWidth - w) / 2,
+                left: 0,
                 width: w,
                 height: containerH,
                 child: Stack(
@@ -61,7 +61,7 @@ class AvatarDisplay extends StatelessWidget {
                       width: w, height: containerH, top: 0, left: 0),
                     
                     // Hair or Hat
-                    if (config!.hatStyle != 'none')
+                    if (config!.hatStyle != null && config!.hatStyle != 'none')
                       _buildHatPart(w, containerH)
                     else
                       _buildHairPart(w, containerH),
@@ -69,7 +69,7 @@ class AvatarDisplay extends StatelessWidget {
                     // Face details (centered area)
                     Positioned(
                       top: containerH * 0.3,
-                      left: 0,
+                      left: w * 0.03, // Matches frontend right: -3% shift
                       width: w,
                       height: containerH,
                       child: Stack(
@@ -84,11 +84,14 @@ class AvatarDisplay extends StatelessWidget {
                             width: w, height: containerH * 0.12, top: containerH * 0.07, left: 0),
                           
                           // Glasses
-                          if (config!.glassesStyle != 'none')
+                          if (config!.glassesStyle != null && config!.glassesStyle != 'none')
                             _buildPart(_getGlassesSvg(), 
-                              width: w * 1.06, height: containerH * 0.22, top: containerH * 0.03, left: -w * 0.035),
+                              width: w, 
+                              height: containerH * 0.22, 
+                              top: containerH * 0.005, 
+                              left: w * -0.03),
 
-                          // Ears
+                          // Ears - Moved back here to match frontend parity
                           _buildPart(_getEarSvg(), 
                             width: w * 0.16, height: containerH * 0.15, top: containerH * 0.13, left: w * 0.198),
                           
@@ -98,7 +101,7 @@ class AvatarDisplay extends StatelessWidget {
                           
                           // Mouth
                           _buildPart(_getMouthSvg(), 
-                            width: w * 0.5, height: containerH * 0.17, top: containerH * 0.23, left: w * 0.27),
+                            width: w * 0.5, height: containerH * 0.19, top: containerH * 0.23, left: w * 0.27),
                         ],
                       ),
                     ),
@@ -125,6 +128,7 @@ class AvatarDisplay extends StatelessWidget {
       height: height,
       child: SvgPicture.string(
         svg,
+        key: ValueKey(svg),
         fit: BoxFit.contain,
       ),
     );
@@ -146,6 +150,8 @@ class AvatarDisplay extends StatelessWidget {
     }
 
     switch (config!.hairStyle) {
+      case 'none':
+        return const SizedBox.shrink();
       case 'normal':
         svg = AvatarPartsData.getHairNormal(hairColor);
         widthFactor = 0.94;
@@ -169,17 +175,17 @@ class AvatarDisplay extends StatelessWidget {
         break;
       case 'womanLong':
         svg = AvatarPartsData.getHairWomanLong(hairColor);
-        widthFactor = 1.25;
+        widthFactor = 0.97;
         heightFactor = 1.0;
-        topFactor = -0.05;
-        leftFactor = -0.12;
+        topFactor = 0.022; // bottom: -2.2% in frontend
+        leftFactor = 0;
         break;
       case 'womanShort':
         svg = AvatarPartsData.getHairWomanShort(hairColor);
-        widthFactor = 1.1;
-        heightFactor = 0.85;
-        topFactor = 0;
-        leftFactor = -0.05;
+        widthFactor = 0.92;
+        heightFactor = 0.75;
+        topFactor = 0; // bottom: 25% in frontend
+        leftFactor = -0.008;
         break;
       default:
         svg = AvatarPartsData.getHairNormal(hairColor);
@@ -232,10 +238,10 @@ class AvatarDisplay extends StatelessWidget {
   Widget _buildShirtPart(double w, double h) {
     final color = config!.shirtColor ?? '#2196F3';
     String svg;
-    double widthFactor = 1.0;
+    double widthFactor = 0.98;
     double heightFactor = 0.26;
-    double bottomFactor = -0.025;
-    double leftFactor = 0;
+    double bottomFactor = -0.02;
+    double leftFactor = (1.0 - widthFactor) / 2;
 
     switch (config!.shirtStyle) {
       case 'short':
@@ -257,33 +263,29 @@ class AvatarDisplay extends StatelessWidget {
   }
 
   String _getEyesSvg() {
-    switch (config!.eyeStyle) {
-      case 'oval': return AvatarPartsData.getEyesOval();
-      case 'smile': return AvatarPartsData.getEyesSmile();
-      default: return AvatarPartsData.getEyesCircle();
-    }
+    final style = config!.eyeStyle;
+    if (style == 'oval') return AvatarPartsData.getEyesOval();
+    if (style == 'smile') return AvatarPartsData.getEyesSmile();
+    return AvatarPartsData.getEyesCircle();
   }
 
   String _getEyebrowSvg() {
-    switch (config!.eyeBrowStyle) {
-      case 'upWoman': return AvatarPartsData.getEyebrowUpWoman();
-      default: return AvatarPartsData.getEyebrowUp();
-    }
+    if (config!.eyeBrowStyle == 'upWoman') return AvatarPartsData.getEyebrowUpWoman();
+    return AvatarPartsData.getEyebrowUp();
   }
 
   String _getGlassesSvg() {
-    switch (config!.glassesStyle) {
-      case 'square': return AvatarPartsData.getGlassesSquare();
-      default: return AvatarPartsData.getGlassesRound();
-    }
+    final style = config!.glassesStyle;
+    if (style == 'square') return AvatarPartsData.getGlassesSquare();
+    if (style == 'round') return AvatarPartsData.getGlassesRound();
+    return '';
   }
 
   String _getMouthSvg() {
-    switch (config!.mouthStyle) {
-      case 'laugh': return AvatarPartsData.getMouthLaugh();
-      case 'peace': return AvatarPartsData.getMouthPeace();
-      default: return AvatarPartsData.getMouthSmile();
-    }
+    final style = config!.mouthStyle;
+    if (style == 'laugh') return AvatarPartsData.getMouthLaugh();
+    if (style == 'peace') return AvatarPartsData.getMouthPeace();
+    return AvatarPartsData.getMouthSmile();
   }
 
   String _getEarSvg() {
@@ -293,11 +295,11 @@ class AvatarDisplay extends StatelessWidget {
   }
 
   String _getNoseSvg() {
-    switch (config!.noseStyle) {
-      case 'long': return AvatarPartsData.getNoseLong();
-      case 'round': return AvatarPartsData.getNoseRound();
-      default: return AvatarPartsData.getNoseShort();
-    }
+    final style = config!.noseStyle;
+    if (style == 'long') return AvatarPartsData.getNoseLong();
+    if (style == 'round') return AvatarPartsData.getNoseRound();
+    if (style == 'short') return AvatarPartsData.getNoseShort();
+    return '';
   }
 
   Color _hexToColor(String hex) {
