@@ -282,32 +282,35 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onConfirm();
+                    },
+                    child: const Text('Unlock Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    onConfirm();
-                  },
-                  child: const Text('Unlock Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -333,22 +336,38 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
             children: [
               // Header - Web Parity
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 40, 16, 8),
+                padding: const EdgeInsets.fromLTRB(12, 40, 12, 8),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => context.pop(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => context.pop(),
+                        ),
+                        const Text('Edit', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      ],
                     ),
-                    const Text('Edit', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    _buildPointsBadge(),
-                    const SizedBox(width: 8),
-                    _buildHeaderButton(Icons.refresh, _handleReset, _isModified),
-                    const SizedBox(width: 8),
-                    _buildHeaderButton(Icons.delete, _handleRemove, true, color: Colors.red),
-                    const SizedBox(width: 8),
-                    _buildHeaderButton(Icons.save, _handleSave, _isModified, color: Colors.blue),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildPointsBadge(),
+                            const SizedBox(width: 4),
+                            _buildHeaderButton(Icons.refresh, _handleReset, _isModified),
+                            const SizedBox(width: 4),
+                            _buildHeaderButton(Icons.delete, _handleRemove, true, color: Colors.red),
+                            const SizedBox(width: 4),
+                            _buildHeaderButton(Icons.save, _handleSave, _isModified, color: Colors.blue),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -361,28 +380,26 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                   children: [
                     const Text('Select Part To Edit', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: 140,
-                      child: GridView.count(
-                        crossAxisCount: 6,
-                        mainAxisSpacing: 8,
-                        crossAxisSpacing: 8,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          _buildCategoryIcon('faceColor', Icons.palette),
-                          _buildCategoryIcon('hairStyle', Icons.content_cut),
-                          _buildCategoryIcon('hatStyle', Icons.theater_comedy),
-                          _buildCategoryIcon('eyeStyle', Icons.visibility),
-                          _buildCategoryIcon('eyeBrowStyle', Icons.face),
-                          _buildCategoryIcon('glassesStyle', Icons.badge),
-                          _buildCategoryIcon('earSize', Icons.hearing),
-                          _buildCategoryIcon('noseStyle', Icons.auto_fix_normal),
-                          _buildCategoryIcon('mouthStyle', Icons.sentiment_satisfied),
-                          _buildCategoryIcon('shirtStyle', Icons.checkroom),
-                          _buildCategoryIcon('shirtColor', Icons.format_paint),
-                          _buildCategoryIcon('bgColor', Icons.circle, color: Colors.red),
-                        ],
-                      ),
+                    GridView.count(
+                      crossAxisCount: 6,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildCategoryIcon('faceColor', Icons.palette),
+                        _buildCategoryIcon('hairStyle', Icons.content_cut),
+                        _buildCategoryIcon('hatStyle', Icons.theater_comedy),
+                        _buildCategoryIcon('eyeStyle', Icons.visibility),
+                        _buildCategoryIcon('eyeBrowStyle', Icons.face),
+                        _buildCategoryIcon('glassesStyle', Icons.badge),
+                        _buildCategoryIcon('earSize', Icons.hearing),
+                        _buildCategoryIcon('noseStyle', Icons.auto_fix_normal),
+                        _buildCategoryIcon('mouthStyle', Icons.sentiment_satisfied),
+                        _buildCategoryIcon('shirtStyle', Icons.checkroom),
+                        _buildCategoryIcon('shirtColor', Icons.format_paint),
+                        _buildCategoryIcon('bgColor', Icons.circle, color: Colors.red),
+                      ],
                     ),
                   ],
                 ),
@@ -462,13 +479,13 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
 
   Widget _buildPointsBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: _localPoints < 0 ? Colors.red : Colors.amber[700],
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        'Points: $_localPoints',
+        '$_localPoints UP',
         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
@@ -476,8 +493,8 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
 
   Widget _buildHeaderButton(IconData icon, VoidCallback onPressed, bool enabled, {Color? color}) {
     return Container(
-      width: 44,
-      height: 44,
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
         color: enabled ? (color ?? Colors.white12) : Colors.white10,
         borderRadius: BorderRadius.circular(8),
@@ -867,32 +884,35 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onConfirm();
+                    },
+                    child: const Text('Save Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    onConfirm();
-                  },
-                  child: const Text('Save Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
