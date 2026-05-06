@@ -8,6 +8,7 @@ import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 import '../../shared/widgets/skeleton_loader.dart';
 import '../../shared/widgets/quick_menu_drawer.dart';
+import '../profile/widgets/avatar_display.dart';
 
 class StudentHomeScreen extends ConsumerStatefulWidget {
   const StudentHomeScreen({super.key});
@@ -120,26 +121,33 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 children: [
                                   GestureDetector(
                                     onTap: () => context.go('/profile'),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: 36,
                                       height: 36,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF6C5CE7),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        (state.profile?.name.isNotEmpty ==
-                                                true)
-                                            ? state.profile!.name[0]
-                                                  .toUpperCase()
-                                            : 'U',
-                                        style: GoogleFonts.montserrat(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                        ),
-                                      ),
+                                      child: (state.profile?.avatarConfig != null)
+                                          ? AvatarDisplay(
+                                              key: ValueKey(state.profile!.avatarConfig),
+                                              config: state.profile!.avatarConfig,
+                                              size: 36,
+                                              shape: 'circle',
+                                            )
+                                          : Container(
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF6C5CE7),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                (state.profile?.name.isNotEmpty == true)
+                                                    ? state.profile!.name[0].toUpperCase()
+                                                    : 'U',
+                                                style: GoogleFonts.montserrat(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

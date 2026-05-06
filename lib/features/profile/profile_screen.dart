@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
+import 'widgets/avatar_display.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -19,7 +20,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(userProvider.notifier).loadProfile();
+      if (ref.read(userProvider).profile == null) {
+        ref.read(userProvider.notifier).loadProfile();
+      }
       ref.read(authProvider.notifier).fetchProfiles();
     });
   }
@@ -168,17 +171,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Avatar circle
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    profile.initials,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
-                    ),
+                SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: Stack(
+                    children: [
+                      if (profile.avatarConfig != null)
+                        AvatarDisplay(
+                          key: ValueKey(profile.avatarConfig),
+                          config: profile.avatarConfig,
+                          size: 120,
+                          shape: 'circle',
+                        )
+                      else
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            profile.initials,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: () async {
+                            final result = await context.push('/avatar');
+                            if (result == true) {
+                              // Force a refresh from server to be sure, though optimistic update handles it
+                              ref.read(userProvider.notifier).loadProfile();
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Colors.amber,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.edit_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),

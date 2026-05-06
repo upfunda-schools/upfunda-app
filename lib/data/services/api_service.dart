@@ -78,6 +78,7 @@ abstract class ApiService {
   Future<List<dynamic>> getClasses();
   Future<List<dynamic>> getSections(String schoolId, String classId);
   Future<void> studentSignUp(Map<String, dynamic> data);
+  Future<void> updateUser(Map<String, dynamic> data);
 
   // Similar Questions
   Future<Question> getSimilarQuestion(String questionId);

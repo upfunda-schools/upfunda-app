@@ -27,6 +27,7 @@ dependencies:
   intl_phone_field: ^3.2.0
   intl: ^0.20.2
   url_launcher: ^6.3.2
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
