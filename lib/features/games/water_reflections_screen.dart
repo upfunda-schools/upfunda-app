@@ -92,18 +92,15 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
   late _Pattern _pattern;
   String? _feedback; // 'correct' | 'wrong' | null
   bool _isSoundEnabled = true;
-  late final AudioPlayer _audioPlayer;
 
   @override
   void initState() {
     super.initState();
     _pattern = _generatePattern();
-    _audioPlayer = AudioPlayer();
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -151,8 +148,11 @@ class _WaterReflectionsScreenState extends State<WaterReflectionsScreen> {
       final source = isCorrect
           ? AssetSource('audio/correct_sound_effect.mp3')
           : AssetSource('audio/wrong_sound_effect.mp3');
-      await _audioPlayer.stop();
-      await _audioPlayer.play(source);
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+      await player.play(source);
     } catch (e) {
       debugPrint('Error playing sound: $e');
     }

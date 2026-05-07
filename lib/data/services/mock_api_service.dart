@@ -156,4 +156,15 @@ class MockApiService implements ApiService {
   Future<void> studentSignUp(Map<String, dynamic> data) async {
     await Future.delayed(const Duration(milliseconds: 800));
   }
+
+  @override
+  Future<void> updateUser(Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<Question> getSimilarQuestion(String questionId) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return MockData.testDetailsResponse.questions.first;
+  }
 }

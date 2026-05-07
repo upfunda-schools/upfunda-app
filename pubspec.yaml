@@ -27,6 +27,7 @@ dependencies:
   intl_phone_field: ^3.2.0
   intl: ^0.20.2
   url_launcher: ^6.3.2
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -43,7 +44,7 @@ flutter:
     - "assets/images/3. SignUp-Email/"
     - "assets/log in page/"
     - assets/images/home/
-    - assets/audio/
+
     - "assets/7. Academy Path/"
     - "assets/5. Home Page/"
     - "assets/8. Logical Reasoning/"
@@ -58,6 +59,7 @@ flutter:
     - "assets/images/quick_menu/"
     - "assets/images/quiz/"
     - "assets/audio/"
+    - "assets/quiz_similar/"
 
 flutter_launcher_icons:
   android: true

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/utils/env_config.dart';
 import '../core/utils/profile_storage.dart';
+import '../data/models/profile_model.dart';
 import '../data/services/api_service.dart';
 import '../data/services/dio_api_service.dart';
 import '../data/services/firebase_auth_service.dart';
@@ -35,6 +36,7 @@ class AuthState {
   final User? user;
   // null = not yet checked, 0 = new user, 1 = single profile, 2+ = multi-profile
   final int? profileCount;
+  final List<StudentProfile>? profiles;
   // True only for login flows that require the student to pick a profile.
   final bool requiresProfileSelection;
 
@@ -44,6 +46,7 @@ class AuthState {
     this.error,
     this.user,
     this.profileCount,
+    this.profiles,
     this.requiresProfileSelection = false,
   });
 
@@ -55,6 +58,8 @@ class AuthState {
     bool clearUser = false,
     int? profileCount,
     bool clearProfileCount = false,
+    List<StudentProfile>? profiles,
+    bool clearProfiles = false,
     bool? requiresProfileSelection,
   }) =>
       AuthState(
@@ -64,6 +69,7 @@ class AuthState {
         user: clearUser ? null : (user ?? this.user),
         profileCount:
             clearProfileCount ? null : (profileCount ?? this.profileCount),
+        profiles: clearProfiles ? null : (profiles ?? this.profiles),
         requiresProfileSelection:
             requiresProfileSelection ?? this.requiresProfileSelection,
       );
@@ -80,25 +86,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void _listenToAuthChanges() {
     _authSub = _authService.authStateChanges().listen((user) async {
       if (user != null) {
-        if (!state.isLoading && ProfileStorage.profileId == null) {
-          // App startup with cached Firebase session and no active login() in
-          // progress. Fetch profile count before routing so multi-profile users
-          // are directed to select_profile_screen instead of student-home.
-          state = state.copyWith(isLoggedIn: true, user: user, isLoading: true);
-          final idToken = await user.getIdToken();
-          final count = await _fetchProfileCount(idToken);
-          state = state.copyWith(
-            isLoading: false,
-            profileCount: count,
-            requiresProfileSelection:
-                ProfileStorage.profileId == null && (count == null || count != 1),
-          );
-        } else {
-          // During login()/phoneLogin() — let those methods handle profile check.
-          state = state.copyWith(isLoggedIn: true, user: user);
-        }
+        state = state.copyWith(isLoggedIn: true, user: user);
+        
+        // Always fetch profiles on login/startup to ensure switch buttons work
+        final idToken = await user.getIdToken();
+        final count = await _fetchProfileCount(idToken);
+        final profiles = await fetchProfiles();
+        
+        state = state.copyWith(
+          profileCount: count,
+          profiles: profiles,
+          requiresProfileSelection: ProfileStorage.profileId == null && 
+              (count == null || count != 1),
+        );
       } else {
-        state = state.copyWith(isLoggedIn: false, clearUser: true);
+        state = state.copyWith(isLoggedIn: false, clearUser: true, clearProfiles: true);
       }
     });
   }
@@ -113,11 +115,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       final idToken = await credential.user?.getIdToken();
       final profileCount = await _fetchProfileCount(idToken);
+      final profiles = await fetchProfiles();
       state = state.copyWith(
         isLoggedIn: true,
         isLoading: false,
         user: credential.user,
         profileCount: profileCount,
+        profiles: profiles,
         requiresProfileSelection:
             ProfileStorage.profileId == null && (profileCount == null || profileCount != 1),
       );
@@ -148,11 +152,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final credential = await _authService.signInWithCustomToken(customToken);
       final idToken = await credential.user?.getIdToken();
       final profileCount = await _fetchProfileCount(idToken);
+      final profiles = await fetchProfiles();
       state = state.copyWith(
         isLoggedIn: true,
         isLoading: false,
         user: credential.user,
         profileCount: profileCount,
+        profiles: profiles,
         requiresProfileSelection:
             ProfileStorage.profileId == null && (profileCount == null || profileCount != 1),
       );
@@ -187,6 +193,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return list.length;
     } catch (_) {
       ProfileStorage.profileId = null;
+      return null;
+    }
+  }
+
+  Future<List<StudentProfile>?> fetchProfiles() async {
+    final user = _authService.currentUser;
+    if (user == null) return null;
+
+    try {
+      final idToken = await user.getIdToken();
+      final dio = Dio(BaseOptions(
+        baseUrl: EnvConfig.apiBaseUrl,
+        headers: {'Authorization': 'Bearer $idToken'},
+      ));
+      final res = await dio.get('/student/profiles');
+      final list = (res.data as List<dynamic>?) ?? [];
+      final profiles = list.map((e) => StudentProfile.fromJson(e)).toList();
+      state = state.copyWith(profiles: profiles, profileCount: profiles.length);
+      return profiles;
+    } catch (_) {
       return null;
     }
   }

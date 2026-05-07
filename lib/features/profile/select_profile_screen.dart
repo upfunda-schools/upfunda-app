@@ -8,6 +8,8 @@ import '../../data/models/profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/worksheet_provider.dart';
+import '../../data/models/user_avatar_config.dart';
+import 'widgets/avatar_display.dart';
 
 class SelectProfileScreen extends ConsumerStatefulWidget {
   const SelectProfileScreen({super.key});
@@ -26,20 +28,29 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfiles();
+    });
   }
 
   Future<void> _loadProfiles() async {
+    final filterName =
+        GoRouterState.of(context).uri.queryParameters['filterName'];
     try {
       final api = ref.read(apiServiceProvider);
       final profiles = await api.getStudentProfiles();
+
       if (mounted) {
         if (profiles.isEmpty) {
           context.go('/add-student');
           return;
         }
         setState(() {
-          _profiles = profiles;
+          if (filterName != null) {
+            _profiles = profiles.where((p) => p.name == filterName).toList();
+          } else {
+            _profiles = profiles;
+          }
           _isLoading = false;
         });
       }
@@ -172,7 +183,7 @@ class _SelectProfileScreenState extends ConsumerState<SelectProfileScreen> {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends ConsumerWidget {
   final StudentProfile profile;
   final bool isSelecting;
   final bool disabled;
@@ -186,7 +197,27 @@ class _ProfileCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userState = ref.watch(userProvider);
+    UserAvatarConfig? effectiveConfig = profile.avatarConfig;
+    
+    if (effectiveConfig == null && userState.profile?.rawAvatarMap != null) {
+      final avatarMap = userState.profile!.rawAvatarMap!;
+      final searchName = profile.name.trim().toLowerCase();
+      if (avatarMap.containsKey(profile.name)) {
+        effectiveConfig = UserAvatarConfig.fromJson(avatarMap[profile.name] as Map<String, dynamic>);
+      } else {
+        for (final entry in avatarMap.entries) {
+          if (entry.key.trim().toLowerCase() == searchName) {
+            if (entry.value is Map<String, dynamic>) {
+              effectiveConfig = UserAvatarConfig.fromJson(entry.value as Map<String, dynamic>);
+            }
+            break;
+          }
+        }
+      }
+    }
+
     final subtitle = [
       if (profile.classGrade.isNotEmpty) 'Grade ${profile.classGrade}',
       if (profile.sectionName != null && profile.sectionName!.isNotEmpty)
@@ -212,6 +243,28 @@ class _ProfileCard extends StatelessWidget {
             ),
             child: Row(
               children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: effectiveConfig != null
+                      ? AvatarDisplay(
+                          config: effectiveConfig,
+                          size: 48,
+                          shape: 'circle',
+                        )
+                      : CircleAvatar(
+                          radius: 24,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -55,6 +55,7 @@ import '../../features/challenge/room/challenge_room_lobby_screen.dart';
 import '../../features/challenge/room/challenge_room_quiz_screen.dart';
 import '../../features/challenge/room/challenge_room_result_screen.dart';
 import '../../features/leaderboard/leaderboard_screen.dart';
+import '../../features/profile/avatar_editor_screen.dart';
 
 class _RouterNotifier extends ChangeNotifier {
   void notify() => notifyListeners();
@@ -140,6 +141,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/avatar',
+        builder: (context, state) => const AvatarEditorScreen(),
       ),
       GoRoute(
         path: '/select-profile',

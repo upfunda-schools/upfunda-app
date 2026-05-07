@@ -6,6 +6,7 @@ class TestDetailsResponse {
   final List<Question> questions;
   final List<AlreadyAnswered> alreadyAnswered;
   final Pagination pagination;
+  final bool showSimilarQuestion;
 
   TestDetailsResponse({
     required this.testId,
@@ -15,6 +16,7 @@ class TestDetailsResponse {
     required this.questions,
     required this.alreadyAnswered,
     required this.pagination,
+    this.showSimilarQuestion = false,
   });
 
   factory TestDetailsResponse.fromJson(Map<String, dynamic> json) =>
@@ -35,6 +37,7 @@ class TestDetailsResponse {
             [],
         pagination:
             Pagination.fromJson(json['pagination'] as Map<String, dynamic>),
+        showSimilarQuestion: json['show_similar_question'] as bool? ?? false,
       );
 }
 
@@ -86,6 +89,19 @@ class Question {
       );
 
   bool get isFillType => type == 'FILL_UP' || type == 'INTEGER';
+
+  bool get isMultipleChoice {
+    final t = type.toLowerCase();
+    if (t.contains('fill') || t.contains('integer')) return false;
+    return t == 'multiple_choice' ||
+        t == 'multiple-choice' ||
+        t == 'true_false' ||
+        t == 'mcq';
+  }
+
+  bool get hasNoImage => !text.contains('<img');
+  bool get optionsHaveNoImage =>
+      options.every((opt) => !opt.text.contains('<img'));
 }
 
 class QuestionOption {

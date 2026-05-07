@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
@@ -14,6 +13,8 @@ import 'widgets/status_legend.dart';
 import 'widgets/exit_dialog.dart';
 import 'widgets/time_up_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'widgets/submission_dialog.dart';
+import 'widgets/similar_question_dialog.dart';
 
 
 
@@ -190,116 +191,67 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 _buildTopBar(quizState),
                 const SizedBox(height: 8),
 
-                // Stats and Mystic Eraser Row
+                // Mystic Eraser Button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      // Questions Count Box
-                      Expanded(
-                        child: Container(
-                          height: 54,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF43329D).withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                  child: GestureDetector(
+                    onTap: quizState.canUseFiftyFifty
+                        ? () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => MysticEraserDialog(
+                                remainingUses: quizState.fiftyFiftyLimit -
+                                    quizState.fiftyFiftyUsageCount,
+                                onConfirm: () {
+                                  ref
+                                      .read(quizProvider.notifier)
+                                      .useFiftyFifty(quizState.currentQuestionId);
+                                },
                               ),
-                            ],
+                            );
+                          }
+                        : null,
+                    child: Container(
+                      height: 56,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE848A1), Color(0xFF8B5CF6)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset('assets/images/quiz/book.png', height: 18),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Questions ${quizState.currentIndex + 1}/${quizState.questions.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.auto_fix_high,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Mystic Eraser (${quizState.fiftyFiftyLimit - quizState.fiftyFiftyUsageCount} Left)',
+                              style: GoogleFonts.montserrat(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // Mystic Eraser Button
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: quizState.canUseFiftyFifty
-                              ? () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => MysticEraserDialog(
-                                      remainingUses: quizState.fiftyFiftyLimit -
-                                          quizState.fiftyFiftyUsageCount,
-                                      onConfirm: () {
-                                        ref
-                                            .read(quizProvider.notifier)
-                                            .useFiftyFifty(quizState.currentQuestionId);
-                                      },
-                                    ),
-                                  );
-                                }
-                              : null,
-                          child: Container(
-                            height: 54,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFE848A1), Color(0xFF8B5CF6)],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.auto_fix_high,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Mystic Eraser (${quizState.fiftyFiftyLimit - quizState.fiftyFiftyUsageCount} Left)',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    ],
+                    ),
                   ),
                 ),
 
@@ -385,6 +337,23 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 question: question,
                 questionNumber: quizState.currentIndex + 1,
                 totalQuestions: quizState.questions.length,
+                showNextButton: quizState.checkDetails,
+                isLastQuestion: quizState.isLastQuestion,
+                onNext: () {
+                  if (quizState.isLastQuestion) {
+                    ref.read(quizProvider.notifier).submitTest().then((result) {
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => SubmissionDialog(result: result),
+                        );
+                      }
+                    });
+                  } else {
+                    ref.read(quizProvider.notifier).goToNext();
+                  }
+                },
               ),
             ),
           ),
@@ -401,7 +370,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                     child: _buildOptionsSection(quizState, question),
                   ),
                 ),
-                const NavigationButtons(),
+                if (!quizState.checkDetails) const NavigationButtons(),
               ],
             ),
           ),
@@ -422,6 +391,23 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   question: question,
                   questionNumber: quizState.currentIndex + 1,
                   totalQuestions: quizState.questions.length,
+                  showNextButton: quizState.checkDetails,
+                  isLastQuestion: quizState.isLastQuestion,
+                  onNext: () {
+                    if (quizState.isLastQuestion) {
+                      ref.read(quizProvider.notifier).submitTest().then((result) {
+                        if (mounted) {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => SubmissionDialog(result: result),
+                          );
+                        }
+                      });
+                    } else {
+                      ref.read(quizProvider.notifier).goToNext();
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildOptionsSection(quizState, question),
@@ -429,10 +415,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             ),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: NavigationButtons(),
-        ),
+        if (!quizState.checkDetails)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: NavigationButtons(),
+          ),
       ],
     );
   }
@@ -472,7 +459,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         yourAnswer: yourAnswerText,
         correctAnswer: correctAnswerText,
         explanation: question.solution?.explanation ?? '',
-        questionId: quizState.currentQuestionId,
+        questionId: question.questionId,
+        question: question,
       );
     }
 
@@ -804,12 +792,13 @@ class MysticEraserDialog extends StatelessWidget {
   }
 }
 
-class SolutionPanel extends StatelessWidget {
+class SolutionPanel extends ConsumerWidget {
   final bool isCorrect;
   final String yourAnswer;
   final String correctAnswer;
   final String explanation;
   final String? questionId;
+  final Question question;
 
   static const List<String> quotes = [
     "Great job! You got it right! 🌟",
@@ -835,6 +824,7 @@ class SolutionPanel extends StatelessWidget {
     required this.yourAnswer,
     required this.correctAnswer,
     required this.explanation,
+    required this.question,
     this.questionId,
   });
 
@@ -857,22 +847,16 @@ class SolutionPanel extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cleanYourAnswer = _stripHtml(yourAnswer);
     final cleanCorrectAnswer = _stripHtml(correctAnswer);
     final cleanExplanation = _stripHtml(explanation);
 
-    // Random quote for correct answer
-    String? quote;
-    if (isCorrect) {
-      final seed = questionId?.hashCode ?? Random().nextInt(1000);
-      quote = quotes[Random(seed).nextInt(quotes.length)];
-    }
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -883,144 +867,170 @@ class SolutionPanel extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            'Answer and Solution',
-            style: GoogleFonts.montserrat(
-              fontSize: 20,
-              fontWeight: FontWeight.w700, // BOLD
-              color: const Color(0xFF1F2937),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Answer and Solution',
+              style: GoogleFonts.montserrat(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1F2937),
+              ),
             ),
           ),
           const SizedBox(height: 16),
           
-          // Notice Box
-          isCorrect
-              ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7), // Light green
-                    borderRadius: BorderRadius.circular(12),
-                    border: const Border(
-                      left: BorderSide(color: Color(0xFF22C55E), width: 4),
+          // Motivational Box
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF9C3), // Light yellow
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+              boxShadow: [
+                 BoxShadow(
+                   color: const Color(0xFFFDE68A).withValues(alpha: 0.3),
+                   blurRadius: 0,
+                   offset: const Offset(0, 4),
+                 ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    isCorrect ? "Great job! You got it right! 🌟" : "Don't Worry! you're doing great!",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1F2937),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          quote ?? "Great job! You got it right! 🌟",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700, // BOLD
-                            color: const Color(0xFF166534), // Dark green
-                          ),
-                        ),
-                      ),
-                      const Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(Icons.auto_awesome, color: Color(0xFFBBF7D0), size: 24),
-                          Positioned(
-                            right: -2,
-                            top: -2,
-                            child: Icon(Icons.celebration, color: Color(0xFF4ADE80), size: 14),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                )
-              : Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF9C3), // Light yellow
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFEF08A), width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.rocket_launch, color: Color(0xFFEAB308), size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "You're learning! Check the details below!",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700, // BOLD
-                            color: const Color(0xFF854D0E),
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.auto_awesome, color: Color(0xFFFEF08A), size: 16),
-                    ],
-                  ),
                 ),
-          const SizedBox(height: 20),
+                const Text('🌈', style: TextStyle(fontSize: 20)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
 
           // Answer details
-          _buildInfoRow('Your answer:', cleanYourAnswer, isCorrect ? AppColors.success : AppColors.incorrect),
-          const SizedBox(height: 8),
-          _buildInfoRow('Correct answer:', cleanCorrectAnswer, AppColors.success),
-          
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: Color(0xFFE5E7EB)),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1F2937),
+              ),
+              children: [
+                const TextSpan(text: 'Your answer: '),
+                TextSpan(
+                  text: cleanYourAnswer.isEmpty ? 'No answer' : cleanYourAnswer,
+                  style: TextStyle(color: isCorrect ? const Color(0xFF22C55E) : const Color(0xFFEF4444)),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 4),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: GoogleFonts.montserrat(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1F2937),
+              ),
+              children: [
+                const TextSpan(text: 'Correct answer: '),
+                TextSpan(
+                  text: cleanCorrectAnswer,
+                  style: const TextStyle(color: Color(0xFF22C55E)),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Show Similar Questions Button
+          Builder(
+            builder: (context) {
 
-          // Explanation
-          if (cleanExplanation.isNotEmpty) ...[
-            Text(
-              'Explanation:',
-              style: GoogleFonts.montserrat(
-                fontSize: 15,
-                fontWeight: FontWeight.w700, // BOLD
-                color: const Color(0xFF374151),
+              
+              final showSimilarQuestionButton = 
+                  !isCorrect && 
+                  question.hasNoImage && 
+                  question.optionsHaveNoImage;
+
+              if (!showSimilarQuestionButton) return const SizedBox.shrink();
+
+              return SizedBox(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (questionId != null) {
+                      final similarQ = await ref.read(quizProvider.notifier).fetchSimilarQuestion(questionId!);
+                      if (similarQ != null && context.mounted) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (context) => SimilarQuestionDialog(
+                            question: similarQ,
+                            onContinue: () {
+                              // Continue to next question or stay
+                            },
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Show Similar Questions',
+                    style: GoogleFonts.montserrat(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              );
+            }
+          ),
+          
+          const SizedBox(height: 24),
+
+          // Explanation Box
+          if (cleanExplanation.isNotEmpty) 
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                cleanExplanation,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF374151),
+                  height: 1.5,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              cleanExplanation,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w600, // SEMI-BOLD
-                color: const Color(0xFF4B5563),
-                height: 1.5,
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value, Color valueColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 15,
-            fontWeight: FontWeight.w700, // BOLD
-            color: const Color(0xFF6B7280),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w700, // BOLD
-              color: valueColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 

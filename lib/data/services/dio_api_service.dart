@@ -59,24 +59,7 @@ class DioApiService implements ApiService {
   Future<UserProfile> getUserProfile() async {
     final response = await _dio.get('/user/profile');
     final data = response.data as Map<String, dynamic>;
-    return UserProfile(
-      id: data['user_id'] ?? data['id'] ?? '',
-      email: data['email'] ?? '',
-      role: data['role'] ?? 'student',
-      name: data['name'] ?? data['student_name'] ?? '',
-      upPoints: data['up_points'] ?? 0,
-      schoolId: data['school_id'] ?? '',
-      classId: data['class_id'] ?? '',
-      schoolName: data['school_name'],
-      className: data['class_name'],
-      sectionName: data['section_name'],
-      sectionId: data['section_id'],
-      gender: data['gender'],
-      country: data['country'],
-      phone: data['phone'],
-      studentId: data['student_id'] ?? '',
-      isPremiumUser: data['is_premium_user'] ?? false,
-    );
+    return UserProfile.fromJson(data);
   }
 
   @override
@@ -287,5 +270,45 @@ class DioApiService implements ApiService {
   @override
   Future<void> studentSignUp(Map<String, dynamic> data) async {
     await _dio.post('/student/signup', data: data);
+  }
+
+  @override
+  Future<void> updateUser(Map<String, dynamic> data) async {
+    await _dio.patch('/edit/user', data: data);
+  }
+
+  @override
+  Future<Question> getSimilarQuestion(String questionId) async {
+    final response = await _dio.get('/questions/$questionId/similar_question');
+    final data = response.data as Map<String, dynamic>;
+
+    // Handle the wrapped response format { "Question": ..., "Options": [...] }
+    final qData = data['Question'] as Map<String, dynamic>;
+    final optsData = data['Options'] as List<dynamic>;
+
+    // Find the correct option ID
+    String? correctOptionId;
+    for (var opt in optsData) {
+      if (opt['is_correct'] == true) {
+        correctOptionId = opt['id']?.toString();
+        break;
+      }
+    }
+
+    // Map to mobile Question model
+    return Question(
+      questionId: qData['id']?.toString() ?? '',
+      text: qData['question_text']?.toString() ?? '',
+      type: qData['type']?.toString() ?? 'MCQ',
+      options: optsData.map((e) => QuestionOption(
+        optionId: e['id']?.toString() ?? '',
+        text: e['option_text']?.toString() ?? '',
+      )).toList(),
+      solution: Solution(
+        answer: '', // Not provided by this endpoint
+        explanation: '', // Not provided by this endpoint
+        correctOptionId: correctOptionId,
+      ),
+    );
   }
 }

@@ -602,32 +602,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
 
-                                SizedBox(height: spaceM),
-
-                                // Join now link
-                                GestureDetector(
-                                  onTap: () => context.go('/signup'),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 12,
-                                        color: const Color(0xFF6B7280),
-                                      ),
-                                      children: [
-                                        const TextSpan(
-                                            text: "Don't have an account? "),
-                                        TextSpan(
-                                          text: 'Join now',
-                                          style: GoogleFonts.montserrat(
-                                            fontWeight: FontWeight.w700,
-                                            color: const Color(0xFF3B82F6),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
                                 SizedBox(height: spaceS),
 
                                 // Forgot password link

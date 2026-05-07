@@ -13,34 +13,16 @@ class NavigationButtons extends ConsumerStatefulWidget {
 }
 
 class _NavigationButtonsState extends ConsumerState<NavigationButtons> {
-  // Use a static player or a more persistent one to avoid "sometimes" issues on Web
-  static final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlayerInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initAudio();
-  }
-
-  Future<void> _initAudio() async {
-    if (_isPlayerInitialized) return;
-    try {
-      // Pre-set some properties for better web compatibility
-      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
-      _isPlayerInitialized = true;
-    } catch (e) {
-      debugPrint('Audio initialization error: $e');
-    }
-  }
 
   Future<void> _playSound(bool isCorrect) async {
-    final soundFile = isCorrect ? 'correct_sound_effect.mp3' : 'wrong_sound_effect.mp3';
+    final soundFile = isCorrect ? 'audio/correct_sound_effect.mp3' : 'audio/wrong_sound_effect.mp3';
     try {
       debugPrint('Playing sound: $soundFile');
-      // On Web, sometimes play() needs a fresh source or explicit stop
-      await _audioPlayer.stop();
-      await _audioPlayer.play(AssetSource('audio/$soundFile'), volume: 1.0);
+      final player = AudioPlayer();
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+      await player.play(AssetSource(soundFile), volume: 1.0);
     } catch (e) {
       debugPrint('Error playing sound ($soundFile): $e');
     }
