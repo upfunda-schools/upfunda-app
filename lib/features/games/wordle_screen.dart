@@ -170,6 +170,9 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
   int _score = 0;
   int _level = 1;
   bool _invalidWord = false;
+  bool _showHintDialog = false;
+  bool _hintUsed = false;
+  String _hintText = '';
 
   // ── Animations ──
   late AnimationController _modalCtrl;
@@ -216,12 +219,30 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
       _guesses.clear();
       _gameStatus = _GameStatus.playing;
       _invalidWord = false;
+      _showHintDialog = false;
+      _hintUsed = false;
+      _hintText = '';
       if (nextLevel) _level++;
     });
     _modalCtrl.reset();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _keyboardFocus.requestFocus();
     });
+  }
+
+  String _generateHint() {
+    final correctPositions = <int>{};
+    for (final guess in _guesses) {
+      for (var i = 0; i < 5; i++) {
+        if (guess.statuses[i] == _LetterStatus.correct) correctPositions.add(i);
+      }
+    }
+    for (var i = 0; i < 5; i++) {
+      if (!correctPositions.contains(i)) {
+        return 'The letter at position ${i + 1} is "${_targetWord[i]}"';
+      }
+    }
+    return 'Look carefully at the letters you already know!';
   }
 
   List<_LetterStatus> _evaluateGuess(String word) {
@@ -286,6 +307,10 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
     if (_gameStatus != _GameStatus.playing) {
       Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted) _modalCtrl.forward();
+      });
+    } else if (_guesses.length == 3 && !_hintUsed) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) setState(() => _showHintDialog = true);
       });
     }
   }
@@ -391,6 +416,10 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
                               const SizedBox(height: 8),
                               _buildInvalidBanner(),
                             ],
+                            if (_hintUsed && _hintText.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _buildHintBanner(),
+                            ],
                             const SizedBox(height: 16),
                             _buildKeyboard(),
                             const SizedBox(height: 16),
@@ -408,6 +437,8 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
                     opacity: _modalAnim,
                     child: _buildModal(),
                   ),
+                // Hint dialog
+                if (_showHintDialog) _buildHintDialog(),
               ],
             ),
           ),
@@ -749,6 +780,94 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHintDialog() {
+    return Container(
+      color: Colors.black.withValues(alpha: 0.5),
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 8)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('💡', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 12),
+              Text(
+                'Need a Hint?',
+                style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: const Color(0xFF1F2937)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "You've used 3 guesses. Would you like a hint to help you along?",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.montserrat(fontSize: 13, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModalButton(
+                      label: 'Yes, hint me!',
+                      color: const Color(0xFF22C55E),
+                      onTap: () => setState(() {
+                        _hintText = _generateHint();
+                        _hintUsed = true;
+                        _showHintDialog = false;
+                      }),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _ModalButton(
+                      label: 'No thanks',
+                      color: const Color(0xFF9CA3AF),
+                      onTap: () => setState(() => _showHintDialog = false),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHintBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF93C5FD)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('💡', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Hint: $_hintText',
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1D4ED8),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
