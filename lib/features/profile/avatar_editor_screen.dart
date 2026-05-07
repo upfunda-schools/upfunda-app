@@ -113,7 +113,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
   }
 
   String _getHairSvgForStyle(String style) {
-    final color = _currentConfig.hairColor ?? '#000000';
+    const color = '#000000'; // Force black hair
     switch (style) {
       case 'thick': return AvatarPartsData.getHairThick(color);
       case 'mohawk': return AvatarPartsData.getHairMohawk(color);
@@ -171,6 +171,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
   String _getHatSvgForStyle(String style) {
     final color = _currentConfig.hatColor ?? '#000000';
     if (style == 'beanie') return AvatarPartsData.getHatBeanie(color);
+    if (style == 'cap') return AvatarPartsData.getHatCap(color);
     return AvatarPartsData.getHatTurban(color);
   }
 

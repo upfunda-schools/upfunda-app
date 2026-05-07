@@ -4,6 +4,12 @@ import '../data/models/user_avatar_config.dart';
 import '../data/models/home_model.dart';
 import 'auth_provider.dart';
 
+/// Derived provider that tracks only the avatar config.
+/// Watchers rebuild only when the avatar changes, not on any UserState change.
+final avatarConfigProvider = Provider<UserAvatarConfig?>((ref) {
+  return ref.watch(userProvider.select((s) => s.profile?.avatarConfig));
+});
+
 final userProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
   final api = ref.watch(apiServiceProvider);
   final notifier = UserNotifier(api);
