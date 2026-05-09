@@ -6,6 +6,7 @@ import '../../providers/worksheet_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
 import '../../data/models/home_model.dart';
+import '../../core/utils/certificate_helper.dart';
 
 class WorksheetsScreen extends ConsumerStatefulWidget {
   const WorksheetsScreen({super.key});
@@ -203,6 +204,8 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                                       index: index,
                                                       scale: scale,
                                                       gradeLabel: gradeLabel,
+                                                      studentName: userState.profile?.name ?? 'Student',
+                                                      studentLevel: userState.profile?.className ?? '1',
                                                       onTap: () => context.go(
                                                         '/worksheets-list/${subject.subjectId}',
                                                       ),
@@ -217,7 +220,9 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
 
                                     // Download report button
                                     GestureDetector(
-                                      onTap: () {}, // Handle report download here
+                                      onTap: () {
+                                        // Implement report download if needed
+                                      },
                                       child: Image.asset(
                                         'assets/images/home/Leader_Board_Button.png',
                                         height: 38 * scale,
@@ -225,7 +230,7 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
                                       ),
                                     ),
 
-                                    SizedBox(height: 20 * scale),
+                                    SizedBox(height: 30 * scale),
                                   ],
                                 ),
                               ),
@@ -241,11 +246,30 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
     );
   }
 
+  Future<void> _downloadCertificate(String name, String subject, String level) async {
+    try {
+      await CertificateHelper.generateAndDownload(
+        studentName: name,
+        categoryName: subject,
+        level: level,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Certificate downloaded!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate certificate: $e')),
+        );
+      }
+    }
+  }
+
   Widget _buildPremiumOrUnlock(bool isPremium, double scale) {
     return isPremium ? const SizedBox.shrink() : _buildUnlockButton(scale);
   }
-
-
 
   Widget _buildUnlockButton(double scale) {
     return Image.asset(
@@ -377,6 +401,8 @@ class _CategoryCardAssetBased extends StatelessWidget {
   final VoidCallback onTap;
   final double scale;
   final String gradeLabel;
+  final String studentName;
+  final String studentLevel;
 
   const _CategoryCardAssetBased({
     required this.assetPath,
@@ -385,6 +411,8 @@ class _CategoryCardAssetBased extends StatelessWidget {
     required this.onTap,
     required this.scale,
     required this.gradeLabel,
+    required this.studentName,
+    required this.studentLevel,
   });
 
   @override
@@ -433,6 +461,50 @@ class _CategoryCardAssetBased extends StatelessWidget {
               ),
             ),
           ),
+
+          // Certificate Icon Action (Top Left for Academic, Top Right for others)
+          if (!subjectKey.contains('olympiad'))
+            Positioned(
+              top: 30 * scale,
+              left: subjectKey.contains('academic') ? 15 * scale : null,
+              right: subjectKey.contains('academic') ? null : 15 * scale,
+              child: GestureDetector(
+                onTap: subject.completedPercentage < 100
+                    ? () => CertificateHelper.showPreview(
+                          context,
+                          studentName: studentName,
+                          categoryName: subject.name,
+                          level: studentLevel,
+                        )
+                    : () {
+                        _WorksheetsScreenState parent =
+                            context.findAncestorStateOfType<_WorksheetsScreenState>()!;
+                        parent._downloadCertificate(
+                            studentName, subject.name, studentLevel);
+                      },
+                child: Container(
+                  padding: EdgeInsets.all(6 * scale),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    subject.completedPercentage < 100
+                        ? Icons.remove_red_eye
+                        : Icons.download,
+                    size: 16 * scale,
+                    color: themeColor,
+                  ),
+                ),
+              ),
+            ),
 
           Positioned(
             top: 35 * scale,
@@ -516,8 +588,7 @@ class _CategoryCardAssetBased extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: subject.completedPercentage / 100,
                           backgroundColor: Colors.white,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(themeColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
                           minHeight: 5 * scale,
                         ),
                       ),
