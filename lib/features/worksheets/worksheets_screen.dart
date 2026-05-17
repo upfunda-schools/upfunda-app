@@ -247,24 +247,201 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
   }
 
   Future<void> _downloadCertificate(String name, String subject, String level) async {
-    try {
-      await CertificateHelper.generateAndDownload(
-        studentName: name,
-        categoryName: subject,
-        level: level,
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Certificate downloaded!')),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              Text(
+                'Get Certificate',
+                style: GoogleFonts.montserrat(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0B0B45),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Choose how you would like to receive your certificate for $subject',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fredoka(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Option 1: Download & Save
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(sheetContext); // Close bottom sheet
+                  final messenger = ScaffoldMessenger.of(context);
+                  try {
+                    messenger.showSnackBar(
+                      const SnackBar(content: Text('Preparing certificate download...')),
+                    );
+                    await CertificateHelper.generateAndSave(
+                      studentName: name,
+                      categoryName: subject,
+                      level: level,
+                    );
+                  } catch (e) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Failed to download certificate: $e')),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[200]!),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.file_download,
+                          color: Colors.green,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Download & Save',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0B0B45),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Save as a PDF directly to your device',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: Colors.grey[400]),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Option 2: Share Certificate
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(sheetContext); // Close bottom sheet
+                  final messenger = ScaffoldMessenger.of(context);
+                  try {
+                    messenger.showSnackBar(
+                      const SnackBar(content: Text('Preparing certificate to share...')),
+                    );
+                    await CertificateHelper.generateAndDownload(
+                      studentName: name,
+                      categoryName: subject,
+                      level: level,
+                    );
+                  } catch (e) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Failed to share certificate: $e')),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[200]!),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.share,
+                          color: Colors.blue,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Share Certificate',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0B0B45),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Send via WhatsApp, Email, or other apps',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: Colors.grey[400]),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate certificate: $e')),
-        );
-      }
-    }
+      },
+    );
   }
 
   Widget _buildPremiumOrUnlock(bool isPremium, double scale) {

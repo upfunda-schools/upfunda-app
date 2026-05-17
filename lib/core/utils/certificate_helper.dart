@@ -18,6 +18,19 @@ class CertificateHelper {
     );
   }
 
+  static Future<void> generateAndSave({
+    required String studentName,
+    required String categoryName,
+    required String level,
+  }) async {
+    final pdf = await _buildPdf(studentName, categoryName, level, isPreview: false);
+    
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'Upfunda_Certificate_${categoryName.replaceAll(' ', '_')}_${studentName.replaceAll(' ', '_')}.pdf',
+    );
+  }
+
   static Future<void> showPreview(
     BuildContext context, {
     required String studentName,
