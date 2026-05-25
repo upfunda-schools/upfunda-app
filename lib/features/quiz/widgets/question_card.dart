@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -192,11 +193,13 @@ class QuestionCard extends ConsumerWidget {
     if (src.startsWith('data:image')) {
       try {
         final base64String = src.split(',').last;
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.memory(
-            base64Decode(base64String),
-            fit: BoxFit.contain,
+        return RepaintBoundary(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              base64Decode(base64String),
+              fit: BoxFit.contain,
+            ),
           ),
         );
       } catch (_) {
@@ -205,10 +208,16 @@ class QuestionCard extends ConsumerWidget {
     }
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        src,
+      child: CachedNetworkImage(
+        imageUrl: src,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) =>
+        placeholder: (context, url) => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) =>
             const Icon(Icons.broken_image, color: Colors.grey),
       ),
     );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
@@ -83,12 +84,14 @@ class OptionTile extends StatelessWidget {
                         try {
                           final base64Str = src.split(',').last;
                           final bytes = base64Decode(base64Str);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Image.memory(
-                              bytes,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          return RepaintBoundary(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Image.memory(
+                                bytes,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                              ),
                             ),
                           );
                         } catch (_) {
@@ -97,10 +100,14 @@ class OptionTile extends StatelessWidget {
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Image.network(
-                          src,
+                        child: CachedNetworkImage(
+                          imageUrl: src,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          placeholder: (_, __) => const SizedBox(
+                            height: 40,
+                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                          errorWidget: (_, __, ___) => const SizedBox.shrink(),
                         ),
                       );
                     },

@@ -96,6 +96,7 @@ class _FourShapesScreenState extends State<FourShapesScreen> with TickerProvider
   // Tap a specific shape tile to select it
   void _handleShapeTap(int colIndex, int rowIndex) {
     if (_isComplete) return;
+    if (rowIndex != 0) return; // only the top shape in a column is selectable
     final sel = _selection;
     if (sel != null && sel.col == colIndex && sel.row == rowIndex) {
       // Tapped same shape — deselect
@@ -276,8 +277,8 @@ class _FourShapesScreenState extends State<FourShapesScreen> with TickerProvider
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Tap any shape to select it (glows blue), then tap another column to move it there. '
-              'Sort all shapes so each column has only one type!',
+              'Tap the TOP shape in a column to select it (glows blue), then tap another column to move it there. '
+              'You can only move from the top — sort all shapes so each column has only one type!',
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 color: const Color(0xFF1E40AF),
@@ -370,21 +371,25 @@ class _FourShapesScreenState extends State<FourShapesScreen> with TickerProvider
 
   Widget _buildShapeTile(String shape, int colIndex, int rowIndex, bool isSelected, bool isSourceCol) {
     final color = _shapeColors[shape] ?? Colors.grey;
+    final isTop = rowIndex == 0;
+
     return GestureDetector(
       onTap: () {
         if (_selection != null && _selection!.col != colIndex) {
-          // A shape from another column is selected — move it here
+          // A shape from another column is selected — move it here (always allowed)
           _handleColumnTap(colIndex);
-        } else {
-          // Select/deselect this shape
+        } else if (isTop) {
+          // Only the top shape can be selected/deselected
           _handleShapeTap(colIndex, rowIndex);
         }
+        // Tapping a locked (non-top) shape with no incoming selection: do nothing
       },
       child: _ShapeTile(
         shape: shape,
         color: color,
         isSelected: isSelected,
         isSource: isSourceCol,
+        isLocked: !isTop,
       ),
     );
   }
@@ -496,35 +501,40 @@ class _ShapeTile extends StatelessWidget {
   final Color color;
   final bool isSelected; // this specific tile is selected
   final bool isSource;   // its column is the source column
+  final bool isLocked;   // non-top shape — cannot be selected
 
   const _ShapeTile({
     required this.shape,
     required this.color,
     required this.isSelected,
     required this.isSource,
+    this.isLocked = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: 56,
-      height: 56,
-      margin: const EdgeInsets.symmetric(vertical: 3),
-      transform: isSelected ? Matrix4.diagonal3Values(1.08, 1.08, 1.0) : Matrix4.identity(),
-      transformAlignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isSelected ? color : color.withValues(alpha: 0.5),
-          width: isSelected ? 2.5 : 1.5,
+    return Opacity(
+      opacity: isLocked ? 0.45 : 1.0,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 56,
+        height: 56,
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        transform: isSelected ? Matrix4.diagonal3Values(1.08, 1.08, 1.0) : Matrix4.identity(),
+        transformAlignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.5),
+            width: isSelected ? 2.5 : 1.5,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 3))]
+              : [BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 4, offset: const Offset(0, 2))],
         ),
-        boxShadow: isSelected
-            ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 3))]
-            : [BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 4, offset: const Offset(0, 2))],
+        child: Center(child: _shapeIcon(shape, 30, color)),
       ),
-      child: Center(child: _shapeIcon(shape, 30, color)),
     );
   }
 }
