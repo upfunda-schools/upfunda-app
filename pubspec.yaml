@@ -29,6 +29,9 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_svg: ^2.0.10+1
   cached_network_image: ^3.4.1
+  pdf: ^3.12.0
+  printing: ^5.14.3
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +44,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/images/certificate/
     - assets/images/signup/
     - "assets/images/3. SignUp-Email/"
     - "assets/log in page/"

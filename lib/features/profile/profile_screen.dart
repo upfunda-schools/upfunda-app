@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../data/models/user_avatar_config.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../shared/widgets/loader_widget.dart';
@@ -16,20 +17,47 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  UserAvatarConfig? _avatarConfig;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      if (ref.read(userProvider).profile == null) {
+      if (!mounted) return;
+      final userState = ref.read(userProvider);
+      if (userState.profile == null) {
         ref.read(userProvider.notifier).loadProfile();
+      } else {
+        setState(() => _avatarConfig = userState.profile?.avatarConfig);
       }
       ref.read(authProvider.notifier).fetchProfiles();
+    });
+  }
+
+  Future<void> _openAvatarEditor() async {
+    await context.push('/avatar');
+    if (!mounted) return;
+    ref.read(userProvider.notifier).loadProfile();
+    final latest = ref.read(avatarConfigProvider);
+    setState(() {
+      _avatarConfig = latest;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userProvider);
+
+    ref.listen<UserAvatarConfig?>(
+      avatarConfigProvider,
+      (_, newAvatar) {
+        if (mounted && newAvatar != _avatarConfig) {
+          setState(() => _avatarConfig = newAvatar);
+        }
+      },
+    );
+
+    final profile = state.profile;
 
     return Scaffold(
       body: Container(
@@ -41,17 +69,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         child: SafeArea(
-          child: state.isLoading
+          child: (state.isLoading && profile == null)
               ? const LoaderWidget(message: 'Loading profile...')
-              : state.profile == null
+              : profile == null
                   ? const Center(child: Text('No profile data'))
-                  : _buildProfile(state),
+                  : _buildProfileContent(state),
         ),
       ),
     );
   }
 
-  Widget _buildProfile(UserState state) {
+  Widget _buildProfileContent(UserState state) {
     final profile = state.profile!;
     final authState = ref.watch(authProvider);
     final profiles = authState.profiles ?? [];
@@ -176,7 +204,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 120,
                   child: Stack(
                     children: [
-                      if (profile.avatarConfig != null)
+                      if (_avatarConfig != null)
+                        AvatarDisplay(
+                          key: ValueKey(_avatarConfig),
+                          config: _avatarConfig,
+                          size: 120,
+                          shape: 'circle',
+                        )
+                      else if (profile.avatarConfig != null)
                         AvatarDisplay(
                           key: ValueKey(profile.avatarConfig),
                           config: profile.avatarConfig,
@@ -200,13 +235,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         bottom: 0,
                         right: 0,
                         child: GestureDetector(
-                          onTap: () async {
-                            final result = await context.push('/avatar');
-                            if (result == true) {
-                              // Force a refresh from server to be sure, though optimistic update handles it
-                              ref.read(userProvider.notifier).loadProfile();
-                            }
-                          },
+                          onTap: _openAvatarEditor,
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(

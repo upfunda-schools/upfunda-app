@@ -141,13 +141,7 @@ class AvatarDisplay extends StatelessWidget {
     double topFactor = 0;
     double leftFactor = -0.005;
 
-    String hairColor = config!.hairColor ?? '#000000';
-    
-    // Website parity: certain styles default to black if randomization is off
-    if ((config!.hairStyle == 'thick' || config!.hairStyle == 'mohawk') && 
-        (config!.hairColorRandom != true)) {
-      hairColor = '#000000';
-    }
+    const String hairColor = '#000000';
 
     switch (config!.hairStyle) {
       case 'none':
@@ -219,6 +213,13 @@ class AvatarDisplay extends StatelessWidget {
         break;
       case 'turban':
         svg = AvatarPartsData.getHatTurban(config!.hatColor ?? '#000000');
+        widthFactor = 0.64;
+        heightFactor = 0.84;
+        bottomFactor = 0.33;
+        leftFactor = 0.158;
+        break;
+      case 'cap':
+        svg = AvatarPartsData.getHatCap(config!.hatColor ?? '#000000');
         widthFactor = 0.64;
         heightFactor = 0.84;
         bottomFactor = 0.33;
