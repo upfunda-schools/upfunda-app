@@ -56,6 +56,9 @@ import '../../features/challenge/room/challenge_room_quiz_screen.dart';
 import '../../features/challenge/room/challenge_room_result_screen.dart';
 import '../../features/leaderboard/leaderboard_screen.dart';
 import '../../features/profile/avatar_editor_screen.dart';
+import '../../features/payment/premium_screen.dart';
+import '../../features/payment/checkout_screen.dart';
+import '../../data/models/payment_model.dart';
 
 class _RouterNotifier extends ChangeNotifier {
   void notify() => notifyListeners();
@@ -370,6 +373,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderBoardScreen(),
+      ),
+      GoRoute(
+        path: '/premium',
+        builder: (context, state) => const PremiumScreen(),
+      ),
+      GoRoute(
+        path: '/premium-checkout',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final plans = extra['plans'] as List<PricingPlan>;
+          final isIndia = extra['isIndia'] as bool;
+          return CheckoutScreen(selectedPlans: plans, isIndia: isIndia);
+        },
       ),
     ],
     errorBuilder: (context, state) =>

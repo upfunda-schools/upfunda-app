@@ -136,9 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 )
               else
                 GestureDetector(
-                  onTap: () {
-                    // Handle subscription
-                  },
+                  onTap: () => context.push('/premium'),
                   child: Image.asset(
                     'assets/Updated 2/Premium Main.png',
                     height: 32,
