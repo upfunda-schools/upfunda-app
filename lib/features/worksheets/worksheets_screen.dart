@@ -449,16 +449,19 @@ class _WorksheetsScreenState extends ConsumerState<WorksheetsScreen> {
   }
 
   Widget _buildUnlockButton(double scale) {
-    return Image.asset(
-      'assets/Updated 2/Premium Main.png',
-      height: 32 * scale,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => Container(
+    return GestureDetector(
+      onTap: () => context.push('/premium'),
+      child: Image.asset(
+        'assets/Updated 2/Premium Main.png',
         height: 32 * scale,
-        width: 100 * scale,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(16 * scale),
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Container(
+          height: 32 * scale,
+          width: 100 * scale,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(16 * scale),
+          ),
         ),
       ),
     );
