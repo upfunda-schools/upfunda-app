@@ -187,7 +187,8 @@ bool _isPerfectSquare(int n) {
   return r * r == n;
 }
 
-/// Returns a minimal clue subset that uniquely identifies [n] within [range].
+/// Returns a clue subset that uniquely identifies [n] within [range],
+/// showing at least [count] clues.
 List<_Clue> _selectUniqueClues(int n, List<int> range, List<_Clue> allClues, int count) {
   final rng = Random();
   allClues.shuffle(rng);
@@ -197,22 +198,11 @@ List<_Clue> _selectUniqueClues(int n, List<int> range, List<_Clue> allClues, int
   for (final clue in allClues) {
     selected.add(clue);
     final survivors = range.where((x) => selected.every((c) => c.test(x))).toList();
-    if (survivors.length == 1 && survivors.first == n) {
-      if (selected.length >= count) break;
-    }
-    if (selected.length >= count) break;
+    // Keep going until n is uniquely identified AND we've shown at least count clues
+    if (survivors.length == 1 && survivors.first == n && selected.length >= count) break;
   }
 
-  // If still not unique, keep adding
-  for (final clue in allClues) {
-    if (selected.contains(clue)) continue;
-    selected.add(clue);
-    final survivors = range.where((x) => selected.every((c) => c.test(x))).toList();
-    if (survivors.length == 1 && survivors.first == n) break;
-    if (selected.length >= count + 3) break;
-  }
-
-  return selected.take(count).toList();
+  return selected;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
