@@ -824,11 +824,14 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
                     child: _ModalButton(
                       label: 'Yes, hint me!',
                       color: const Color(0xFF22C55E),
-                      onTap: () => setState(() {
-                        _hintText = _generateHint();
-                        _hintUsed = true;
-                        _showHintDialog = false;
-                      }),
+                      onTap: () {
+                        setState(() {
+                          _hintText = _generateHint();
+                          _hintUsed = true;
+                          _showHintDialog = false;
+                        });
+                        WidgetsBinding.instance.addPostFrameCallback((_) => _keyboardFocus.requestFocus());
+                      },
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -836,7 +839,10 @@ class _WordleScreenState extends State<WordleScreen> with TickerProviderStateMix
                     child: _ModalButton(
                       label: 'No thanks',
                       color: const Color(0xFF9CA3AF),
-                      onTap: () => setState(() => _showHintDialog = false),
+                      onTap: () {
+                        setState(() => _showHintDialog = false);
+                        WidgetsBinding.instance.addPostFrameCallback((_) => _keyboardFocus.requestFocus());
+                      },
                     ),
                   ),
                 ],

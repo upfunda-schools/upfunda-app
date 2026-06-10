@@ -43,39 +43,55 @@ class _Shape {
 List<List<bool>> _emptyGrid() => List.generate(6, (_) => List.filled(6, false));
 
 _Shape _generateShape(int type) {
-  final rng = Random();
-  final grid = _emptyGrid();
+  final expected = type == 1
+      ? <String>{'vertical'}
+      : type == 2
+          ? <String>{'horizontal'}
+          : <String>{'vertical', 'horizontal'};
 
-  if (type == 1) {
-    // Vertical symmetry: fill left 3 columns, mirror right
-    for (int i = 0; i < 6; i++) {
-      for (int j = 0; j < 3; j++) {
-        grid[i][j] = rng.nextBool();
-        grid[i][5 - j] = grid[i][j];
+  final rng = Random();
+
+  List<List<bool>> build() {
+    final g = _emptyGrid();
+    if (type == 1) {
+      for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 3; j++) {
+          g[i][j] = rng.nextBool();
+          g[i][5 - j] = g[i][j];
+        }
+      }
+    } else if (type == 2) {
+      for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 6; j++) {
+          g[i][j] = rng.nextBool();
+          g[5 - i][j] = g[i][j];
+        }
+      }
+    } else {
+      for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+          g[i][j] = rng.nextBool();
+          g[i][5 - j] = g[i][j];
+          g[5 - i][j] = g[i][j];
+          g[5 - i][5 - j] = g[i][j];
+        }
       }
     }
-  } else if (type == 2) {
-    // Horizontal symmetry: fill top 3 rows, mirror bottom
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 6; j++) {
-        grid[i][j] = rng.nextBool();
-        grid[5 - i][j] = grid[i][j];
-      }
-    }
-  } else {
-    // Both: fill top-left 3×3, mirror right then bottom
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        grid[i][j] = rng.nextBool();
-        grid[i][5 - j] = grid[i][j];
-        grid[5 - i][j] = grid[i][j];
-        grid[5 - i][5 - j] = grid[i][j];
-      }
+    return g;
+  }
+
+  for (int attempt = 0; attempt < 200; attempt++) {
+    final grid = build();
+    final lines = _verifySymmetries(grid);
+    final linesSet = lines.toSet();
+    if (linesSet.length == expected.length && linesSet.containsAll(expected)) {
+      return _Shape(type: type, symmetryLines: lines, pattern: grid);
     }
   }
 
-  final lines = _verifySymmetries(grid);
-  return _Shape(type: type, symmetryLines: lines, pattern: grid);
+  // Fallback: return with the hardcoded expected lines so the game stays solvable
+  final grid = build();
+  return _Shape(type: type, symmetryLines: expected.toList(), pattern: grid);
 }
 
 List<String> _verifySymmetries(List<List<bool>> g) {
