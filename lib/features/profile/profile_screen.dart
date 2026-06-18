@@ -137,10 +137,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               else
                 GestureDetector(
                   onTap: () => context.push('/premium'),
-                  child: Image.asset(
-                    'assets/Updated 2/Premium Main.png',
-                    height: 32,
-                    fit: BoxFit.contain,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE4B500), Color(0xFFFF8C00)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star_border_rounded, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'Buy Premium',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],

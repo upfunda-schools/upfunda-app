@@ -89,9 +89,14 @@ _Shape _generateShape(int type) {
     }
   }
 
-  // Fallback: return with the hardcoded expected lines so the game stays solvable
+  // Fallback: verify actual symmetries on the last-built grid so the answer key matches
   final grid = build();
-  return _Shape(type: type, symmetryLines: expected.toList(), pattern: grid);
+  final actualLines = _verifySymmetries(grid);
+  return _Shape(
+    type: type,
+    symmetryLines: actualLines.isEmpty ? expected.toList() : actualLines,
+    pattern: grid,
+  );
 }
 
 List<String> _verifySymmetries(List<List<bool>> g) {
