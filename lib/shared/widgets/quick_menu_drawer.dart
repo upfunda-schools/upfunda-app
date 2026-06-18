@@ -132,7 +132,10 @@ class _QuickMenuDrawerState extends ConsumerState<QuickMenuDrawer> {
                     title: 'Pricing',
                     useBold: true,
                     color: const Color(0xFF2D2D2D),
-                    onTap: () => _launchUrl('https://upfunda.academy/pricingAmount'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/premium');
+                    },
                   ),
                   
                   _buildAssetImage('Line 14.png', height: 1),
