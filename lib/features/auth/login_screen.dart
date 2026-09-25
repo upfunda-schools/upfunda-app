@@ -617,6 +617,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
 
+                                SizedBox(height: spaceS),
+
+                                // Sign up link
+                                GestureDetector(
+                                  onTap: () => context.go('/signup'),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 12,
+                                        color: const Color(0xFF666666),
+                                      ),
+                                      children: const [
+                                        TextSpan(text: "Don't have an account? "),
+                                        TextSpan(
+                                          text: 'Join now',
+                                          style: TextStyle(
+                                            color: Color(0xFFFF7067),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),

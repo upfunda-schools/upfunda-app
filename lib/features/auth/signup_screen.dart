@@ -755,7 +755,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                             ],
                                           ),
                                         ),
-                                        const SizedBox(height: 24),
+                                        const SizedBox(height: 16),
+                                        GestureDetector(
+                                          onTap: () => context.go('/login'),
+                                          child: RichText(
+                                            text: const TextSpan(
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF666666),
+                                                fontFamily: 'Roboto',
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: 'Already have an account? ',
+                                                ),
+                                                TextSpan(
+                                                  text: 'Sign In',
+                                                  style: TextStyle(
+                                                    color: Color(0xFF6C5CE7),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
                                       ],
                                     ),
                                   ),
