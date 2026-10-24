@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/meta_events.dart';
 import '../../data/models/payment_model.dart';
 import '../../providers/user_provider.dart';
 import 'payment_provider.dart';
-import 'razorpay_web_impl.dart' if (dart.library.io) 'razorpay_web_stub.dart' as rzp_web;
+import 'razorpay_web_impl.dart'
+    if (dart.library.io) 'razorpay_web_stub.dart'
+    as rzp_web;
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   final List<PricingPlan> selectedPlans;
@@ -32,11 +35,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String get _country => _isIndia ? 'IN' : 'US';
 
   // Whether the worksheet plan is in the selection (coupons only apply to it)
-  bool get _hasWorksheetPlan => widget.selectedPlans
-      .any((p) => p.description.toLowerCase().contains('worksheet'));
+  bool get _hasWorksheetPlan => widget.selectedPlans.any(
+    (p) => p.description.toLowerCase().contains('worksheet'),
+  );
 
-  int get _totalPrice => widget.selectedPlans
-      .fold(0, (sum, p) => sum + p.paymentAmountFor(_isIndia));
+  int get _totalPrice => widget.selectedPlans.fold(
+    0,
+    (sum, p) => sum + p.paymentAmountFor(_isIndia),
+  );
 
   int get _worksheetPrice {
     final wp = widget.selectedPlans
@@ -65,7 +71,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _calculatePrice({String? couponCode}) async {
-    await ref.read(paymentProvider.notifier).calculatePrice(
+    await ref
+        .read(paymentProvider.notifier)
+        .calculatePrice(
           price: _totalPrice,
           discountablePrice: _worksheetPrice,
           country: _country,
@@ -77,10 +85,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final code = _couponController.text.trim();
     if (code.isEmpty) return;
     if (!_hasWorksheetPlan) {
-      _showSnackBar('Coupons can only be applied to Worksheet Subscriptions', isError: true);
+      _showSnackBar(
+        'Coupons can only be applied to Worksheet Subscriptions',
+        isError: true,
+      );
       return;
     }
-    final ok = await ref.read(paymentProvider.notifier).validateAndApplyCoupon(
+    final ok = await ref
+        .read(paymentProvider.notifier)
+        .validateAndApplyCoupon(
           code: code,
           price: _totalPrice,
           discountablePrice: _worksheetPrice,
@@ -98,12 +111,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _calculatePrice();
   }
 
+  /// Logs Meta Subscribe after a verified payment (INR only). Must run before
+  /// verifyPayment, which clears the current order.
+  Future<bool> _verifyAndTrack({
+    required String orderId,
+    required String paymentId,
+    required String signature,
+  }) async {
+    final paidAmount = ref.read(paymentProvider).currentOrder?.amount ?? 0;
+    final ok = await ref
+        .read(paymentProvider.notifier)
+        .verifyPayment(
+          razorpayOrderId: orderId,
+          razorpayPaymentId: paymentId,
+          razorpaySignature: signature,
+        );
+    if (ok && _isIndia && paidAmount > 0) {
+      MetaEvents.subscribe(
+        amountInPaise: paidAmount,
+        planName: widget.selectedPlans.map((p) => p.description).join(' + '),
+        orderId: paymentId,
+      );
+    }
+    return ok;
+  }
+
   Future<void> _onPayNow() async {
+    MetaEvents.initiateCheckout();
     final payState = ref.read(paymentProvider);
 
     // Send original plan price — backend re-applies coupon and calculates final amount itself.
     // Sending the already-discounted finalAmount causes backend to treat coupon as 100% discount.
-    final order = await ref.read(paymentProvider.notifier).createOrder(
+    final order = await ref
+        .read(paymentProvider.notifier)
+        .createOrder(
           price: _totalPrice,
           discountablePrice: _worksheetPrice,
           country: _country,
@@ -121,7 +162,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     // Use key from the order response (not from env)
     final key = order.key;
     if (key.isEmpty) {
-      _showSnackBar('Payment not configured. Please contact support.', isError: true);
+      _showSnackBar(
+        'Payment not configured. Please contact support.',
+        isError: true,
+      );
       return;
     }
 
@@ -144,11 +188,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       rzp_web.openRazorpayCheckout(
         options: options,
         onSuccess: (orderId, paymentId, signature) async {
-          final ok = await ref.read(paymentProvider.notifier).verifyPayment(
-                razorpayOrderId: orderId,
-                razorpayPaymentId: paymentId,
-                razorpaySignature: signature,
-              );
+          final ok = await _verifyAndTrack(
+            orderId: orderId,
+            paymentId: paymentId,
+            signature: signature,
+          );
           if (mounted && ok) _showSuccessDialog();
         },
         onError: (msg) {
@@ -166,19 +210,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _onPaymentSuccess(PaymentSuccessResponse response) async {
-    final orderId = ref.read(paymentProvider).currentOrder?.razorpayOrderId ?? '';
-    final success = await ref.read(paymentProvider.notifier).verifyPayment(
-          razorpayOrderId: orderId,
-          razorpayPaymentId: response.paymentId ?? '',
-          razorpaySignature: response.signature ?? '',
-        );
+    final orderId =
+        ref.read(paymentProvider).currentOrder?.razorpayOrderId ?? '';
+    final success = await _verifyAndTrack(
+      orderId: orderId,
+      paymentId: response.paymentId ?? '',
+      signature: response.signature ?? '',
+    );
     if (!mounted) return;
     if (success) _showSuccessDialog();
   }
 
   void _onPaymentError(PaymentFailureResponse response) {
     if (!mounted) return;
-    _showSnackBar('Payment failed: ${response.message ?? 'Unknown error'}', isError: true);
+    _showSnackBar(
+      'Payment failed: ${response.message ?? 'Unknown error'}',
+      isError: true,
+    );
   }
 
   void _onExternalWallet(ExternalWalletResponse response) {
@@ -215,14 +263,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
                   context.go('/student-home');
                 },
-                child: const Text('Start Learning', style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  'Start Learning',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],
@@ -232,11 +285,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _showSnackBar(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: isError ? AppColors.incorrect : AppColors.success,
-      behavior: SnackBarBehavior.floating,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? AppColors.incorrect : AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -244,7 +299,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final state = ref.watch(paymentProvider);
     final pricing = state.priceBreakdown;
     final isCalculating = state.status == PaymentStatus.calculatingPrice;
-    final isProcessing = state.status == PaymentStatus.creatingOrder ||
+    final isProcessing =
+        state.status == PaymentStatus.creatingOrder ||
         state.status == PaymentStatus.processingPayment;
 
     return Scaffold(
@@ -258,7 +314,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         title: const Text(
           'Order Review',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -326,9 +386,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: const Border(left: BorderSide(color: Color(0xFFE91E8C), width: 4)),
+              border: const Border(
+                left: BorderSide(color: Color(0xFFE91E8C), width: 4),
+              ),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                ),
               ],
             ),
             child: Row(
@@ -338,16 +403,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(plan.description,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                      const Text('1 year access',
-                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(
+                        plan.description,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Text(
+                        '1 year access',
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
                 Text(
                   '$_currencySymbol${(amount / 100).toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),
@@ -369,7 +444,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           color: couponApplied ? Colors.green.shade300 : Colors.grey.shade200,
           style: BorderStyle.solid,
         ),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +454,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           if (!_hasWorksheetPlan)
             Row(
               children: [
-                Icon(Icons.local_offer_outlined, size: 16, color: Colors.grey.shade400),
+                Icon(
+                  Icons.local_offer_outlined,
+                  size: 16,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -395,13 +476,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 Expanded(
                   child: Text(
                     'Coupon "${state.couponCode}" applied',
-                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 GestureDetector(
                   onTap: _removeCoupon,
-                  child: const Text('Remove',
-                      style: TextStyle(color: Colors.red, fontSize: 13)),
+                  child: const Text(
+                    'Remove',
+                    style: TextStyle(color: Colors.red, fontSize: 13),
+                  ),
                 ),
               ],
             )
@@ -414,7 +500,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     textCapitalization: TextCapitalization.characters,
                     decoration: InputDecoration(
                       hintText: 'Enter coupon code',
-                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 13,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -427,11 +516,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFFE91E8C)),
                       ),
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       isDense: true,
-                      prefixIcon:
-                          const Icon(Icons.local_offer_outlined, size: 18, color: Colors.grey),
+                      prefixIcon: const Icon(
+                        Icons.local_offer_outlined,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                     ),
                     onSubmitted: (_) => _applyCoupon(),
                   ),
@@ -441,8 +535,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE91E8C),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     elevation: 0,
                   ),
                   onPressed: _applyCoupon,
@@ -455,10 +554,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  Widget _buildBillDetails(CalculatePriceResponse? pricing, bool isCalculating) {
+  Widget _buildBillDetails(
+    CalculatePriceResponse? pricing,
+    bool isCalculating,
+  ) {
     final baseAmount = pricing?.baseAmount ?? _totalPrice;
     final discountAmount = pricing?.discountAmount ?? 0;
-    final amountAfterDiscount = pricing?.amountAfterDiscount ?? (baseAmount - discountAmount);
+    final amountAfterDiscount =
+        pricing?.amountAfterDiscount ?? (baseAmount - discountAmount);
     final gstPct = pricing?.gstPercentage ?? 0;
     final gstAmount = pricing?.gstAmount ?? 0;
     final finalAmount = pricing?.finalAmount ?? baseAmount;
@@ -468,13 +571,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Bill Details',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text(
+            'Bill Details',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
           const SizedBox(height: 14),
           if (isCalculating)
             const Center(
@@ -484,7 +591,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             )
           else ...[
-            _billRow('Base Price', '$_currencySymbol${(baseAmount / 100).toStringAsFixed(0)}'),
+            _billRow(
+              'Base Price',
+              '$_currencySymbol${(baseAmount / 100).toStringAsFixed(0)}',
+            ),
             if (discountAmount > 0) ...[
               _billRow(
                 'Discount',
@@ -505,11 +615,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total Amount',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text(
+                  'Total Amount',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 Text(
                   '$_currencySymbol${(finalAmount / 100).toStringAsFixed(2)} ${pricing?.currency ?? (_isIndia ? 'INR' : 'USD')}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -526,18 +641,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 14,
-                  color: valueColor ?? Colors.black87,
-                  fontWeight: valueColor != null ? FontWeight.w600 : FontWeight.normal)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              color: valueColor ?? Colors.black87,
+              fontWeight: valueColor != null
+                  ? FontWeight.w600
+                  : FontWeight.normal,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildPayButton(
-      CalculatePriceResponse? pricing, bool isProcessing, bool isCalculating) {
+    CalculatePriceResponse? pricing,
+    bool isProcessing,
+    bool isCalculating,
+  ) {
     final finalAmount = pricing?.finalAmount ?? _totalPrice;
     final label =
         'Pay $_currencySymbol${(finalAmount / 100).toStringAsFixed(2)} Now';
@@ -549,7 +672,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           backgroundColor: const Color(0xFFE91E8C),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
         onPressed: (isProcessing || isCalculating) ? null : _onPayNow,
@@ -557,9 +682,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ? const SizedBox(
                 height: 20,
                 width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
-            : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            : Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
