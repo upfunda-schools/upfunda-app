@@ -1,4 +1,4 @@
-package com.upfunda.upfunda_app
+package academy.upfunda.fe
 
 import io.flutter.embedding.android.FlutterActivity
 

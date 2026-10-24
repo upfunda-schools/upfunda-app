@@ -1,7 +1,7 @@
 name: upfunda_app
 description: "Upfunda Education Platform - Student App"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+5
 
 environment:
   sdk: ^3.9.0

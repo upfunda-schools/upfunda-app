@@ -1,3 +1,6 @@
 {
-    "dart.showTodos": false
+    "dart.showTodos": false,
+    "chat.tools.terminal.autoApprove": {
+        "flutter": true
+    }
 }
