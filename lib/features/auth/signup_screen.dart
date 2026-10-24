@@ -1,3 +1,4 @@
+import '../../core/utils/meta_events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,6 +104,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           .emailRegister(email: value, password: password);
     }
 
+    if (success) {
+      MetaEvents.completeRegistration(
+        method: _isPhoneSelected ? 'phone' : 'email',
+      );
+    }
     if (success && mounted) {
       context.go('/student-home');
     } else if (mounted) {
@@ -767,7 +773,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                               ),
                                               children: [
                                                 TextSpan(
-                                                  text: 'Already have an account? ',
+                                                  text:
+                                                      'Already have an account? ',
                                                 ),
                                                 TextSpan(
                                                   text: 'Sign In',

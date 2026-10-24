@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/env_config.dart';
 import '../../data/models/payment_model.dart';
@@ -13,7 +15,15 @@ final paymentServiceProvider = Provider<PaymentService>((ref) {
   );
 });
 
-enum PaymentStatus { idle, loadingPlans, calculatingPrice, creatingOrder, processingPayment, success, error }
+enum PaymentStatus {
+  idle,
+  loadingPlans,
+  calculatingPrice,
+  creatingOrder,
+  processingPayment,
+  success,
+  error,
+}
 
 class PaymentState {
   final PaymentStatus status;
@@ -45,16 +55,17 @@ class PaymentState {
     String? couponCode,
     bool clearCoupon = false,
     bool? couponValid,
-  }) =>
-      PaymentState(
-        status: status ?? this.status,
-        plans: plans ?? this.plans,
-        priceBreakdown: clearPriceBreakdown ? null : (priceBreakdown ?? this.priceBreakdown),
-        currentOrder: clearOrder ? null : (currentOrder ?? this.currentOrder),
-        errorMessage: errorMessage,
-        couponCode: clearCoupon ? null : (couponCode ?? this.couponCode),
-        couponValid: couponValid ?? this.couponValid,
-      );
+  }) => PaymentState(
+    status: status ?? this.status,
+    plans: plans ?? this.plans,
+    priceBreakdown: clearPriceBreakdown
+        ? null
+        : (priceBreakdown ?? this.priceBreakdown),
+    currentOrder: clearOrder ? null : (currentOrder ?? this.currentOrder),
+    errorMessage: errorMessage,
+    couponCode: clearCoupon ? null : (couponCode ?? this.couponCode),
+    couponValid: couponValid ?? this.couponValid,
+  );
 }
 
 class PaymentNotifier extends StateNotifier<PaymentState> {
@@ -64,12 +75,18 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   PaymentNotifier(this._service, this._ref) : super(const PaymentState());
 
   Future<void> loadPlans() async {
-    state = state.copyWith(status: PaymentStatus.loadingPlans, errorMessage: null);
+    state = state.copyWith(
+      status: PaymentStatus.loadingPlans,
+      errorMessage: null,
+    );
     try {
       final result = await _service.fetchPremiumPrice();
       state = state.copyWith(status: PaymentStatus.idle, plans: result.plans);
     } catch (e) {
-      state = state.copyWith(status: PaymentStatus.error, errorMessage: _parseError(e));
+      state = state.copyWith(
+        status: PaymentStatus.error,
+        errorMessage: _parseError(e),
+      );
     }
   }
 
@@ -82,14 +99,19 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     required String country,
     String? couponCode,
   }) async {
-    state = state.copyWith(status: PaymentStatus.calculatingPrice, errorMessage: null);
+    state = state.copyWith(
+      status: PaymentStatus.calculatingPrice,
+      errorMessage: null,
+    );
     try {
-      final breakdown = await _service.calculatePrice(CalculatePriceRequest(
-        couponCode: couponCode,
-        price: price,
-        discountablePrice: discountablePrice,
-        country: country,
-      ));
+      final breakdown = await _service.calculatePrice(
+        CalculatePriceRequest(
+          couponCode: couponCode,
+          price: price,
+          discountablePrice: discountablePrice,
+          country: country,
+        ),
+      );
       state = state.copyWith(
         status: PaymentStatus.idle,
         priceBreakdown: breakdown,
@@ -97,7 +119,10 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
         couponValid: couponCode != null && couponCode.isNotEmpty,
       );
     } catch (e) {
-      state = state.copyWith(status: PaymentStatus.error, errorMessage: _parseError(e));
+      state = state.copyWith(
+        status: PaymentStatus.error,
+        errorMessage: _parseError(e),
+      );
     }
   }
 
@@ -136,7 +161,11 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   }
 
   void clearCoupon() {
-    state = state.copyWith(clearCoupon: true, clearPriceBreakdown: true, couponValid: false);
+    state = state.copyWith(
+      clearCoupon: true,
+      clearPriceBreakdown: true,
+      couponValid: false,
+    );
   }
 
   Future<CreateOrderResponse?> createOrder({
@@ -146,19 +175,33 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     String? couponCode,
     String? planId,
   }) async {
-    state = state.copyWith(status: PaymentStatus.creatingOrder, errorMessage: null);
+    state = state.copyWith(
+      status: PaymentStatus.creatingOrder,
+      errorMessage: null,
+    );
     try {
-      final order = await _service.createOrder(CreateOrderRequest(
-        couponCode: couponCode ?? (state.couponValid ? state.couponCode : null),
-        price: price,
-        discountablePrice: discountablePrice,
-        country: country,
-        planId: planId,
-      ));
+      final order = await _service.createOrder(
+        CreateOrderRequest(
+          couponCode:
+              couponCode ?? (state.couponValid ? state.couponCode : null),
+          price: price,
+          discountablePrice: discountablePrice,
+          country: country,
+          planId: planId,
+        ),
+      );
       state = state.copyWith(status: PaymentStatus.idle, currentOrder: order);
       return order;
     } catch (e) {
-      state = state.copyWith(status: PaymentStatus.error, errorMessage: _parseError(e));
+      debugPrint('createOrder error: $e');
+      if (e is DioException) {
+        debugPrint('Dio response: ${e.response?.data}');
+        debugPrint('Dio status: ${e.response?.statusCode}');
+      }
+      state = state.copyWith(
+        status: PaymentStatus.error,
+        errorMessage: _parseError(e),
+      );
       return null;
     }
   }
@@ -168,18 +211,26 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     required String razorpayPaymentId,
     required String razorpaySignature,
   }) async {
-    state = state.copyWith(status: PaymentStatus.processingPayment, errorMessage: null);
+    state = state.copyWith(
+      status: PaymentStatus.processingPayment,
+      errorMessage: null,
+    );
     try {
-      await _service.verifyPayment(VerifyPaymentRequest(
-        razorpayOrderId: razorpayOrderId,
-        razorpayPaymentId: razorpayPaymentId,
-        razorpaySignature: razorpaySignature,
-      ));
+      await _service.verifyPayment(
+        VerifyPaymentRequest(
+          razorpayOrderId: razorpayOrderId,
+          razorpayPaymentId: razorpayPaymentId,
+          razorpaySignature: razorpaySignature,
+        ),
+      );
       await _ref.read(userProvider.notifier).loadProfile();
       state = state.copyWith(status: PaymentStatus.success, clearOrder: true);
       return true;
     } catch (e) {
-      state = state.copyWith(status: PaymentStatus.error, errorMessage: _parseError(e));
+      state = state.copyWith(
+        status: PaymentStatus.error,
+        errorMessage: _parseError(e),
+      );
       return false;
     }
   }
@@ -200,6 +251,8 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   }
 }
 
-final paymentProvider = StateNotifierProvider<PaymentNotifier, PaymentState>((ref) {
+final paymentProvider = StateNotifierProvider<PaymentNotifier, PaymentState>((
+  ref,
+) {
   return PaymentNotifier(ref.read(paymentServiceProvider), ref);
 });

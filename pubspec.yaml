@@ -33,6 +33,7 @@ dependencies:
   printing: ^5.14.3
   path_provider: ^2.1.5
   razorpay_flutter: ^1.4.5
+  facebook_app_events: ^0.31.0
 
 dev_dependencies:
   flutter_test:
