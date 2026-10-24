@@ -15,6 +15,7 @@ import 'widgets/time_up_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/submission_dialog.dart';
 import 'widgets/similar_question_dialog.dart';
+import 'widgets/explanation_video_button.dart';
 
 
 
@@ -1007,6 +1008,8 @@ class SolutionPanel extends ConsumerWidget {
           ),
           
           const SizedBox(height: 24),
+
+          if (questionId != null) ExplanationVideoButton(questionId: questionId!),
 
           // Explanation Box
           if (cleanExplanation.isNotEmpty) 
