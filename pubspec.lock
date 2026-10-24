@@ -433,9 +433,11 @@ packages:
   flutter_math_fork:
     dependency: "direct overridden"
     description:
-      path: "../vdo/katex_rich"
-      relative: true
-    source: path
+      path: katex_rich
+      ref: "2a0693bd48ec3e0b032cdbd4ffd37e30d278dd8b"
+      resolved-ref: "2a0693bd48ec3e0b032cdbd4ffd37e30d278dd8b"
+      url: "https://github.com/barath0811/vdo.git"
+    source: git
     version: "0.7.4"
   flutter_riverpod:
     dependency: "direct main"
@@ -1263,9 +1265,11 @@ packages:
   vdo_player:
     dependency: "direct main"
     description:
-      path: "../vdo/flutter_player"
-      relative: true
-    source: path
+      path: flutter_player
+      ref: "2a0693bd48ec3e0b032cdbd4ffd37e30d278dd8b"
+      resolved-ref: "2a0693bd48ec3e0b032cdbd4ffd37e30d278dd8b"
+      url: "https://github.com/barath0811/vdo.git"
+    source: git
     version: "1.1.3+7"
   vector_graphics:
     dependency: transitive
